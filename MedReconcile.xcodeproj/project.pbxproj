@@ -1,0 +1,296 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BC145B91C30077E832 /* UIKit.framework */; };
+		EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BE145B91C30077E832 /* Foundation.framework */; };
+		EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4C0145B91C30077E832 /* CoreGraphics.framework */; };
+		EE30A4C7145B91C30077E832 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = EE30A4C5145B91C30077E832 /* InfoPlist.strings */; };
+		EE30A4C9145B91C30077E832 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4C8145B91C30077E832 /* main.m */; };
+		EE30A4CD145B91C30077E832 /* INAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CC145B91C30077E832 /* INAppDelegate.m */; };
+		EE30A4D0145B91C30077E832 /* INViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CF145B91C30077E832 /* INViewController.m */; };
+		EE30A4D3145B91C30077E832 /* INViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE30A4D1145B91C30077E832 /* INViewController_iPhone.xib */; };
+		EE30A4D6145B91C30077E832 /* INViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE30A4D4145B91C30077E832 /* INViewController_iPad.xib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		EE30A4B8145B91C30077E832 /* MedReconcile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedReconcile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EE30A4BC145B91C30077E832 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		EE30A4BE145B91C30077E832 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		EE30A4C0145B91C30077E832 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		EE30A4C4145B91C30077E832 /* MedReconcile-Info.plist */ = {isa = PBXFileReference; path = "MedReconcile-Info.plist"; sourceTree = "<group>"; };
+		EE30A4C6145B91C30077E832 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		EE30A4C8145B91C30077E832 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		EE30A4CA145B91C30077E832 /* MedReconcile-Prefix.pch */ = {isa = PBXFileReference; path = "MedReconcile-Prefix.pch"; sourceTree = "<group>"; };
+		EE30A4CB145B91C30077E832 /* INAppDelegate.h */ = {isa = PBXFileReference; path = INAppDelegate.h; sourceTree = "<group>"; };
+		EE30A4CC145B91C30077E832 /* INAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INAppDelegate.m; sourceTree = "<group>"; };
+		EE30A4CE145B91C30077E832 /* INViewController.h */ = {isa = PBXFileReference; path = INViewController.h; sourceTree = "<group>"; };
+		EE30A4CF145B91C30077E832 /* INViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INViewController.m; sourceTree = "<group>"; };
+		EE30A4D2145B91C30077E832 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/INViewController_iPhone.xib; sourceTree = "<group>"; };
+		EE30A4D5145B91C30077E832 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/INViewController_iPad.xib; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EE30A4B5145B91C30077E832 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */,
+				EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */,
+				EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		EE30A4AD145B91C30077E832 = {
+			isa = PBXGroup;
+			children = (
+				EE30A4C2145B91C30077E832 /* MedReconcile */,
+				EE30A4BB145B91C30077E832 /* Frameworks */,
+				EE30A4B9145B91C30077E832 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		EE30A4B9145B91C30077E832 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EE30A4B8145B91C30077E832 /* MedReconcile.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		EE30A4BB145B91C30077E832 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EE30A4BC145B91C30077E832 /* UIKit.framework */,
+				EE30A4BE145B91C30077E832 /* Foundation.framework */,
+				EE30A4C0145B91C30077E832 /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		EE30A4C2145B91C30077E832 /* MedReconcile */ = {
+			isa = PBXGroup;
+			children = (
+				EE30A4CB145B91C30077E832 /* INAppDelegate.h */,
+				EE30A4CC145B91C30077E832 /* INAppDelegate.m */,
+				EE30A4CE145B91C30077E832 /* INViewController.h */,
+				EE30A4CF145B91C30077E832 /* INViewController.m */,
+				EE30A4D1145B91C30077E832 /* INViewController_iPhone.xib */,
+				EE30A4D4145B91C30077E832 /* INViewController_iPad.xib */,
+				EE30A4C3145B91C30077E832 /* Supporting Files */,
+			);
+			path = MedReconcile;
+			sourceTree = "<group>";
+		};
+		EE30A4C3145B91C30077E832 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				EE30A4C4145B91C30077E832 /* MedReconcile-Info.plist */,
+				EE30A4C5145B91C30077E832 /* InfoPlist.strings */,
+				EE30A4C8145B91C30077E832 /* main.m */,
+				EE30A4CA145B91C30077E832 /* MedReconcile-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		EE30A4B7145B91C30077E832 /* MedReconcile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EE30A4D9145B91C30077E832 /* Build configuration list for PBXNativeTarget "MedReconcile" */;
+			buildPhases = (
+				EE30A4B4145B91C30077E832 /* Sources */,
+				EE30A4B5145B91C30077E832 /* Frameworks */,
+				EE30A4B6145B91C30077E832 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MedReconcile;
+			productName = MedReconcile;
+			productReference = EE30A4B8145B91C30077E832 /* MedReconcile.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EE30A4AF145B91C30077E832 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+				ORGANIZATIONNAME = "Children's Hospital Boston";
+			};
+			buildConfigurationList = EE30A4B2145B91C30077E832 /* Build configuration list for PBXProject "MedReconcile" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = EE30A4AD145B91C30077E832;
+			productRefGroup = EE30A4B9145B91C30077E832 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EE30A4B7145B91C30077E832 /* MedReconcile */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		EE30A4B6145B91C30077E832 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EE30A4C7145B91C30077E832 /* InfoPlist.strings in Resources */,
+				EE30A4D3145B91C30077E832 /* INViewController_iPhone.xib in Resources */,
+				EE30A4D6145B91C30077E832 /* INViewController_iPad.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EE30A4B4145B91C30077E832 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EE30A4C9145B91C30077E832 /* main.m in Sources */,
+				EE30A4CD145B91C30077E832 /* INAppDelegate.m in Sources */,
+				EE30A4D0145B91C30077E832 /* INViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		EE30A4C5145B91C30077E832 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EE30A4C6145B91C30077E832 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		EE30A4D1145B91C30077E832 /* INViewController_iPhone.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EE30A4D2145B91C30077E832 /* en */,
+			);
+			name = INViewController_iPhone.xib;
+			sourceTree = "<group>";
+		};
+		EE30A4D4145B91C30077E832 /* INViewController_iPad.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EE30A4D5145B91C30077E832 /* en */,
+			);
+			name = INViewController_iPad.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		EE30A4D7145B91C30077E832 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EE30A4D8145B91C30077E832 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		EE30A4DA145B91C30077E832 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "MedReconcile/MedReconcile-Prefix.pch";
+				INFOPLIST_FILE = "MedReconcile/MedReconcile-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		EE30A4DB145B91C30077E832 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "MedReconcile/MedReconcile-Prefix.pch";
+				INFOPLIST_FILE = "MedReconcile/MedReconcile-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		EE30A4B2145B91C30077E832 /* Build configuration list for PBXProject "MedReconcile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE30A4D7145B91C30077E832 /* Debug */,
+				EE30A4D8145B91C30077E832 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EE30A4D9145B91C30077E832 /* Build configuration list for PBXNativeTarget "MedReconcile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE30A4DA145B91C30077E832 /* Debug */,
+				EE30A4DB145B91C30077E832 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EE30A4AF145B91C30077E832 /* Project object */;
+}
