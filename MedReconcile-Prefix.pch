@@ -1,0 +1,33 @@
+//
+// Prefix header for all source files of the 'MedReconcile' target in the 'MedReconcile' project
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_4_0
+#	warning "This project uses features only available in iOS SDK 4.0 and later."
+#endif
+
+#ifdef __OBJC__
+#	import <UIKit/UIKit.h>
+#	import <Foundation/Foundation.h>
+#endif
+
+// Easy access to the app delegate
+#define APP_DELEGATE ((INAppDelegate *)[[UIApplication sharedApplication] delegate])
+
+// DLog only displays if -DDEBUG is set, ALog always displays output regardless of the DEBUG setting
+#ifdef DEBUG
+#   define DLog(fmt, ...) NSLog((@"%s (line %d) " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+#else
+#   define DLog(...)
+#endif
+#define ALog(fmt, ...) NSLog((@"%s (line %d) " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+// Make localization easy
+#define L_(s) NSLocalizedString(s, nil)
+#define L_2(s, c) NSLocalizedString(s, c)
+
+// Rotation
+#define IS_IPAD (UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())
+#define SUPPORTED_ORIENTATION(r) (IS_IPAD ? YES : UIDeviceOrientationIsPortrait(r))

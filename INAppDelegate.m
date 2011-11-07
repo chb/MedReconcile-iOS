@@ -7,25 +7,39 @@
 //
 
 #import "INAppDelegate.h"
-
-#import "INViewController.h"
+#import "IndivoServer.h"
+#import "INMedListController.h"
 
 @implementation INAppDelegate
 
-@synthesize window = _window;
-@synthesize viewController = _viewController;
+@synthesize indivo;
+@synthesize window, medListController;
+
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    // Override point for customization after application launch.
+	
+	// create Indivo Instance
+	NSURL *serverURL = [NSURL URLWithString:@"http://localhost:8000"];
+	NSURL *uiURL = [NSURL URLWithString:@"http://localhost:8001"];
+	self.indivo = [IndivoServer serverWithURL:serverURL uiURL:uiURL];
+	indivo.consumerKey = @"medreconcile@apps.indivo.org";
+	indivo.consumerSecret = @"medreconcile";
+	indivo.delegate = self;
+	
+    // create med list controller
 	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-	    self.viewController = [[INViewController alloc] initWithNibName:@"INViewController_iPhone" bundle:nil];
+	    self.medListController = [INMedListController new];
 	} else {
-	    self.viewController = [[INViewController alloc] initWithNibName:@"INViewController_iPad" bundle:nil];
+	    self.medListController = [INMedListController new];
 	}
-	self.window.rootViewController = self.viewController;
+	
+	// wrap in a navi controller
+	UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:medListController];
+	self.window.rootViewController = nav;
     [self.window makeKeyAndVisible];
+	
     return YES;
 }
 
@@ -67,5 +81,18 @@
 	 See also applicationDidEnterBackground:.
 	 */
 }
+
+
+
+#pragma mark - Indivo Server Delegate
+- (UIViewController *)viewControllerToPresentLoginViewController:(IndivoLoginViewController *)loginViewController
+{
+	return window.rootViewController;
+}
+
+- (void)userDidLogout:(IndivoServer *)fromServer
+{
+}
+
 
 @end
