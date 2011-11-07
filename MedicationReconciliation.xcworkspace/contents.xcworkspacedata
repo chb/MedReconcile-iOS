@@ -2,9 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "container:MedReconcile/MedReconcile.xcodeproj">
+      location = "container:MedReconcile.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:IndivoFramework/IndivoFramework/IndivoFramework.xcodeproj">
+      location = "group:../IndivoFramework/IndivoFramework/IndivoFramework.xcodeproj">
    </FileRef>
 </Workspace>
