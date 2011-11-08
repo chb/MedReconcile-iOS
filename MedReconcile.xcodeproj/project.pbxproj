@@ -15,6 +15,7 @@
 		EE6461E3145F1AA60007C6B9 /* INMedListController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CF145B91C30077E832 /* INMedListController.m */; };
 		EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */; };
 		EE6461E5145F1AAE0007C6B9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4C8145B91C30077E832 /* main.m */; };
+		EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9F067714688252000412C4 /* NSArray+NilProtection.m */; };
 		EEDB8DAE145CE260001C6C2C /* libIndivoServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DAD145CE260001C6C2C /* libIndivoServer.a */; };
 		EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB2145CE695001C6C2C /* Security.framework */; };
 		EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */; };
@@ -35,6 +36,8 @@
 		EE30A4CF145B91C30077E832 /* INMedListController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INMedListController.m; sourceTree = "<group>"; };
 		EE6461D3145F17FC0007C6B9 /* INNewMedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INNewMedViewController.h; sourceTree = "<group>"; };
 		EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INNewMedViewController.m; sourceTree = "<group>"; };
+		EE9F067614688252000412C4 /* NSArray+NilProtection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+NilProtection.h"; path = "Classes/NSArray+NilProtection.h"; sourceTree = SOURCE_ROOT; };
+		EE9F067714688252000412C4 /* NSArray+NilProtection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSArray+NilProtection.m"; path = "Classes/NSArray+NilProtection.m"; sourceTree = SOURCE_ROOT; };
 		EEDB8DAD145CE260001C6C2C /* libIndivoServer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivoServer.a; path = "../IndivoFramework/IndivoFramework/build/Release-iphoneos/libIndivoServer.a"; sourceTree = "<group>"; };
 		EEDB8DB2145CE695001C6C2C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
@@ -116,6 +119,8 @@
 				EE30A4CF145B91C30077E832 /* INMedListController.m */,
 				EE6461D3145F17FC0007C6B9 /* INNewMedViewController.h */,
 				EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */,
+				EE9F067614688252000412C4 /* NSArray+NilProtection.h */,
+				EE9F067714688252000412C4 /* NSArray+NilProtection.m */,
 			);
 			name = "View Controller";
 			path = ViewController;
@@ -187,6 +192,7 @@
 				EE6461E2145F1AA20007C6B9 /* INAppDelegate.m in Sources */,
 				EE6461E3145F1AA60007C6B9 /* INMedListController.m in Sources */,
 				EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */,
+				EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
