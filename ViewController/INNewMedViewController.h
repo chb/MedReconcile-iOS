@@ -12,5 +12,4 @@
 
 - (void)loadSuggestionsFor:(NSString *)medString;
 
-
 @end

@@ -14,3 +14,10 @@
 - (id)objectOrNilAtIndex:(NSUInteger)index;
 
 @end
+
+
+@interface NSMutableArray (NilProtection) 
+
+- (void)addObjectIfNotNil:(id)anObject;
+
+@end

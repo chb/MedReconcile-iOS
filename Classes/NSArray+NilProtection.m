@@ -33,3 +33,16 @@
 }
 
 @end
+
+
+
+@implementation NSMutableArray (NilProtection)
+
+- (void)addObjectIfNotNil:(id)anObject
+{
+	if (anObject) {
+		[self addObject:anObject];
+	}
+}
+
+@end
