@@ -7,41 +7,33 @@
 //
 
 #import "INNewMedViewController.h"
+#import "INAppDelegate.h"
+#import "INTableSection.h"
+
+#import "IndivoServer.h"
 #import "INURLFetcher.h"
 #import "INURLLoader.h"
 #import "INXMLParser.h"
 #import "INXMLNode.h"
+#import "IndivoMedication.h"
 #import "NSArray+NilProtection.h"
 
 
 @interface INNewMedViewController ()
 
-@property (nonatomic, strong) NSMutableArray *suggestions;							///< A 2d array with suggestions per level
-@property (nonatomic, strong) NSMutableDictionary *suggested;						///< An dictionary with the selected suggestion (INXMLNode) per level (NSNumber)
-@property (nonatomic, strong) NSMutableDictionary *suggestionsExpanded;				///< Dictionary containing BOOL-NSNumbers
-@property (nonatomic, strong) NSMutableDictionary *suggestionsHeaders;				///< Dictionary containing NSStrings for NSNumber keys
-@property (nonatomic, assign) NSUInteger showLoadingIndicatorAtSection;				///< The active level
+@property (nonatomic, strong) NSMutableArray *sections;								///< An array full of INTableSection objects
 @property (nonatomic, copy) NSString *currentMedString;								///< The string for which suggestions are being loaded
 @property (nonatomic, strong) NSMutableDictionary *currentScores;					///< A dictionary containing approxMatch scores
 
-@property (nonatomic, assign) NSInteger showLoadingSuggestionsIndicator;			///< If >0 shows an indicator that we are loading suggestions
-@property (nonatomic, strong) UIView *suggestionHeaderView;
 @property (nonatomic, strong) UILabel *loadingTextLabel;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingActivity;
 
 - (void)fetcher:(INURLFetcher *)aFetcher didLoadSuggestionsFor:(NSString *)medString;
 - (void)clearSuggestions;
 - (void)proceedWith:(INXMLNode *)aNode fromLevel:(NSUInteger)fromLevel;
+- (void)useDrug:(INXMLNode *)drugNode;
 
-- (void)goToLevel:(NSUInteger)level;
-- (void)updateSuggestionLevel:(NSUInteger)level animated:(BOOL)animated;
-- (void)addSuggestionLevel:(NSUInteger)level animated:(BOOL)animated;
-- (void)expandSuggestionLevel:(NSUInteger)level animated:(BOOL)animated;
-- (void)collapseSuggestionLevel:(NSUInteger)level animated:(BOOL)animated;
-- (void)removeSuggestionLevel:(NSUInteger)level animated:(BOOL)animated;
-
-- (UIView *)suggestionHeader;
-- (void)updateSuggestionHeader;
+- (void)goToSection:(NSUInteger)sectionIdx;
 
 - (NSString *)displayNameFor:(INXMLNode *)drugNode;
 
@@ -50,8 +42,9 @@
 
 @implementation INNewMedViewController
 
-@synthesize suggestions, suggested, showLoadingIndicatorAtSection, suggestionsExpanded, suggestionsHeaders, currentMedString, currentScores;
-@synthesize showLoadingSuggestionsIndicator, suggestionHeaderView, loadingTextLabel, loadingActivity;
+@synthesize sections;
+@synthesize currentMedString, currentScores;
+@synthesize loadingTextLabel, loadingActivity;
 
 
 - (id)init
@@ -63,11 +56,8 @@
 {
     if ((self = [super initWithNibName:nibName bundle:aBundle])) {
 		self.title = @"New Medication";
-		self.suggestions = [NSMutableArray arrayWithCapacity:5];
-		[suggestions addObject:[NSNull null]];
-		self.suggested = [NSMutableDictionary dictionaryWithCapacity:5];
-		self.suggestionsExpanded = [NSMutableDictionary dictionaryWithCapacity:5];
-		self.suggestionsHeaders = [NSMutableDictionary dictionary];
+		self.sections = [NSMutableArray arrayWithCapacity:8];
+		[sections addObject:[INTableSection new]];
 		self.currentScores = [NSMutableDictionary dictionaryWithCapacity:20];
     }
     return self;
@@ -78,7 +68,7 @@
 #pragma mark - Table View Data Source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)aTableView
 {
-	return [suggestions count];
+	return [sections count];
 }
 
 - (NSInteger)tableView:(UITableView *)aTableView numberOfRowsInSection:(NSInteger)section
@@ -86,38 +76,27 @@
 	if (0 == section) {
 		return 1;
 	}
-	
-	if (section < [suggestions count]) {
-		if ([[suggestionsExpanded objectForKey:[NSNumber numberWithInteger:section]] boolValue]) {
-			return [[suggestions objectAtIndex:section] count];
-		}
-		return 1;
-	}
-	return 0;
+	INTableSection *sect = [sections objectOrNilAtIndex:section];
+	return [sect numRows];
+
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-	if (section > 0) {
-		return [suggestionsHeaders objectForKey:[NSNumber numberWithInteger:section]];
-	}
-	return nil;
+	INTableSection *sect = [sections objectOrNilAtIndex:section];
+	return [sect title];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-	if (section > 0 && (showLoadingIndicatorAtSection == section || [suggestionsHeaders objectForKey:[NSNumber numberWithInteger:section]])) {
-		return 28.f;
-	}
-	return 0.f;
+	INTableSection *sect = [sections objectOrNilAtIndex:section];
+	return [sect headerHeight];
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-	if (section > 0 && showLoadingIndicatorAtSection == section) {
-		return [self suggestionHeader];
-	}
-	return nil;
+	INTableSection *sect = [sections objectOrNilAtIndex:section];
+	return [sect headerView];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -158,18 +137,13 @@
 	
 	// suggestions
 	else {
-		INXMLNode *drug = nil;
-		NSUInteger level = indexPath.section;
-		if ([[suggestionsExpanded objectForKey:[NSNumber numberWithInteger:level]] boolValue]) {
-			NSArray *suggLevel = [suggestions objectOrNilAtIndex:level];
-			drug = [suggLevel objectOrNilAtIndex:indexPath.row];
+		INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
+		if ([@"suggestion" isEqualToString:section.type] || [@"drug" isEqualToString:section.type]) {
+			INXMLNode *drug = [section objectForRow:indexPath.row];
+			
+			cell.textLabel.text = drug ? [[drug childNamed:@"name"] text] : @"Unknown";
+			cell.detailTextLabel.text = drug ? [[drug childNamed:@"tty"] text] : nil;
 		}
-		else {
-			drug = [suggested objectForKey:[NSNumber numberWithInteger:level]];
-		}
-		
-		cell.textLabel.text = drug ? [[drug childNamed:@"name"] text] : @"Unknown";
-		cell.detailTextLabel.text = drug ? [[drug childNamed:@"tty"] text] : nil;
 	}
 	
 	return cell;
@@ -186,26 +160,32 @@
 		[textField resignFirstResponder];
 		
 		[tableView deselectRowAtIndexPath:indexPath animated:YES];
-		NSUInteger level = indexPath.section;
-		
-		// tapped an expanded level
-		if ([[suggestionsExpanded objectForKey:[NSNumber numberWithInteger:level]] boolValue]) {
-			NSArray *levelSugg = [suggestions objectOrNilAtIndex:level];
-			INXMLNode *tappedObject = [levelSugg objectOrNilAtIndex:indexPath.row];
-			
-			// get the tapped node and set it selected
-			if (tappedObject) {
-				[suggested setObject:tappedObject forKey:[NSNumber numberWithInteger:level]];
-				[self proceedWith:tappedObject fromLevel:level];
-			}
-			else {
-				DLog(@"Ohoh, the suggestion that was tapped was not found at %@", indexPath);
-			}
-		}
+		INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
+		INXMLNode *tappedObject = [section objectForRow:indexPath.row];
 		
 		// collapsed level tapped
+		if ([section isCollapsed]) {
+			[self goToSection:indexPath.section];
+		}
+		
+		// tapped an expanded level
 		else {
-			[self goToLevel:level];
+			section.selectedObject = tappedObject;
+			
+			// tapped a suggestion row
+			if ([@"suggestion" isEqualToString:section.type]) {
+				if (tappedObject) {
+					[self proceedWith:tappedObject fromLevel:indexPath.section];
+				}
+				else {
+					DLog(@"Ohoh, the suggestion that was tapped was not found at %@", indexPath);
+				}
+			}
+			
+			// tapped a drug row
+			else if ([@"drug" isEqualToString:section.type]) {
+				[self useDrug:tappedObject];
+			}
 		}
 	}
 }
@@ -262,10 +242,9 @@
  */
 - (void)loadSuggestionsFor:(NSString *)medString
 {
-	showLoadingIndicatorAtSection = 1;
-	showLoadingSuggestionsIndicator = MAX(1, showLoadingSuggestionsIndicator + 1);
-	//DLog(@"goto");
-	[self goToLevel:1];
+	[self goToSection:1];
+	INTableSection *section = [sections objectOrNilAtIndex:1];
+	[section showIndicatorWith:@"Loading Suggestions..."];
 	
 	self.currentMedString = medString;
 	[currentScores removeAllObjects];
@@ -280,7 +259,7 @@
 	
 	INURLLoader *loader = [[INURLLoader alloc] initWithURL:url];
 	[loader getWithCallback:^(BOOL didCancel, NSString *errorString) {
-		showLoadingSuggestionsIndicator--;
+		[section hideIndicator];
 		
 		// failed
 		if (errorString) {
@@ -289,15 +268,14 @@
 		
 		// got some suggestions!
 		else {
-			NSMutableArray *sugg = [suggestions objectAtIndex:1];
-			[sugg removeAllObjects];
+			[section removeAllObjects];
 			
 			// create a node with the user's entries
 			INXMLNode *name = [INXMLNode nodeWithName:@"name" attributes:nil];
 			name.text = medString;
 			INXMLNode *myDrug = [INXMLNode nodeWithName:@"properties" attributes:nil];
 			[myDrug addChild:name];
-			[sugg addObject:myDrug];
+			[section addObject:myDrug];
 			
 			// parse XML
 			NSError *error = nil;
@@ -349,11 +327,11 @@
 						}
 						
 						// start fetching the suggestion's names
-						showLoadingSuggestionsIndicator++;
-						[self updateSuggestionHeader];
+						[section showIndicatorWith:@"Loading Names..."];
 						
 						INURLFetcher *fetcher = [INURLFetcher new];
 						[fetcher getURLs:urls callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+							[section hideIndicator];
 							[self fetcher:fetcher didLoadSuggestionsFor:medString];
 						}];
 						return;					// to skip the table updating just yet
@@ -362,17 +340,16 @@
 			}
 		}
 		
-		showLoadingIndicatorAtSection = 0;
-		[self updateSuggestionLevel:1 animated:YES];
+		[section hideIndicator];
+		[section updateAnimated:YES];
 	}];
 }
 
 - (void)fetcher:(INURLFetcher *)aFetcher didLoadSuggestionsFor:(NSString *)medString
 {
-	showLoadingSuggestionsIndicator--;
-	[self updateSuggestionHeader];
-	
 	if ([currentMedString isEqualToString:medString]) {
+		INTableSection *section = [sections objectOrNilAtIndex:1];
+		
 		if ([aFetcher.successfulLoads count] > 0) {
 			NSMutableArray *suggIN = [NSMutableArray array];
 			NSMutableArray *suggBN = [NSMutableArray array];
@@ -408,28 +385,25 @@
 			}
 			
 			// decide which ones to use
-			NSMutableArray *sugg = [suggestions objectOrNilAtIndex:1];
 			if ([suggBN count] > 0) {
-				[sugg addObjectsFromArray:suggBN];
+				[section addObjects:suggBN];
 			}
 			else if ([suggIN count] > 0) {
-				[sugg addObjectsFromArray:suggIN];
+				[section addObjects:suggIN];
 			}
 			else {
-				[sugg addObjectsFromArray:suggSBD];
+				[section addObjects:suggSBD];
 			}
 		}
 		else {
 			DLog(@"ALL loaders failed to load!");
 		}
 		
-		[self updateSuggestionLevel:1 animated:YES];
+		[section updateAnimated:YES];
 	}
 	else {
 		DLog(@"Received suggestions for \"%@\", but we have moved on to \"%@\", discarding", medString, currentMedString);
 	}
-	
-	showLoadingIndicatorAtSection = 0;
 }
 
 
@@ -439,13 +413,17 @@
  */
 - (void)proceedWith:(INXMLNode *)aNode fromLevel:(NSUInteger)fromLevel
 {
+	INTableSection *section = [sections objectOrNilAtIndex:fromLevel];
+	
 	NSString *tty = [[aNode childNamed:@"tty"] text];
 	NSString *rxcui = [[aNode childNamed:@"rxcui"] text];
 	
 	NSString *urlBase = @"http://rxnav.nlm.nih.gov/REST";
 	NSString *urlString = nil;
+	BOOL nowAtDrugEndpoint = NO;
 	if ([@"BN" isEqualToString:tty]) {
-		urlString = [NSString stringWithFormat:@"%@/rxcui/%@/related?tty=SBD+DF+PIN", urlBase, rxcui];
+		nowAtDrugEndpoint = YES;
+		urlString = [NSString stringWithFormat:@"%@/rxcui/%@/related?tty=SBD+DF+PIN+SCDC", urlBase, rxcui];
 	}
 	else if ([@"IN" isEqualToString:tty]) {
 		urlString = [NSString stringWithFormat:@"%@/rxcui/%@/related?tty=BN", urlBase, rxcui];
@@ -453,21 +431,16 @@
 	
 	// continue
 	if (urlString) {
-		[suggestionsHeaders removeAllObjects];
-		
 		NSUInteger level = fromLevel + 1;
-		[self goToLevel:level];
+		[self goToSection:level];
 		
-		showLoadingIndicatorAtSection = level;
-		showLoadingSuggestionsIndicator = MAX(1, showLoadingSuggestionsIndicator);
-		[self updateSuggestionHeader];
+		[section showIndicatorWith:@"Loading Suggestions..."];
 		
 		DLog(@"->  %@", urlString);
 		NSURL *url = [NSURL URLWithString:urlString];
 		INURLLoader *loader = [[INURLLoader alloc] initWithURL:url];
 		[loader getWithCallback:^(BOOL didCancel, NSString *errorString) {
-			showLoadingSuggestionsIndicator--;
-			[self updateSuggestionHeader];
+			[section hideIndicator];
 			
 			// remove suggestions further down in the hierarchy
 			BOOL somethingFound = NO;
@@ -482,10 +455,10 @@
 				if (body) {
 					NSArray *concepts = [[body childNamed:@"relatedGroup"] childrenNamed:@"conceptGroup"];
 					if ([concepts count] > 0) {
-						NSMutableArray *sections = [NSMutableArray array];
-						NSMutableArray *sectionNames = [NSMutableArray array];
+						NSMutableArray *newSections = [NSMutableArray array];
 						NSMutableArray *drugs = [NSMutableArray array];
 						NSMutableArray *stripFromNames = [NSMutableArray array];
+						NSMutableString *strength = [NSMutableString string];
 						
 						for (INXMLNode *concept in concepts) {
 							NSString *tty = [[concept childNamed:@"tty"] text];
@@ -496,12 +469,14 @@
 								for (INXMLNode *main in propNodes) {
 									INXMLNode *nameNode = [main childNamed:@"name"];
 									NSString *name = [nameNode text];
+									DLog(@"%@: %@", tty, name);
 									
-									// we got a DF, dose form, use as section
+									// ** we got a DF, dose form, use as section
 									if ([@"DF" isEqualToString:tty]) {
 										if (name) {
-											[sections addObjectIfNotNil:[NSMutableArray array]];
-											[sectionNames addObjectIfNotNil:name];
+											INTableSection *newSection = [INTableSection sectionWithTitle:name];
+											newSection.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
+											[newSections addObject:newSection];
 											[stripFromNames addObjectIfNotNil:name];
 										}
 										else {
@@ -509,12 +484,18 @@
 										}
 									}
 									
-									// got a PIN, precise ingredient, use to strip from names
+									// ** got a PIN, precise ingredient, use to strip from names
 									else if ([@"PIN" isEqualToString:tty]) {
 										[stripFromNames addObjectIfNotNil:name];
 									}
 									
-									// got a drug (BN or SBD for now)
+									// ** got the SCDC, clinical drug component, strip PIN to get strength
+									else if ([@"SCDC" isEqualToString:tty]) {
+										[strength setString:name];
+										// CAN THERE BE MULTIPLE SCDC NODES???
+									}
+									
+									// ** got a drug (BN or SBD for now)
 									else {
 										[drugs addObject:main];
 									}
@@ -522,9 +503,11 @@
 							}
 						}
 						
-						// no sections found, just add them in one
-						if ([sections count] < 1) {
-							[sections addObject:drugs];
+						// no DF-sections found, just add them in one
+						if ([newSections count] < 1) {
+							INTableSection *lone = [INTableSection new];
+							lone.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";;
+							[newSections addObject:lone];
 						}
 						
 						// revisit drugs to apply grouping and name improving
@@ -534,18 +517,20 @@
 							for (INXMLNode *drug in drugs) {
 								INXMLNode *nameNode = [drug childNamed:@"name"];
 								NSString *name = [nameNode text];
+								INXMLNode *origName = [INXMLNode nodeWithName:@"originalName"];
+								origName.text = name;
+								[drug addChild:origName];
 								
-								// group
+								// add drugs to sections
 								NSUInteger i = 0;
-								for (NSString *sectionName in sectionNames) {
-									if (NSNotFound != [name rangeOfString:sectionName].location) {
-										NSMutableArray *section = [sections objectAtIndex:i];
+								for (INTableSection *section in newSections) {
+									if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
 										[section addObject:drug];
 									}
 									i++;
 								}
 								
-								// strip
+								// strip from names
 								for (NSString *string in stripFromNames) {
 									name = [name stringByReplacingOccurrencesOfString:string withString:@""];
 								}
@@ -558,24 +543,23 @@
 							
 							// update table
 							[self.tableView beginUpdates];
-							NSUInteger i = [suggestions count];
+							NSUInteger i = [sections count];
 							while (i > level) {
-								[self removeSuggestionLevel:(i - 1) animated:NO];
+								INTableSection *last = [sections lastObject];
+								//DLog(@"Removing %@", last);
+								[last removeAnimated:NO];
+								[sections removeLastObject];
 								i--;
 							}
 							i = level;
-							for (NSMutableArray *section in sections) {
-								[suggestions addObject:section];
-								[self addSuggestionLevel:i animated:YES];
-								
-								NSString *sectionName = [sectionNames objectOrNilAtIndex:(i - level)];
-								if (sectionName) {
-									[suggestionsHeaders setObject:sectionName forKey:[NSNumber numberWithInteger:i]];
-								}
+							for (INTableSection *section in newSections) {
+								//DLog(@"Adding %@", section);
+								[sections addObject:section];
+								[section addToTable:self.tableView withIndex:i animated:YES];
 								i++;
 							}
 							[self.tableView endUpdates];
-							showLoadingIndicatorAtSection = 0;
+							
 							return;
 						}
 						else {
@@ -602,34 +586,87 @@
 				nameNode.text = errorString;
 				[fakeNode addChild:nameNode];
 				
-				NSMutableArray *suggArray = [suggestions objectAtIndex:level];
-				[suggArray addObject:fakeNode];
+				INTableSection *newSection = [sections objectOrNilAtIndex:level];
+				if (!newSection) {
+					newSection = [INTableSection new];
+					newSection.type = @"suggestion";
+					[sections addObject:newSection];
+				}
+				[newSection addObject:fakeNode];
 			}
 			
-			//[self.tableView reloadData];
-			[self updateSuggestionLevel:level animated:NO];
+			[self goToSection:level];
 		}];
 	}
 	
-	// at last step
+	// ok, we're happy with the selected drug, move on!
 	else {
-		DLog(@"THE END, go get: http://rxnav.nlm.nih.gov/REST/rxcui/%@/ndcs", rxcui);
+		[self.tableView beginUpdates];
+		[section collapseAnimated:YES];
+		[self.tableView endUpdates];
+		
+		[self useDrug:aNode];
 	}
 }
 
 
 
-#pragma mark - Table Updating
+#pragma mark - Drug Details
+/**
+ *	If a drug has been chosen, continue to the next fields
+ */
+- (void)useDrug:(INXMLNode *)drugNode
+{
+	// update table
+	for (INTableSection *other in sections) {
+		other.collapsed = YES;
+	}
+	INTableSection *dates = [INTableSection sectionWithTitle:@"Timeframe"];
+//	dates.type = @"";
+	[dates addObject:drugNode];
+	[sections addObject:dates];
+	
+	INTableSection *instructions = [INTableSection sectionWithTitle:@"Instructions"];
+	[instructions addObject:drugNode];
+	[sections addObject:instructions];
+	
+	[self.tableView reloadData];
+	
+	// create medication document
+	IndivoMedication *med = [IndivoMedication newWithRecord:APP_DELEGATE.indivo.activeRecord];
+	if (!med) {
+		DLog(@"Did not get a medication document!");
+	}
+	
+	// populate drug name and coding schema
+	NSString *rxcui = [[drugNode childNamed:@"rxcui"] text];
+	
+	med.brandName = [INCodedValue new];
+	if (rxcui) {
+		med.brandName.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
+		med.brandName.abbrev = rxcui;
+	}
+	else {
+		DLog(@"NO RX IDENTIFIER");
+	}
+	med.brandName.value = [[drugNode childNamed:@"originalName"] text];
+	
+	med.dose = [INUnitValue new];
+	med.route = [INCodedValue new];
+	med.strength = [INUnitValue new];
+	med.frequency = [INCodedValue new];
+}
+
+
+
+#pragma mark - Table Section Updating
 /**
  *	Clears all suggestions
  */
 - (void)clearSuggestions
 {
-	showLoadingIndicatorAtSection = 0;
-	showLoadingSuggestionsIndicator = 0;
-	[suggestions removeAllObjects];
-	[suggestions addObject:[NSNull null]];
-	[suggestionsHeaders removeAllObjects];
+	[sections removeAllObjects];
+	[sections addObject:[INTableSection new]];
 	
 	[self.tableView reloadData];
 }
@@ -637,169 +674,54 @@
 /**
  *	Make the given level the active level
  */
-- (void)goToLevel:(NSUInteger)level
+- (void)goToSection:(NSUInteger)sectionIdx
 {
-	showLoadingIndicatorAtSection = 0;
-	NSUInteger current = MAX(0, [suggestions count] - 1);
-	NSUInteger i = 0;
-	//DLog(@"going to level %d", level);
-	
+	//DLog(@"going to level %d", level);	
 	[self.tableView beginUpdates];
 	
-	// we're going higher up
-	if (level > current) {
-		for (i = current; i < level; i++) {
-			[self collapseSuggestionLevel:i animated:YES];
+	NSInteger i = [sections count] - 1;
+	BOOL currentExists = NO;
+	while (i >= 0) {
+		INTableSection *existing = [sections objectAtIndex:i];
+		
+		// remove higher sections
+		if (i > sectionIdx) {
+			//DLog(@"Removing %@", existing);
+			[existing removeAnimated:NO];
+			[sections removeLastObject];
 		}
-		[self addSuggestionLevel:level animated:YES];
+		
+		// our section, expand or add to table, if necessary
+		else if (i == sectionIdx) {
+			currentExists = YES;
+			if ([existing hasTable]) {
+				//DLog(@"Expanding current %@", existing);
+				[existing expandAnimated:YES];
+			}
+			else {
+				//DLog(@"Adding current to table %@", existing);
+				[existing addToTable:self.tableView withIndex:sectionIdx animated:YES];
+			}
+		}
+		
+		// collapse lower levels
+		else {
+			//DLog(@"Collapsing %@", existing);
+			[existing collapseAnimated:YES];
+		}
+		i--;
 	}
 	
-	// going down, remove higher levels
-	else if (current > level) {
-		for (i = current; i > level; i--) {
-			[self removeSuggestionLevel:i animated:NO];
-		}
-		[self expandSuggestionLevel:level animated:YES];
-	}
-	
-	// staying, reload current
-	else {
-		[self updateSuggestionLevel:level animated:YES];
+	// current is not yet present, add
+	if (!currentExists) {
+		INTableSection *section = [INTableSection new];
+		section.type = @"suggestion";
+		//DLog(@"Adding new to table at %@", section);
+		[section addToTable:self.tableView withIndex:sectionIdx animated:YES];
+		[sections addObject:section];
 	}
 	
 	[self.tableView endUpdates];
-}
-
-/**
- *	Adds a given section
- */
-- (void)addSuggestionLevel:(NSUInteger)level animated:(BOOL)animated
-{
-	NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:level];
-	
-	//DLog(@"adding section %d", level);
-	while ([suggestions count] <= level) {
-		[suggestions addObject:[NSMutableArray array]];
-	}
-	[suggestionsExpanded setObject:[NSNumber numberWithBool:YES] forKey:[NSNumber numberWithInteger:level]];
-	[self.tableView insertSections:mySet withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
-}
-
-/**
- *	Expands a given section
- */
-- (void)expandSuggestionLevel:(NSUInteger)level animated:(BOOL)animated
-{
-	NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:level];
-	
-	//DLog(@"expanding section %d", level);
-	[suggestionsExpanded setObject:[NSNumber numberWithBool:YES] forKey:[NSNumber numberWithInteger:level]];
-	[self.tableView reloadSections:mySet withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
-}
-
-/**
- *	Collapses a given section
- */
-- (void)collapseSuggestionLevel:(NSUInteger)level animated:(BOOL)animated
-{
-	if ([[suggestionsExpanded objectForKey:[NSNumber numberWithInteger:level]] boolValue]) {
-		//DLog(@"collapsing section %d", level);
-		[suggestionsExpanded setObject:[NSNumber numberWithBool:NO] forKey:[NSNumber numberWithInteger:level]];
-		NSMutableArray *indexes = [NSMutableArray array];
-		NSUInteger row = 0;
-		INXMLNode *theOne = [suggested objectForKey:[NSNumber numberWithInteger:level]];
-		for (INXMLNode *node in [suggestions objectOrNilAtIndex:level]) {
-			if (![node isEqual:theOne]) {
-				NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:level];
-				[indexes addObjectIfNotNil:indexPath];
-			}
-			row++;
-		}
-		
-		[self.tableView deleteRowsAtIndexPaths:indexes withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
-		[suggestionsExpanded setObject:[NSNumber numberWithBool:NO] forKey:[NSNumber numberWithInteger:level]];
-	}
-	else {
-		//DLog(@"section %d is already collapsed", level);
-	}
-}
-
-/**
- *	Removes a given section
- */
-- (void)removeSuggestionLevel:(NSUInteger)level animated:(BOOL)animated
-{
-	NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:level];
-	
-	//DLog(@"deleting section %d", level);
-	while ([suggestions count] > level) {
-		[suggestions removeLastObject];
-	}
-	[suggestionsExpanded removeObjectForKey:[NSNumber numberWithInteger:level]];
-	[self.tableView deleteSections:mySet withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
-}
-
-/**
- *	Reloads a section
- */
-- (void)updateSuggestionLevel:(NSUInteger)level animated:(BOOL)animated
-{
-	NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:level];
-	
-	//DLog(@"reloading section %d", level);
-	[self.tableView reloadSections:mySet withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
-}
-
-
-/**
- *	Starts and stops the spinner and adjusts the text
- */
-- (void)updateSuggestionHeader
-{
-	if (showLoadingSuggestionsIndicator > 0) {
-		[loadingActivity startAnimating];
-		loadingTextLabel.text = @"Loading Suggestions...";
-	}
-	else {
-		[loadingActivity stopAnimating];
-		loadingTextLabel.text = @"Suggestions";
-	}
-}
-
-
-/**
- *	Returns the loading indicator view
- */
-- (UIView *)suggestionHeader
-{
-	[suggestionHeaderView removeFromSuperview];
-	
-	self.suggestionHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0.f, 0.f, 320.f, 28.f)];
-	suggestionHeaderView.opaque = NO;
-	suggestionHeaderView.backgroundColor = [UIColor clearColor];
-	suggestionHeaderView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	
-	UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20.f, 0.f, 280.f, 28.f)];
-	label.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	label.opaque = NO;
-	label.backgroundColor = [UIColor clearColor];
-	label.font = [UIFont boldSystemFontOfSize:16.f];
-	label.textColor = [UIColor colorWithRed:0.3f green:0.33f blue:0.42f alpha:1.f];
-	label.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
-	label.shadowOffset = CGSizeMake(0.f, 1.f);
-	label.text = @"Suggestions";
-	[suggestionHeaderView addSubview:label];
-	self.loadingTextLabel = label;
-	
-	CGRect loadingFrame = suggestionHeaderView.frame;
-	self.loadingActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-	CGRect actFrame = loadingActivity.frame;
-	actFrame.origin = CGPointMake(loadingFrame.size.width - 20.f - actFrame.size.width, 4.f);
-	loadingActivity.frame = actFrame;
-	loadingActivity.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-	[suggestionHeaderView addSubview:loadingActivity];
-	
-	return suggestionHeaderView;
 }
 
 

@@ -16,9 +16,10 @@
 		EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */; };
 		EE6461E5145F1AAE0007C6B9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4C8145B91C30077E832 /* main.m */; };
 		EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9F067714688252000412C4 /* NSArray+NilProtection.m */; };
-		EEDB8DAE145CE260001C6C2C /* libIndivoServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DAD145CE260001C6C2C /* libIndivoServer.a */; };
 		EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB2145CE695001C6C2C /* Security.framework */; };
 		EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */; };
+		EEE62F92146ACB75000DA370 /* libIndivoServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE62F91146ACB75000DA370 /* libIndivoServer.a */; };
+		EEE62F96146AFACD000DA370 /* INTableSection.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE62F95146AFACD000DA370 /* INTableSection.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,9 @@
 		EEDB8DAD145CE260001C6C2C /* libIndivoServer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivoServer.a; path = "../IndivoFramework/IndivoFramework/build/Release-iphoneos/libIndivoServer.a"; sourceTree = "<group>"; };
 		EEDB8DB2145CE695001C6C2C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		EEE62F91146ACB75000DA370 /* libIndivoServer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivoServer.a; path = "../../../Library/Developer/Xcode/DerivedData/MedicationReconciliation-aglgthohrfcqnagvmblvlhwzellq/Build/Products/Debug-iphoneos/libIndivoServer.a"; sourceTree = "<group>"; };
+		EEE62F94146AFACD000DA370 /* INTableSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INTableSection.h; path = Classes/INTableSection.h; sourceTree = "<group>"; };
+		EEE62F95146AFACD000DA370 /* INTableSection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INTableSection.m; path = Classes/INTableSection.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,7 +54,7 @@
 			files = (
 				EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */,
 				EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */,
-				EEDB8DAE145CE260001C6C2C /* libIndivoServer.a in Frameworks */,
+				EEE62F92146ACB75000DA370 /* libIndivoServer.a in Frameworks */,
 				EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */,
 				EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */,
 				EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */,
@@ -80,6 +84,7 @@
 		EE30A4BB145B91C30077E832 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EEE62F91146ACB75000DA370 /* libIndivoServer.a */,
 				EE30A4BC145B91C30077E832 /* UIKit.framework */,
 				EE30A4BE145B91C30077E832 /* Foundation.framework */,
 				EE30A4C0145B91C30077E832 /* CoreGraphics.framework */,
@@ -95,6 +100,7 @@
 			children = (
 				EE30A4CB145B91C30077E832 /* INAppDelegate.h */,
 				EE30A4CC145B91C30077E832 /* INAppDelegate.m */,
+				EEE62F97146AFAD4000DA370 /* Models */,
 				EE6461D9145F18020007C6B9 /* View Controller */,
 				EE30A4C3145B91C30077E832 /* Supporting Files */,
 			);
@@ -124,6 +130,15 @@
 			);
 			name = "View Controller";
 			path = ViewController;
+			sourceTree = "<group>";
+		};
+		EEE62F97146AFAD4000DA370 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				EEE62F94146AFACD000DA370 /* INTableSection.h */,
+				EEE62F95146AFACD000DA370 /* INTableSection.m */,
+			);
+			name = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -193,6 +208,7 @@
 				EE6461E3145F1AA60007C6B9 /* INMedListController.m in Sources */,
 				EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */,
 				EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */,
+				EEE62F96146AFACD000DA370 /* INTableSection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,6 +284,10 @@
 				GCC_PREFIX_HEADER = "MedReconcile-Prefix.pch";
 				INFOPLIST_FILE = "MedReconcile-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/MedicationReconciliation-aglgthohrfcqnagvmblvlhwzellq/Build/Products/Debug-iphoneos\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -280,6 +300,10 @@
 				GCC_PREFIX_HEADER = "MedReconcile-Prefix.pch";
 				INFOPLIST_FILE = "MedReconcile-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/MedicationReconciliation-aglgthohrfcqnagvmblvlhwzellq/Build/Products/Debug-iphoneos\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
