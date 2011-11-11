@@ -12,9 +12,14 @@
 #import "IndivoRecord.h"
 #import "IndivoMedication.h"
 #import "INNewMedViewController.h"
+#import "INMedContainer.h"
+#import "INMedTile.h"
+#import "NSArray+NilProtection.h"
 
 
 @interface INMedListController ()
+
+@property (nonatomic, strong) INMedContainer *container;
 
 - (void)showNewMedView:(id)sender;
 - (void)setRecordButtonTitle:(NSString *)aTitle;
@@ -27,6 +32,7 @@
 
 @synthesize record, medGroups;
 @synthesize recordSelectButton, addMedButton;
+@synthesize container;
 
 
 - (id)init
@@ -40,9 +46,17 @@
 
 
 #pragma mark - View lifecycle
-- (void)viewDidLoad
+- (void)loadView
 {
-    [super viewDidLoad];
+    CGRect fullFrame = [[UIScreen mainScreen] applicationFrame];
+	fullFrame.origin = CGPointZero;
+	
+	self.view = [[UIView alloc] initWithFrame:fullFrame];
+	self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	
+	self.container = [[INMedContainer alloc] initWithFrame:fullFrame];
+	container.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	[self.view addSubview:container];
 	
 	// connect to indivo button
 	self.recordSelectButton = [[UIBarButtonItem alloc] initWithTitle:@"Connect" style:UIBarButtonItemStyleBordered target:self action:@selector(selectRecord:)];
@@ -163,8 +177,14 @@
 				
 				// successfully fetched medications, display
 				else if (!userDidCancel) {
-					//self.medGroups = [record documentsOfType:@"Medication"];
-					// REFRESH DISPLAY
+					NSArray *meds = [record documentsOfType:@"Medication"];
+					NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
+					for (IndivoMedication *med in meds) {
+						INMedTile *tile = [INMedTile tileWithMedication:med];
+						[tiles addObjectIfNotNil:tile];
+					}
+					
+					[container showTiles:tiles];
 				}
 			}];
 		}

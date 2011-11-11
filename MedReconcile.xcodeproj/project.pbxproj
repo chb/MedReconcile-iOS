@@ -16,6 +16,8 @@
 		EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */; };
 		EE6461E5145F1AAE0007C6B9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4C8145B91C30077E832 /* main.m */; };
 		EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9F067714688252000412C4 /* NSArray+NilProtection.m */; };
+		EEA4507F146D764500DC9EB1 /* INMedContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA4507E146D764500DC9EB1 /* INMedContainer.m */; };
+		EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA45083146D768500DC9EB1 /* INMedTile.m */; };
 		EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB2145CE695001C6C2C /* Security.framework */; };
 		EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */; };
 		EEE62F92146ACB75000DA370 /* libIndivoServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE62F91146ACB75000DA370 /* libIndivoServer.a */; };
@@ -39,6 +41,10 @@
 		EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INNewMedViewController.m; sourceTree = "<group>"; };
 		EE9F067614688252000412C4 /* NSArray+NilProtection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+NilProtection.h"; path = "Classes/NSArray+NilProtection.h"; sourceTree = SOURCE_ROOT; };
 		EE9F067714688252000412C4 /* NSArray+NilProtection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSArray+NilProtection.m"; path = "Classes/NSArray+NilProtection.m"; sourceTree = SOURCE_ROOT; };
+		EEA4507D146D764500DC9EB1 /* INMedContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INMedContainer.h; path = Classes/INMedContainer.h; sourceTree = "<group>"; };
+		EEA4507E146D764500DC9EB1 /* INMedContainer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INMedContainer.m; path = Classes/INMedContainer.m; sourceTree = "<group>"; };
+		EEA45082146D768500DC9EB1 /* INMedTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INMedTile.h; path = Classes/INMedTile.h; sourceTree = "<group>"; };
+		EEA45083146D768500DC9EB1 /* INMedTile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INMedTile.m; path = Classes/INMedTile.m; sourceTree = "<group>"; };
 		EEDB8DAD145CE260001C6C2C /* libIndivoServer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivoServer.a; path = "../IndivoFramework/IndivoFramework/build/Release-iphoneos/libIndivoServer.a"; sourceTree = "<group>"; };
 		EEDB8DB2145CE695001C6C2C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
@@ -101,6 +107,7 @@
 				EE30A4CB145B91C30077E832 /* INAppDelegate.h */,
 				EE30A4CC145B91C30077E832 /* INAppDelegate.m */,
 				EEE62F97146AFAD4000DA370 /* Models */,
+				EEA45081146D764900DC9EB1 /* Views */,
 				EE6461D9145F18020007C6B9 /* View Controller */,
 				EE30A4C3145B91C30077E832 /* Supporting Files */,
 			);
@@ -130,6 +137,17 @@
 			);
 			name = "View Controller";
 			path = ViewController;
+			sourceTree = "<group>";
+		};
+		EEA45081146D764900DC9EB1 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				EEA4507D146D764500DC9EB1 /* INMedContainer.h */,
+				EEA4507E146D764500DC9EB1 /* INMedContainer.m */,
+				EEA45082146D768500DC9EB1 /* INMedTile.h */,
+				EEA45083146D768500DC9EB1 /* INMedTile.m */,
+			);
+			name = Views;
 			sourceTree = "<group>";
 		};
 		EEE62F97146AFAD4000DA370 /* Models */ = {
@@ -209,6 +227,8 @@
 				EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */,
 				EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */,
 				EEE62F96146AFACD000DA370 /* INTableSection.m in Sources */,
+				EEA4507F146D764500DC9EB1 /* INMedContainer.m in Sources */,
+				EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
