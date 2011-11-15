@@ -19,5 +19,6 @@
 @interface NSMutableArray (NilProtection) 
 
 - (void)addObjectIfNotNil:(id)anObject;
+- (void)unshiftObjectIfNotNil:(id)anObject;
 
 @end

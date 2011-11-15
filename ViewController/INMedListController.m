@@ -23,7 +23,6 @@
 
 - (void)showNewMedView:(id)sender;
 - (void)setRecordButtonTitle:(NSString *)aTitle;
-- (void)dismissModal:(id)sender;
 
 @end
 
@@ -178,6 +177,7 @@
 				// successfully fetched medications, display
 				else if (!userDidCancel) {
 					NSArray *meds = [record documentsOfType:@"Medication"];
+					DLog(@"Medications: %@", meds);
 					NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
 					for (IndivoMedication *med in meds) {
 						INMedTile *tile = [INMedTile tileWithMedication:med];

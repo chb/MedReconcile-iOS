@@ -122,24 +122,42 @@
 			
 			[textField performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.0];
 		}
+		return cell;
 	}
 	
 	// suggestions
-	else {
-		INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
-		if ([@"suggestion" isEqualToString:section.type] || [@"drug" isEqualToString:section.type]) {
-			INXMLNode *drug = [section objectForRow:indexPath.row];
-			
-			cell.textLabel.text = drug ? [[drug childNamed:@"name"] text] : @"Unknown";
-			cell.detailTextLabel.text = drug ? [[drug childNamed:@"tty"] text] : nil;
-		}
-		else if ([@"dates" isEqualToString:section.type]) {
-			INDate *date = [section objectForRow:indexPath.row];
-			cell.textLabel.text = (0 == indexPath.row) ? @"Start" : @"Stop";
-			cell.detailTextLabel.text = [date isoString];
-		}
-		cell.accessoryView = [section accessoryViewForRow:indexPath.row];
+	INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
+	if ([@"suggestion" isEqualToString:section.type] || [@"drug" isEqualToString:section.type]) {
+		INXMLNode *drug = [section objectForRow:indexPath.row];
+		
+		cell.textLabel.text = drug ? [[drug childNamed:@"name"] text] : @"Unknown";
+		cell.detailTextLabel.text = drug ? [[drug childNamed:@"tty"] text] : nil;
 	}
+	
+	// med detail nodes
+	else if ([@"editable" isEqualToString:section.type]) {
+		INObject *obj = [section objectForRow:indexPath.row];
+		cell.textLabel.text = obj.nodeName;
+		if ([obj isKindOfClass:[INDate class]]) {
+			cell.detailTextLabel.text = [(INDate *)obj isoString];
+		}
+		else if ([obj isKindOfClass:[INCodedValue class]]) {
+			cell.detailTextLabel.text = [(INCodedValue *)obj text];
+		}
+		else if ([obj isKindOfClass:[INUnitValue class]]) {
+			cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ %@", [(INUnitValue *)obj value], [(INUnitValue *)obj unit].value];
+		}
+		else if ([obj isKindOfClass:[IndivoMedication class]]) {
+			cell.detailTextLabel.text = @"...";
+		}
+	}
+	
+	// a button
+	else if ([@"button" isEqualToString:section.type]) {
+		cell.textLabel.text = @"Add Medication";
+	}
+	
+	cell.accessoryView = [section accessoryViewForRow:indexPath.row];
 	
 	return cell;
 }
@@ -186,6 +204,28 @@
 			// tapped a drug row
 			else if ([@"drug" isEqualToString:section.type]) {
 				[self useDrug:tappedObject];
+			}
+			
+			// tapped the accept button, ADD MEDICATION AND DISMISS *********************
+			else if ([@"button" isEqualToString:section.type]) {
+				IndivoMedication *med = [section objectForRow:indexPath.row];
+				[med push:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+					if (userDidCancel) {
+						
+					}
+					else if (errorMessage) {
+						UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to add medication"
+																		message:errorMessage
+																	   delegate:nil
+															  cancelButtonTitle:@"Too Bad"
+															  otherButtonTitles:nil];
+						[alert show];
+					}
+					else {
+						DLog(@"Medication successfully added");
+						[self.parentViewController dismissModalViewControllerAnimated:YES];
+					}
+				}];
 			}
 		}
 	}
@@ -440,7 +480,7 @@
 	BOOL nowAtDrugEndpoint = NO;
 	if ([@"BN" isEqualToString:tty]) {
 		nowAtDrugEndpoint = YES;
-		urlString = [NSString stringWithFormat:@"%@/rxcui/%@/related?tty=SBD+DF+PIN+SCDC", urlBase, rxcui];
+		urlString = [NSString stringWithFormat:@"%@/rxcui/%@/related?tty=SBD+DF+IN+PIN+SCDC", urlBase, rxcui];
 	}
 	else if ([@"IN" isEqualToString:tty]) {
 		urlString = [NSString stringWithFormat:@"%@/rxcui/%@/related?tty=BN", urlBase, rxcui];
@@ -468,9 +508,10 @@
 					NSArray *concepts = [[body childNamed:@"relatedGroup"] childrenNamed:@"conceptGroup"];
 					if ([concepts count] > 0) {
 						NSMutableArray *newSections = [NSMutableArray array];
+						NSMutableDictionary *routes = [NSMutableDictionary dictionary];
 						NSMutableArray *drugs = [NSMutableArray array];
 						NSMutableArray *stripFromNames = [NSMutableArray array];
-						NSMutableString *strength = [NSMutableString string];
+						NSMutableArray *scdc = [NSMutableArray array];
 						
 						for (INXMLNode *concept in concepts) {
 							NSString *tty = [[concept childNamed:@"tty"] text];
@@ -483,28 +524,36 @@
 									NSString *name = [nameNode text];
 									DLog(@"%@: %@", tty, name);
 									
-									// ** we got a DF, dose form, use as section
+									// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
 									if ([@"DF" isEqualToString:tty]) {
 										if (name) {
 											INTableSection *newSection = [INTableSection sectionWithTitle:name];
 											newSection.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
 											[newSections addObject:newSection];
 											[stripFromNames addObjectIfNotNil:name];
+											
+											INXMLNode *routeNode = [INXMLNode nodeWithName:@"route"];
+											[routeNode setAttr:[[main childNamed:@"rxcui"] text] forKey:@"value"];
+											[routeNode setAttr:@"http://rxnav.nlm.nih.gov/REST/rxcui/" forKey:@"type"];
+											routeNode.text = name;
+											[routes setObject:routeNode forKey:name];
 										}
 										else {
 											DLog(@"Ohoh, no name for DF found!");
 										}
 									}
 									
-									// ** got a PIN, precise ingredient, use to strip from names
-									else if ([@"PIN" isEqualToString:tty]) {
+									// ** got IN or PIN, (precise) ingredient (e.g. "Metformin" or "Metformin hydrochloride")
+									else if ([@"IN" isEqualToString:tty]) {
 										[stripFromNames addObjectIfNotNil:name];
 									}
+									else if ([@"PIN" isEqualToString:tty]) {
+										[stripFromNames unshiftObjectIfNotNil:name];
+									}
 									
-									// ** got the SCDC, clinical drug component, strip PIN to get strength
+									// ** got the SCDC, clinical drug component (e.g. "Metformin hydrochloride 500 MG")
 									else if ([@"SCDC" isEqualToString:tty]) {
-										[strength setString:name];
-										// CAN THERE BE MULTIPLE SCDC NODES???
+										[scdc addObjectIfNotNil:name];
 									}
 									
 									// ** got a drug (BN or SBD for now)
@@ -514,8 +563,8 @@
 								}
 							}
 						}
-						
-						// no DF-sections found, just add them in one
+								
+						// no DF-sections found, just add them to one
 						if ([newSections count] < 1) {
 							INTableSection *lone = [INTableSection new];
 							lone.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
@@ -526,6 +575,7 @@
 						if ([drugs count] > 0) {
 							somethingFound = YES;
 							
+							// ** loop found drugs
 							for (INXMLNode *drug in drugs) {
 								INXMLNode *nameNode = [drug childNamed:@"name"];
 								NSString *name = [nameNode text];
@@ -533,12 +583,41 @@
 								origName.text = name;
 								[drug addChild:origName];
 								
-								// add drugs to sections
+								// add scdc as strength
+								for (NSString *strength in scdc) {
+									INXMLNode *strengthNode = [drug childNamed:@"strength"];
+									if (NSNotFound != [name rangeOfString:strength].location) {
+										if (!strengthNode) {
+											strengthNode = [INXMLNode nodeWithName:@"strength"];
+											[drug addChild:strengthNode];
+										}
+										NSString *trimmed = strength;
+										for (NSString *strip in stripFromNames) {
+											trimmed = [trimmed stringByReplacingOccurrencesOfString:strip withString:@""];
+										}
+										trimmed = [trimmed stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+										if ([strengthNode.text length] > 0) {
+											strengthNode.text = [NSString stringWithFormat:@"%@/%@", strengthNode.text, trimmed];
+										}
+										else {
+											strengthNode.text = trimmed;
+										}
+									}
+								}
+								
+								// add drug to the matching section (section = DF)
 								NSUInteger i = 0;
 								NSUInteger put = 0;
 								for (INTableSection *section in newSections) {
 									if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
 										[section addObject:drug];
+										
+										// add route node
+										INXMLNode *routeNode = [routes objectForKey:section.title];
+										if (routeNode) {
+											[drug addChild:routeNode];
+										}
+										
 										put++;
 									}
 									i++;
@@ -555,6 +634,7 @@
 								name = [name stringByReplacingOccurrencesOfString:@"    " withString:@" "];
 								name = [name stringByReplacingOccurrencesOfString:@"   " withString:@" "];
 								name = [name stringByReplacingOccurrencesOfString:@"  " withString:@" "];
+								name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 								nameNode.text = name;
 							}
 							
@@ -619,45 +699,97 @@
 		DLog(@"Did not get a medication document!");
 	}
 	
-	// brand name
+	// name and brand name
 	NSString *rxcui = [[drugNode childNamed:@"rxcui"] text];
 	
-	med.brandName = [INCodedValue new];
+	med.name = [INCodedValue newWithNodeName:@"name"];
+	med.brandName = [INCodedValue newWithNodeName:@"brandName"];
 	if (rxcui) {
+		med.name.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
 		med.brandName.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
-		med.brandName.abbrev = rxcui;
+		med.name.value = rxcui;
+		med.brandName.value = rxcui;
 	}
 	else {
 		DLog(@"NO RX IDENTIFIER");
 	}
-	med.brandName.value = [[drugNode childNamed:@"originalName"] text];
+	med.name.text = [[drugNode childNamed:@"originalName"] text];
+	med.brandName.text = [[drugNode childNamed:@"originalName"] text];
+	
+	// dose
+	med.dose = [INUnitValue newWithNodeName:@"dose"];
+	med.dose.value = @"1";
+	med.dose.unit.type = @"http://indivo.org/codes/units#";
+	med.dose.unit.abbrev = @"p";
+	med.dose.unit.value = @"pills";
+	
+	// route
+	med.route = [INCodedValue objectFromNode:drugNode forChildNamed:@"route"];
+	
+	// strength
+	NSString *strength = [[drugNode childNamed:@"strength"] text];
+	med.strength = [INUnitValue newWithNodeName:@"strength"];
+	// RxNorm units:
+	//	CELLS - Cells
+	//	MEQ - Milliequivalent
+	//	MG - Milligram
+	//	ML - Milliliter
+	//	UNT - Unit
+	//	% - Percent
+	//	ACTUAT
+	//	 and combinations thereof as fractions (e.g. CELLS/ML)
+	NSString *value = strength;
+	NSMutableArray *units = [NSMutableArray arrayWithCapacity:2];
+	for (NSString *unit in [NSArray arrayWithObjects:@"CELLS", @"MEQ", @"MG", @"ML", @"UNT", @"%", @"ACTUAT", @"/", nil]) {
+		if (NSNotFound != [value rangeOfString:unit].location) {
+			[units addObject:unit];
+			value = [value stringByReplacingOccurrencesOfString:unit withString:@""];
+		}
+	}
+	med.strength.value = [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	med.strength.unit.type = @"http://rxnav.nlm.nih.gov/";			// no real URL for RxNorm units...
+	med.strength.unit.value = [units componentsJoinedByString:@"/"];
+	
+	// frequency
+	med.frequency = [INCodedValue newWithNodeName:@"frequency"];
+	med.frequency.text = @"Daily";
+	
+	INTableSection *pharm = [INTableSection sectionWithType:@"editable"];
+	[pharm addObject:med.dose];
+	[pharm addObject:med.route];
+	[pharm addObject:med.strength];
+	[pharm addObject:med.frequency];
 	
 	// date started and stopped
 	med.dateStarted = [INDate dateWithDate:[NSDate date]];
-	med.dateStopped = [INDate new];
+	med.dateStarted.nodeName = @"dateStarted";
+	med.dateStopped = [INDate newWithNodeName:@"dateStopped"];
 	
 	INTableSection *dates = [INTableSection sectionWithTitle:@"Timeframe"];
 	dates.type = @"editable";
 	[dates addObject:med.dateStarted];
 	[dates addObject:med.dateStopped];
 	
-	// dose
-	med.dose = [INUnitValue new];
-	med.route = [INCodedValue new];
-	med.strength = [INUnitValue new];
-	med.frequency = [INCodedValue new];
-	
 	// instructions
 	INTableSection *instructions = [INTableSection sectionWithTitle:@"Instructions"];
 	instructions.type = @"editable";
-	[instructions addObject:drugNode];
+	[instructions addObject:med];
+	
+	// accept button
+	INTableSection *accept = [INTableSection sectionWithType:@"button"];
+	[accept addObject:med];
 	
 	// update table
 	for (INTableSection *section in sections) {
 		[section collapseAnimated:YES];
 	}
-	[self addSection:dates animated:NO];
+	[self addSection:pharm animated:YES];
+	[self addSection:dates animated:YES];
 	[self addSection:instructions animated:YES];
+	[self addSection:accept animated:YES];
+	
+	//--
+	NSLog(@"\n%@\n", [med xml]);
 }
 
 

@@ -45,4 +45,12 @@
 	}
 }
 
+- (void)unshiftObjectIfNotNil:(id)anObject
+{
+	if (anObject) {
+		[self insertObject:anObject atIndex:0];
+	}
+}
+
+
 @end
