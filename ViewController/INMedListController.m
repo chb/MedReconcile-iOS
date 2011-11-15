@@ -103,6 +103,44 @@
 
 #pragma mark - Medication Actions
 /**
+ *	Refreshes medication list
+ */
+- (void)refresh:(id)sender
+{
+	if (!record) {
+		DLog(@"No record set, cannot refresh!");
+		return;
+	}
+	
+	// fetch this record's medications
+	[record fetchReportsOfClass:[IndivoMedication class] callback:^(BOOL userDidCancel, NSString *errorMessage) {
+		
+		// error fetching medications
+		if (errorMessage) {
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to get medications"
+															message:errorMessage
+														   delegate:nil
+												  cancelButtonTitle:@"OK"
+												  otherButtonTitles:nil];
+			[alert show];
+		}
+		
+		// successfully fetched medications, display
+		else if (!userDidCancel) {
+			NSArray *meds = [record documentsOfType:@"Medication"];
+			DLog(@"Medications: %@", meds);
+			NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
+			for (IndivoMedication *med in meds) {
+				INMedTile *tile = [INMedTile tileWithMedication:med];
+				[tiles addObjectIfNotNil:tile];
+			}
+			
+			[container showTiles:tiles];
+		}
+	}];
+}
+
+/**
  *	Show the add-medication screen
  */
 - (void)showNewMedView:(id)sender
@@ -112,6 +150,7 @@
 		
 		INNewMedViewController *newMed = [INNewMedViewController new];
 		newMed.navigationItem.rightBarButtonItem = doneButton;
+		newMed.listController = self;
 		
 		UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:newMed];
 		if ([self respondsToSelector:@selector(presentViewController:animated:completion:)]) {		// iOS 5+ only
@@ -160,33 +199,7 @@
 		else if (!userDidCancel) {
 			self.record = [APP_DELEGATE.indivo activeRecord];
 			[self setRecordButtonTitle:[record label]];
-			
-			// fetch this record's medications
-			[record fetchReportsOfClass:[IndivoMedication class] callback:^(BOOL userDidCancel, NSString *errorMessage) {
-				
-				// error fetching medications
-				if (errorMessage) {
-					UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to get medication"
-																	message:errorMessage
-																   delegate:nil
-														  cancelButtonTitle:@"OK"
-														  otherButtonTitles:nil];
-					[alert show];
-				}
-				
-				// successfully fetched medications, display
-				else if (!userDidCancel) {
-					NSArray *meds = [record documentsOfType:@"Medication"];
-					DLog(@"Medications: %@", meds);
-					NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
-					for (IndivoMedication *med in meds) {
-						INMedTile *tile = [INMedTile tileWithMedication:med];
-						[tiles addObjectIfNotNil:tile];
-					}
-					
-					[container showTiles:tiles];
-				}
-			}];
+			[self refresh:sender];
 		}
 		
 		// cancelled

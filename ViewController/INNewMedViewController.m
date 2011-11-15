@@ -8,7 +8,9 @@
 
 #import "INNewMedViewController.h"
 #import "INAppDelegate.h"
+#import "INMedListController.h"
 #import "INTableSection.h"
+#import "INRxNormLoader.h"
 
 #import "IndivoServer.h"
 #import "INURLFetcher.h"
@@ -30,8 +32,8 @@
 
 - (void)fetcher:(INURLFetcher *)aFetcher didLoadSuggestionsFor:(NSString *)medString;
 - (void)clearSuggestions;
-- (void)proceedWith:(INXMLNode *)aNode fromLevel:(NSUInteger)fromLevel;
-- (void)useDrug:(INXMLNode *)drugNode;
+- (void)proceedWith:(NSDictionary *)drugDict fromLevel:(NSUInteger)fromLevel;
+- (void)useDrug:(NSDictionary *)drugDict;
 
 - (INTableSection *)addSection:(INTableSection *)newSection animated:(BOOL)animated;
 - (void)goToSection:(NSUInteger)sectionIdx removeLower:(BOOL)remove;
@@ -43,6 +45,7 @@
 
 @implementation INNewMedViewController
 
+@synthesize listController;
 @synthesize sections;
 @synthesize currentMedString, currentScores;
 @synthesize loadingTextLabel, loadingActivity;
@@ -98,6 +101,7 @@
 		cell.textLabel.adjustsFontSizeToFitWidth = YES;
 		cell.textLabel.minimumFontSize = 10.f;
 	}
+	cell.textLabel.textAlignment = UITextAlignmentLeft;
 	
 	// name input field
 	if (0 == indexPath.section) {
@@ -128,10 +132,10 @@
 	// suggestions
 	INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
 	if ([@"suggestion" isEqualToString:section.type] || [@"drug" isEqualToString:section.type]) {
-		INXMLNode *drug = [section objectForRow:indexPath.row];
+		NSDictionary *drug = [section objectForRow:indexPath.row];
 		
-		cell.textLabel.text = drug ? [[drug childNamed:@"name"] text] : @"Unknown";
-		cell.detailTextLabel.text = drug ? [[drug childNamed:@"tty"] text] : nil;
+		cell.textLabel.text = drug ? [drug objectForKey:@"name"] : @"Unknown";
+		cell.detailTextLabel.text = [drug objectForKey:@"tty"];
 	}
 	
 	// med detail nodes
@@ -155,6 +159,8 @@
 	// a button
 	else if ([@"button" isEqualToString:section.type]) {
 		cell.textLabel.text = @"Add Medication";
+		cell.textLabel.textAlignment = UITextAlignmentCenter;
+		cell.detailTextLabel.text = @"";
 	}
 	
 	cell.accessoryView = [section accessoryViewForRow:indexPath.row];
@@ -174,7 +180,7 @@
 		
 		[tableView deselectRowAtIndexPath:indexPath animated:YES];
 		INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
-		INXMLNode *tappedObject = [section objectForRow:indexPath.row];
+		id tappedObject = [section objectForRow:indexPath.row];
 		
 		// collapsed level tapped
 		if ([section isCollapsed]) {
@@ -222,8 +228,8 @@
 						[alert show];
 					}
 					else {
-						DLog(@"Medication successfully added");
-						[self.parentViewController dismissModalViewControllerAnimated:YES];
+						[listController refresh:nil];
+						[listController dismissModal:nil];
 					}
 				}];
 			}
@@ -323,10 +329,7 @@
 		else {
 			
 			// create a node with the user's entries
-			INXMLNode *name = [INXMLNode nodeWithName:@"name" attributes:nil];
-			name.text = medString;
-			INXMLNode *myDrug = [INXMLNode nodeWithName:@"properties" attributes:nil];
-			[myDrug addChild:name];
+			NSDictionary *myDrug = [NSDictionary dictionaryWithObject:medString forKey:@"name"];
 			[section addObject:myDrug];
 			
 			// parse XML
@@ -420,15 +423,19 @@
 						
 						// we are going to show suggestions with type: IN (ingredient) and BN (Brand Name)
 						NSString *tty = [[drug childNamed:@"tty"] text];
+						NSMutableDictionary *drugDict = [NSMutableDictionary dictionaryWithObject:tty forKey:@"tty"];
+						[drugDict setObject:[[drug childNamed:@"rxcui"] text] forKey:@"rxcui"];
+						[drugDict setObject:[[drug childNamed:@"name"] text] forKey:@"name"];
+						
 						DLog(@"-->  %@  [%@]  (%@, %@)", tty, [currentScores objectForKey:[[drug childNamed:@"rxcui"] text]], [[drug childNamed:@"name"] text], [[drug childNamed:@"rxcui"] text]);
 						if ([tty isEqualToString:@"IN"]) {
-							[suggIN addObject:drug];
+							[suggIN addObject:drugDict];
 						}
 						else if ([tty isEqualToString:@"BN"]) {
-							[suggBN addObject:drug];
+							[suggBN addObject:drugDict];
 						}
 						else if ([tty isEqualToString:@"SBD"]) {
-							[suggSBD addObject:drug];
+							[suggSBD addObject:drugDict];
 						}
 					}
 				}
@@ -470,192 +477,172 @@
  *	An RX object was selected, go to the next step
  *	The sequence is: IN -> BN -> SBD
  */
-- (void)proceedWith:(INXMLNode *)aNode fromLevel:(NSUInteger)fromLevel
+- (void)proceedWith:(NSDictionary *)drugDict fromLevel:(NSUInteger)fromLevel
 {
-	NSString *tty = [[aNode childNamed:@"tty"] text];
-	NSString *rxcui = [[aNode childNamed:@"rxcui"] text];
+	NSString *tty = [drugDict objectForKey:@"tty"];
+	NSString *rxcui = [drugDict objectForKey:@"rxcui"];
 	
-	NSString *urlBase = @"http://rxnav.nlm.nih.gov/REST";
-	NSString *urlString = nil;
+	NSString *desired = nil;
 	BOOL nowAtDrugEndpoint = NO;
 	if ([@"BN" isEqualToString:tty]) {
 		nowAtDrugEndpoint = YES;
-		urlString = [NSString stringWithFormat:@"%@/rxcui/%@/related?tty=SBD+DF+IN+PIN+SCDC", urlBase, rxcui];
+		desired = @"SBD+DF+IN+PIN+SCDC";
 	}
 	else if ([@"IN" isEqualToString:tty]) {
-		urlString = [NSString stringWithFormat:@"%@/rxcui/%@/related?tty=BN", urlBase, rxcui];
+		desired = @"BN";
 	}
 	
 	// continue
-	if (urlString) {
+	if (desired) {
 		INTableSection *current = [self addSection:nil animated:YES];
 		[current collapseAnimated:YES];
 		[current showIndicator];
 		
-		DLog(@"->  %@", urlString);
-		NSURL *url = [NSURL URLWithString:urlString];
-		INURLLoader *loader = [[INURLLoader alloc] initWithURL:url];
-		[loader getWithCallback:^(BOOL didCancel, NSString *errorString) {
+		INRxNormLoader *loader = [INRxNormLoader loader];
+		[loader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
 			BOOL somethingFound = NO;
 			
-			// got some suggestions!
+			// got some data
 			if (!errorString) {
-				NSError *error = nil;
-				INXMLNode *body = [INXMLParser parseXML:loader.responseString error:&error];
+				NSMutableArray *newSections = [NSMutableArray array];
+				NSMutableArray *stripFromNames = [NSMutableArray array];
+				NSMutableArray *scdc = [NSMutableArray array];
+				NSMutableArray *drugs = [NSMutableArray array];
+				NSMutableDictionary *routes = [NSMutableDictionary dictionary];
 				
-				// parsed successfully, drill down
-				if (body) {
-					NSArray *concepts = [[body childNamed:@"relatedGroup"] childrenNamed:@"conceptGroup"];
-					if ([concepts count] > 0) {
-						NSMutableArray *newSections = [NSMutableArray array];
-						NSMutableDictionary *routes = [NSMutableDictionary dictionary];
-						NSMutableArray *drugs = [NSMutableArray array];
-						NSMutableArray *stripFromNames = [NSMutableArray array];
-						NSMutableArray *scdc = [NSMutableArray array];
+				// look at what we've got
+				for (NSString *tty in [loader.related allKeys]) {
+					NSArray *relatedArr = [loader.related objectForKey:tty];
+					for (NSDictionary *related in relatedArr) {
+						NSString *name = [related objectForKey:@"name"];
+						NSString *rx = [related objectForKey:@"rxcui"];
 						
-						for (INXMLNode *concept in concepts) {
-							NSString *tty = [[concept childNamed:@"tty"] text];
-							NSArray *propNodes = [concept childrenNamed:@"conceptProperties"];
-							
-							// loop the properties
-							if ([propNodes count] > 0) {
-								for (INXMLNode *main in propNodes) {
-									INXMLNode *nameNode = [main childNamed:@"name"];
-									NSString *name = [nameNode text];
-									DLog(@"%@: %@", tty, name);
-									
-									// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
-									if ([@"DF" isEqualToString:tty]) {
-										if (name) {
-											INTableSection *newSection = [INTableSection sectionWithTitle:name];
-											newSection.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
-											[newSections addObject:newSection];
-											[stripFromNames addObjectIfNotNil:name];
-											
-											INXMLNode *routeNode = [INXMLNode nodeWithName:@"route"];
-											[routeNode setAttr:[[main childNamed:@"rxcui"] text] forKey:@"value"];
-											[routeNode setAttr:@"http://rxnav.nlm.nih.gov/REST/rxcui/" forKey:@"type"];
-											routeNode.text = name;
-											[routes setObject:routeNode forKey:name];
-										}
-										else {
-											DLog(@"Ohoh, no name for DF found!");
-										}
-									}
-									
-									// ** got IN or PIN, (precise) ingredient (e.g. "Metformin" or "Metformin hydrochloride")
-									else if ([@"IN" isEqualToString:tty]) {
-										[stripFromNames addObjectIfNotNil:name];
-									}
-									else if ([@"PIN" isEqualToString:tty]) {
-										[stripFromNames unshiftObjectIfNotNil:name];
-									}
-									
-									// ** got the SCDC, clinical drug component (e.g. "Metformin hydrochloride 500 MG")
-									else if ([@"SCDC" isEqualToString:tty]) {
-										[scdc addObjectIfNotNil:name];
-									}
-									
-									// ** got a drug (BN or SBD for now)
-									else {
-										[drugs addObject:main];
-									}
-								}
-							}
-						}
+						// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
+						if ([@"DF" isEqualToString:tty]) {
+							if (name) {
+								INTableSection *newSection = [INTableSection sectionWithTitle:name];
+								newSection.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
+								[newSections addObject:newSection];
+								[stripFromNames addObjectIfNotNil:name];
 								
-						// no DF-sections found, just add them to one
-						if ([newSections count] < 1) {
-							INTableSection *lone = [INTableSection new];
-							lone.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
-							[newSections addObject:lone];
+								INCodedValue *route = [INCodedValue newWithNodeName:@"route"];
+								route.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
+								route.value = rx;
+								route.text = name;
+								
+								[routes setObject:route forKey:name];
+							}
+							else {
+								DLog(@"Ohoh, no name for DF found!");
+							}
 						}
 						
-						// revisit drugs to apply grouping and name improving
-						if ([drugs count] > 0) {
-							somethingFound = YES;
-							
-							// ** loop found drugs
-							for (INXMLNode *drug in drugs) {
-								INXMLNode *nameNode = [drug childNamed:@"name"];
-								NSString *name = [nameNode text];
-								INXMLNode *origName = [INXMLNode nodeWithName:@"originalName"];
-								origName.text = name;
-								[drug addChild:origName];
-								
-								// add scdc as strength
-								for (NSString *strength in scdc) {
-									INXMLNode *strengthNode = [drug childNamed:@"strength"];
-									if (NSNotFound != [name rangeOfString:strength].location) {
-										if (!strengthNode) {
-											strengthNode = [INXMLNode nodeWithName:@"strength"];
-											[drug addChild:strengthNode];
-										}
-										NSString *trimmed = strength;
-										for (NSString *strip in stripFromNames) {
-											trimmed = [trimmed stringByReplacingOccurrencesOfString:strip withString:@""];
-										}
-										trimmed = [trimmed stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-										if ([strengthNode.text length] > 0) {
-											strengthNode.text = [NSString stringWithFormat:@"%@/%@", strengthNode.text, trimmed];
-										}
-										else {
-											strengthNode.text = trimmed;
-										}
-									}
-								}
-								
-								// add drug to the matching section (section = DF)
-								NSUInteger i = 0;
-								NSUInteger put = 0;
-								for (INTableSection *section in newSections) {
-									if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
-										[section addObject:drug];
-										
-										// add route node
-										INXMLNode *routeNode = [routes objectForKey:section.title];
-										if (routeNode) {
-											[drug addChild:routeNode];
-										}
-										
-										put++;
-									}
-									i++;
-								}
-								if (put < 1) {
-									DLog(@"Warning: Drug %@ not put in any section!!!", drug);
-								}
-								
-								// strip from names
-								for (NSString *string in stripFromNames) {
-									name = [name stringByReplacingOccurrencesOfString:string withString:@""];
-								}
-								name = [name stringByReplacingOccurrencesOfString:@"     " withString:@" "];		// gimme regex!!!! Use NSScanner one day...
-								name = [name stringByReplacingOccurrencesOfString:@"    " withString:@" "];
-								name = [name stringByReplacingOccurrencesOfString:@"   " withString:@" "];
-								name = [name stringByReplacingOccurrencesOfString:@"  " withString:@" "];
-								name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-								nameNode.text = name;
-							}
-							
-							// update table
-							[current hideIndicator];
-							INTableSection *last = [newSections lastObject];
-							for (INTableSection *section in newSections) {
-								[self addSection:section animated:(section == last)];
-							}
-							return;
+						// ** got IN or PIN, (precise) ingredient (e.g. "Metformin" or "Metformin hydrochloride")
+						else if ([@"IN" isEqualToString:tty]) {
+							[stripFromNames addObjectIfNotNil:name];
 						}
+						else if ([@"PIN" isEqualToString:tty]) {
+							[stripFromNames unshiftObjectIfNotNil:name];
+						}
+						
+						// ** got the SCDC, clinical drug component (e.g. "Metformin hydrochloride 500 MG")
+						else if ([@"SCDC" isEqualToString:tty]) {
+							[scdc addObjectIfNotNil:name];
+						}
+						
+						// ** got a drug (BN or SBD for now)
 						else {
-							DLog(@"Not a single drug found in concepts! %@", concepts);
+							NSMutableDictionary *drug = [NSMutableDictionary dictionaryWithDictionary:related];
+							[drug setObject:tty forKey:@"tty"];
+							[drugs addObject:drug];
 						}
-					}
-					else {
-						DLog(@"No relatedGroup > conceptGroup nesting found in %@", body);
 					}
 				}
+				
+				// no DF-sections found, just add them to one
+				if ([newSections count] < 1) {
+					INTableSection *lone = [INTableSection new];
+					lone.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
+					[newSections addObject:lone];
+				}
+				
+				// revisit drugs to apply grouping and name improving
+				if ([drugs count] > 0) {
+					
+					// ** loop all drugs
+					for (NSMutableDictionary *drug in drugs) {
+						NSString *name = [drug objectForKey:@"name"];
+						[drug setObject:name forKey:@"fullName"];
+						
+						// add scdc as strength
+						for (NSString *strength in scdc) {
+							if (NSNotFound != [name rangeOfString:strength].location) {
+								NSMutableString *myStrength = [drug objectForKey:@"strength"];
+								if (!myStrength) {
+									myStrength = [NSMutableString string];
+									[drug setObject:myStrength forKey:@"strength"];
+								}
+								
+								NSString *trimmed = strength;
+								for (NSString *strip in stripFromNames) {
+									trimmed = [trimmed stringByReplacingOccurrencesOfString:strip withString:@""];
+								}
+								trimmed = [trimmed stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+								if ([myStrength length] > 0) {
+									[myStrength appendFormat:@"/%@", trimmed];
+								}
+								else {
+									[myStrength setString:trimmed];
+								}
+							}
+						}
+						
+						// add drug to the matching section (section = DF)
+						NSUInteger i = 0;
+						NSUInteger put = 0;
+						for (INTableSection *section in newSections) {
+							if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
+								[section addObject:drug];
+								
+								// add route node
+								INCodedValue *route = [routes objectForKey:section.title];
+								if (route) {
+									if ([drug objectForKey:@"route"]) {
+										DLog(@"WARNING: Drug %@ already has a route, this will be overridden!", name);
+									}
+									[drug setObject:route forKey:@"route"];
+								}
+								
+								put++;
+							}
+							i++;
+						}
+						if (put < 1) {
+							DLog(@"WARNING: Drug %@ not put in any section!!!", drug);
+						}
+						
+						// strip from names
+						for (NSString *string in stripFromNames) {
+							name = [name stringByReplacingOccurrencesOfString:string withString:@""];
+						}
+						name = [name stringByReplacingOccurrencesOfString:@"     " withString:@" "];		// gimme regex!!!! Use NSScanner one day...
+						name = [name stringByReplacingOccurrencesOfString:@"    " withString:@" "];
+						name = [name stringByReplacingOccurrencesOfString:@"   " withString:@" "];
+						name = [name stringByReplacingOccurrencesOfString:@"  " withString:@" "];
+						name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+						[drug setObject:name forKey:@"name"];
+					}
+					
+					// update table
+					[current hideIndicator];
+					INTableSection *last = [newSections lastObject];
+					for (INTableSection *section in newSections) {
+						[self addSection:section animated:(section == last)];
+					}
+					return;
+				}
 				else {
-					DLog(@"Error Parsing: %@", [error localizedDescription]);
+					DLog(@"Not a single drug found in concepts!");
 				}
 			}
 			else {
@@ -665,14 +652,11 @@
 			// nothing to show?
 			if (!somethingFound) {
 				errorString = errorString ? errorString : @"No relations found!";
-				INXMLNode *fakeNode = [INXMLNode nodeWithName:@"properties" attributes:nil];
-				INXMLNode *nameNode = [INXMLNode nodeWithName:@"name" attributes:nil];
-				nameNode.text = errorString;
-				[fakeNode addChild:nameNode];
+				NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:errorString forKey:@"name"];
 				
 				INTableSection *newSection = [INTableSection new];
 				newSection.type = @"suggestion";
-				[newSection addObject:fakeNode];
+				[newSection addObject:fakeDrug];
 				[self addSection:newSection animated:YES];
 			}
 			[current hideIndicator];
@@ -681,7 +665,7 @@
 	
 	// ok, we're happy with the selected drug, move on!
 	else {
-		[self useDrug:aNode];
+		[self useDrug:drugDict];
 	}
 }
 
@@ -691,7 +675,7 @@
 /**
  *	If a drug has been chosen, continue to the next fields
  */
-- (void)useDrug:(INXMLNode *)drugNode
+- (void)useDrug:(NSDictionary *)drugDict
 {
 	// create medication document
 	IndivoMedication *med = [IndivoMedication newWithRecord:APP_DELEGATE.indivo.activeRecord];
@@ -700,7 +684,7 @@
 	}
 	
 	// name and brand name
-	NSString *rxcui = [[drugNode childNamed:@"rxcui"] text];
+	NSString *rxcui = [drugDict objectForKey:@"rxcui"];
 	
 	med.name = [INCodedValue newWithNodeName:@"name"];
 	med.brandName = [INCodedValue newWithNodeName:@"brandName"];
@@ -713,8 +697,8 @@
 	else {
 		DLog(@"NO RX IDENTIFIER");
 	}
-	med.name.text = [[drugNode childNamed:@"originalName"] text];
-	med.brandName.text = [[drugNode childNamed:@"originalName"] text];
+	med.name.text = [drugDict objectForKey:@"fullName"];
+	med.brandName.text = [drugDict objectForKey:@"fullName"];
 	
 	// dose
 	med.dose = [INUnitValue newWithNodeName:@"dose"];
@@ -724,10 +708,10 @@
 	med.dose.unit.value = @"pills";
 	
 	// route
-	med.route = [INCodedValue objectFromNode:drugNode forChildNamed:@"route"];
+	med.route = [drugDict objectForKey:@"route"];
 	
 	// strength
-	NSString *strength = [[drugNode childNamed:@"strength"] text];
+	NSString *strength = [drugDict objectForKey:@"strength"];
 	med.strength = [INUnitValue newWithNodeName:@"strength"];
 	// RxNorm units:
 	//	CELLS - Cells

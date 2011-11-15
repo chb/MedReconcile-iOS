@@ -19,6 +19,7 @@
 @property (nonatomic, strong) UIBarButtonItem *recordSelectButton;
 @property (nonatomic, strong) UIBarButtonItem *addMedButton;
 
+- (void)refresh:(id)sender;
 - (void)dismissModal:(id)sender;
 
 

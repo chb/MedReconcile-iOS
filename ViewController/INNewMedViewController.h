@@ -8,7 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
+@class INMedListController;
+
+
 @interface INNewMedViewController : UITableViewController <UITextFieldDelegate>
+
+@property (nonatomic, assign) INMedListController *listController;				///< Used to refresh the list after a med was added
 
 - (void)loadSuggestionsFor:(NSString *)medString;
 

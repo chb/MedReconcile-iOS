@@ -11,6 +11,7 @@
 		EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BE145B91C30077E832 /* Foundation.framework */; };
 		EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4C0145B91C30077E832 /* CoreGraphics.framework */; };
 		EE30A4C7145B91C30077E832 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = EE30A4C5145B91C30077E832 /* InfoPlist.strings */; };
+		EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */; };
 		EE6461E2145F1AA20007C6B9 /* INAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CC145B91C30077E832 /* INAppDelegate.m */; };
 		EE6461E3145F1AA60007C6B9 /* INMedListController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CF145B91C30077E832 /* INMedListController.m */; };
 		EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */; };
@@ -37,6 +38,8 @@
 		EE30A4CC145B91C30077E832 /* INAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INAppDelegate.m; sourceTree = "<group>"; };
 		EE30A4CE145B91C30077E832 /* INMedListController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = INMedListController.h; sourceTree = "<group>"; };
 		EE30A4CF145B91C30077E832 /* INMedListController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INMedListController.m; sourceTree = "<group>"; };
+		EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INRxNormLoader.h; path = Classes/INRxNormLoader.h; sourceTree = "<group>"; };
+		EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INRxNormLoader.m; path = Classes/INRxNormLoader.m; sourceTree = "<group>"; };
 		EE6461D3145F17FC0007C6B9 /* INNewMedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INNewMedViewController.h; sourceTree = "<group>"; };
 		EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INNewMedViewController.m; sourceTree = "<group>"; };
 		EE9F067614688252000412C4 /* NSArray+NilProtection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+NilProtection.h"; path = "Classes/NSArray+NilProtection.h"; sourceTree = SOURCE_ROOT; };
@@ -155,6 +158,8 @@
 			children = (
 				EEE62F94146AFACD000DA370 /* INTableSection.h */,
 				EEE62F95146AFACD000DA370 /* INTableSection.m */,
+				EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */,
+				EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -229,6 +234,7 @@
 				EEE62F96146AFACD000DA370 /* INTableSection.m in Sources */,
 				EEA4507F146D764500DC9EB1 /* INMedContainer.m in Sources */,
 				EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */,
+				EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
