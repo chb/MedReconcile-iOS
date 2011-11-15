@@ -37,7 +37,7 @@
 - (void)layoutSubviews
 {
 	CGFloat y = 0.f;
-	CGFloat height = 60.f;
+	CGFloat height = 90.f;
 	NSUInteger perRow = 2;			/// @todo determine based on view width
 	CGFloat width = roundf([self bounds].size.width / perRow);			/// @todo compensate for rounded pixels
 	NSUInteger i = 0;

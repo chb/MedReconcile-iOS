@@ -12,6 +12,7 @@
 #import "IndivoRecord.h"
 #import "IndivoMedication.h"
 #import "INNewMedViewController.h"
+#import "INEditMedViewController.h"
 #import "INMedContainer.h"
 #import "INMedTile.h"
 #import "NSArray+NilProtection.h"
@@ -29,6 +30,7 @@
 
 @implementation INMedListController
 
+@synthesize scrollView;
 @synthesize record, medGroups;
 @synthesize recordSelectButton, addMedButton;
 @synthesize container;
@@ -50,8 +52,9 @@
     CGRect fullFrame = [[UIScreen mainScreen] applicationFrame];
 	fullFrame.origin = CGPointZero;
 	
-	self.view = [[UIView alloc] initWithFrame:fullFrame];
-	self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	self.scrollView = [[UIScrollView alloc] initWithFrame:fullFrame];
+	scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	self.view = scrollView;
 	
 	self.container = [[INMedContainer alloc] initWithFrame:fullFrame];
 	container.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -132,12 +135,29 @@
 			NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
 			for (IndivoMedication *med in meds) {
 				INMedTile *tile = [INMedTile tileWithMedication:med];
+				[tile addTarget:self action:@selector(editMedicationFrom:) forControlEvents:UIControlEventTouchUpInside];
 				[tiles addObjectIfNotNil:tile];
 			}
 			
 			[container showTiles:tiles];
+			scrollView.contentSize = [container frame].size;
 		}
 	}];
+}
+
+/**
+ *	Show the medication edit screen
+ */
+- (void)editMedicationFrom:(INMedTile *)medTile
+{
+	if (medTile.med) {
+		INEditMedViewController *editView = [INEditMedViewController new];
+		editView.med = medTile.med;
+		[self.navigationController pushViewController:editView animated:YES];
+	}
+	else {
+		DLog(@"The tile %@ has no associated medication", medTile);
+	}
 }
 
 /**

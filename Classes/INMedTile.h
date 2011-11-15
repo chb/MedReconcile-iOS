@@ -9,16 +9,21 @@
 #import <UIKit/UIKit.h>
 
 @class IndivoMedication;
+@class INMedContainer;
 
 
 /**
  *	A view displaying one medication as a medication tile
  */
-@interface INMedTile : UIView
+@interface INMedTile : UIControl
 
 @property (nonatomic, strong) IndivoMedication *med;
+@property (nonatomic, assign) INMedContainer *container;
+
 
 + (INMedTile *)tileWithMedication:(IndivoMedication *)aMed;
+
+- (void)showMedicationDetails:(id)sender;
 
 
 @end

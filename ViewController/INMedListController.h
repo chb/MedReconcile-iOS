@@ -9,9 +9,12 @@
 #import <UIKit/UIKit.h>
 
 @class IndivoRecord;
+@class INMedTile;
 
 
 @interface INMedListController : UIViewController
+
+@property (nonatomic, strong) UIScrollView *scrollView;
 
 @property (nonatomic, strong) IndivoRecord *record;
 @property (nonatomic, strong) NSMutableArray *medGroups;
@@ -21,6 +24,8 @@
 
 - (void)refresh:(id)sender;
 - (void)dismissModal:(id)sender;
+
+- (void)editMedicationFrom:(INMedTile *)medTile;
 
 
 @end

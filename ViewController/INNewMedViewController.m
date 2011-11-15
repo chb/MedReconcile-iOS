@@ -228,7 +228,7 @@
 						[alert show];
 					}
 					else {
-						[listController refresh:nil];
+						[listController performSelector:@selector(refresh:) withObject:nil afterDelay:0.0];
 						[listController dismissModal:nil];
 					}
 				}];
