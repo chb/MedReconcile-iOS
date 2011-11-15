@@ -12,18 +12,16 @@
 
 @interface INTableSection ()
 
+@property (nonatomic, unsafe_unretained) UITableView *tableView;
+@property (nonatomic, assign) NSInteger tableSection;
+
 @property (nonatomic, readwrite, strong) NSMutableArray *objects;
-@property (nonatomic, assign) NSInteger indicatorCount;
-@property (nonatomic, strong) UIView *indicatorView;
-@property (nonatomic, strong) UILabel *indicatorLabel;
+@property (nonatomic, strong) UIActivityIndicatorView *indicatorView;
 
-@property (nonatomic, assign) NSInteger lastSectionIndex;
-@property (nonatomic, unsafe_unretained) UITableView *lastTable;
-
-- (void)expandInTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated;
-- (void)collapseInTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated;
-- (void)removeFromTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated;
-- (void)updateInTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated;
+- (void)expandInTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated;
+- (void)collapseInTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated;
+- (void)removeFromTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated;
+- (void)updateInTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated;
 
 @end
 
@@ -31,16 +29,17 @@
 @implementation INTableSection
 
 @synthesize type;
-@synthesize title, headerView;
-@synthesize indicatorCount, indicatorView, indicatorLabel;
+@synthesize title;
+@synthesize indicatorView;
 @synthesize collapsed, objects, selectedObject;
-@synthesize lastSectionIndex, lastTable;
+@synthesize tableSection, tableView;
 
 
 - (id)init
 {
 	if ((self = [super init])) {
 		self.objects = [NSMutableArray array];
+		tableSection = -1;
 	}
 	return self;
 }
@@ -52,6 +51,14 @@
 	return s;
 }
 
++ (INTableSection *)sectionWithType:(NSString *)aType
+{
+	INTableSection *s = [self new];
+	s.type = aType;
+	return s;
+}
+
+
 
 #pragma mark - Section Properties
 - (NSUInteger)numRows
@@ -62,66 +69,60 @@
 	return [objects count];
 }
 
-- (UIView *)headerView
+- (NSString *)title
 {
-	return indicatorView ? indicatorView : headerView;
+	if ([self numRows] < 1) {
+		return nil;
+	}
+	return title;
 }
 
-- (CGFloat)headerHeight
-{
-	if (self.headerView) {
-		return [self.headerView frame].size.height;
-	}
-	if (title) {
-		return 28.f;
-	}
-	return 0.f;
-}
 
+
+#pragma mark - The Indicator
+/**
+ *	If we want an indicator shown, this method returns the indicator for the selected row, nil in all other cases
+ */
+- (UIView *)accessoryViewForRow:(NSUInteger)row
+{
+	id object = [objects objectOrNilAtIndex:row];
+	if (object && [object isEqual:selectedObject]) {
+		return indicatorView;
+	}
+	return nil;
+}
 
 /**
- *	Make sure the indicator is shown, creating it if necessary
+ *	Make sure the indicator is shown, creating it if necessary.
+ *	The indicator will only be shown for the selected row, so make sure to set a selectedObject before calling this method!
  */
-- (void)showIndicatorWith:(NSString *)aTitle
+- (void)showIndicator
 {
-	indicatorCount = MAX(1, indicatorCount + 1);
 	if (!indicatorView) {
-		CGRect loadingFrame = CGRectMake(0.f, 0.f, 320.f, 28.f);
-		
-		self.indicatorView = [[UIView alloc] initWithFrame:loadingFrame];
-		indicatorView.opaque = NO;
-		indicatorView.backgroundColor = [UIColor clearColor];
-		indicatorView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-		
-		self.indicatorLabel = [[UILabel alloc] initWithFrame:CGRectMake(20.f, 0.f, 280.f, 28.f)];
-		indicatorLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-		indicatorLabel.opaque = NO;
-		indicatorLabel.backgroundColor = [UIColor clearColor];
-		indicatorLabel.font = [UIFont boldSystemFontOfSize:16.f];
-		indicatorLabel.textColor = [UIColor colorWithRed:0.3f green:0.33f blue:0.42f alpha:1.f];
-		indicatorLabel.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
-		indicatorLabel.shadowOffset = CGSizeMake(0.f, 1.f);
-		indicatorLabel.text = aTitle;
-		[indicatorView addSubview:indicatorLabel];
-		
-		UIActivityIndicatorView *loadingActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-		CGRect actFrame = loadingActivity.frame;
-		actFrame.origin = CGPointMake(loadingFrame.size.width - 20.f - actFrame.size.width, 4.f);
-		loadingActivity.frame = actFrame;
-		loadingActivity.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-		[indicatorView addSubview:loadingActivity];
+		self.indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+		indicatorView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+		[indicatorView startAnimating];
 	}
-	else {
-		indicatorLabel.text = aTitle;
+	
+	// reload
+	if (tableSection >= 0) {
+		NSUInteger row = collapsed ? 0 : [objects indexOfObject:selectedObject];
+		if (NSNotFound != row) {
+			NSIndexPath *myPath = [NSIndexPath indexPathForRow:row inSection:tableSection];
+			[tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:myPath] withRowAnimation:UITableViewRowAnimationNone];
+		}
 	}
 }
 
 - (void)hideIndicator
 {
-	indicatorCount--;
-	if (indicatorCount <= 0) {
-		[indicatorView removeFromSuperview];
-		self.indicatorView = nil;
+	[indicatorView removeFromSuperview];
+	self.indicatorView = nil;
+	
+	// reload
+	if (tableSection >= 0) {
+		NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:tableSection];
+		[tableView reloadSections:mySet withRowAnimation:UITableViewRowAnimationNone];
 	}
 }
 
@@ -176,10 +177,13 @@
 
 
 #pragma mark - Adding, collapsing and removing from/in/to a table
-- (void)addToTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated
+/**
+ *	Adds the receiver to the given table as section with given index
+ */
+- (void)addToTable:(UITableView *)aTable asSection:(NSUInteger)section animated:(BOOL)animated
 {
-	self.lastSectionIndex = section;
-	self.lastTable = aTable;
+	self.tableSection = section;
+	self.tableView = aTable;
 	
 	NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:section];
 	[aTable insertSections:mySet withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
@@ -187,7 +191,7 @@
 
 - (BOOL)hasTable
 {
-	return (nil != lastTable);
+	return (nil != tableView);
 }
 
 /**
@@ -195,48 +199,43 @@
  */
 - (void)expandAnimated:(BOOL)animated
 {
-	if (lastTable && lastSectionIndex >= 0) {
-		[self expandInTable:lastTable withIndex:lastSectionIndex animated:animated];
+	if (tableView && tableSection >= 0) {
+		[self expandInTable:tableView section:tableSection animated:animated];
 	}
 	else {
-		DLog(@"You must add the section to a table first");
+		DLog(@"You must add section %@ to a table first", self);
 	}
 }
 
-- (void)expandInTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated
+- (void)expandInTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated
 {
 	NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:section];
 	
 	self.collapsed = NO;
 	self.selectedObject = nil;
+	
 	[aTable reloadSections:mySet withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
 }
 
 - (void)collapseAnimated:(BOOL)animated
 {
-	if (lastTable && lastSectionIndex >= 0) {
-		if (selectedObject) {
-			[self collapseInTable:lastTable withIndex:lastSectionIndex animated:animated];
-		}
-		else {
-			[self updateInTable:lastTable withIndex:lastSectionIndex animated:animated];
-		}
+	if (tableView && tableSection >= 0) {
+		[self collapseInTable:tableView section:tableSection animated:animated];
 	}
 	else {
-		DLog(@"You must add the section to a table first");
+		DLog(@"You must add section %@ to a table first", self);
 	}
 }
 
-- (void)collapseInTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated
+- (void)collapseInTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated
 {
 	if (!self.collapsed) {
 		self.collapsed = YES;
 		
 		NSMutableArray *indexes = [NSMutableArray array];
 		NSUInteger row = 0;
-		id theOne = [self selectedObject];
 		for (id object in objects) {
-			if (![object isEqual:theOne]) {
+			if (![object isEqual:selectedObject]) {
 				NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:section];
 				[indexes addObjectIfNotNil:indexPath];
 			}
@@ -244,22 +243,25 @@
 		}
 		
 		[aTable deleteRowsAtIndexPaths:indexes withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
+		if (!selectedObject) {
+			[aTable reloadSections:[NSIndexSet indexSetWithIndex:section] withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
+		}
 	}
 }
 
 - (void)removeAnimated:(BOOL)animated
 {
-	if (lastTable && lastSectionIndex >= 0) {
-		[self removeFromTable:lastTable withIndex:lastSectionIndex animated:animated];
-		self.lastSectionIndex = -1;
-		self.lastTable = nil;
+	if (tableView && tableSection >= 0) {
+		[self removeFromTable:tableView section:tableSection animated:animated];
+		self.tableSection = -1;
+		self.tableView = nil;
 	}
 	else {
-		DLog(@"You must add the section to a table first");
+		DLog(@"You must add section %@ to a table first", self);
 	}
 }
 
-- (void)removeFromTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated
+- (void)removeFromTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated
 {
 	NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:section];
 	[aTable deleteSections:mySet withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
@@ -268,15 +270,15 @@
 
 - (void)updateAnimated:(BOOL)animated
 {
-	if (lastTable && lastSectionIndex >= 0) {
-		[self updateInTable:lastTable withIndex:lastSectionIndex animated:animated];
+	if (tableView && tableSection >= 0) {
+		[self updateInTable:tableView section:tableSection animated:animated];
 	}
 	else {
-		DLog(@"You must add the section to a table first");
+		DLog(@"You must add section %@ to a table first", self);
 	}
 }
 
-- (void)updateInTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated
+- (void)updateInTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated
 {
 	NSIndexSet *mySet = [NSIndexSet indexSetWithIndex:section];
 	[aTable reloadSections:mySet withRowAnimation:(animated ? UITableViewRowAnimationFade : UITableViewRowAnimationNone)];
@@ -287,7 +289,7 @@
 #pragma mark - Utilities
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"%@ <0x%x>  %@, section %d, %d objects", NSStringFromClass([self class]), self, (title ? title : (type ? type : @"No title and no type")), lastSectionIndex, [objects count]];
+	return [NSString stringWithFormat:@"%@ <0x%x>  %@, section %d, %d objects", NSStringFromClass([self class]), self, (title ? title : (type ? type : @"No title and no type")), tableSection, [objects count]];
 }
 
 

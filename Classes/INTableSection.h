@@ -11,9 +11,7 @@
 @interface INTableSection : NSObject
 
 @property (nonatomic, copy) NSString *type;
-
 @property (nonatomic, copy) NSString *title;
-@property (nonatomic, strong) UIView *headerView;
 
 @property (nonatomic, assign, getter=isCollapsed) BOOL collapsed;
 @property (nonatomic, readonly, strong) NSMutableArray *objects;
@@ -21,12 +19,13 @@
 
 
 + (INTableSection *)sectionWithTitle:(NSString *)aTitle;
++ (INTableSection *)sectionWithType:(NSString *)aType;
 
 - (NSUInteger)numRows;
-- (CGFloat)headerHeight;
 
-- (void)showIndicatorWith:(NSString *)aTitle;
+- (void)showIndicator;
 - (void)hideIndicator;
+- (UIView *)accessoryViewForRow:(NSUInteger)row;
 
 - (void)removeAllObjects;
 - (void)addObject:(id)anObject;
@@ -35,7 +34,7 @@
 
 - (id)objectForRow:(NSUInteger)row;
 
-- (void)addToTable:(UITableView *)aTable withIndex:(NSUInteger)section animated:(BOOL)animated;
+- (void)addToTable:(UITableView *)aTable asSection:(NSUInteger)section animated:(BOOL)animated;
 - (BOOL)hasTable;
 
 - (void)expandAnimated:(BOOL)animated;

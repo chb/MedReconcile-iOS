@@ -33,7 +33,8 @@
 - (void)proceedWith:(INXMLNode *)aNode fromLevel:(NSUInteger)fromLevel;
 - (void)useDrug:(INXMLNode *)drugNode;
 
-- (void)goToSection:(NSUInteger)sectionIdx;
+- (INTableSection *)addSection:(INTableSection *)newSection animated:(BOOL)animated;
+- (void)goToSection:(NSUInteger)sectionIdx removeLower:(BOOL)remove;
 
 - (NSString *)displayNameFor:(INXMLNode *)drugNode;
 
@@ -87,18 +88,6 @@
 	return [sect title];
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-{
-	INTableSection *sect = [sections objectOrNilAtIndex:section];
-	return [sect headerHeight];
-}
-
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
-{
-	INTableSection *sect = [sections objectOrNilAtIndex:section];
-	return [sect headerView];
-}
-
 - (UITableViewCell *)tableView:(UITableView *)aTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
 	UITableViewCell *cell = nil;
@@ -127,12 +116,12 @@
 			textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
 			textField.placeholder = @"Medication Name";
 			textField.font = [UIFont systemFontOfSize:17.f];
+			textField.leftViewMode = UITextFieldViewModeAlways;
 			textField.delegate = self;
 			[cell.contentView addSubview:textField];
 			
 			[textField performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.0];
 		}
-		
 	}
 	
 	// suggestions
@@ -144,6 +133,12 @@
 			cell.textLabel.text = drug ? [[drug childNamed:@"name"] text] : @"Unknown";
 			cell.detailTextLabel.text = drug ? [[drug childNamed:@"tty"] text] : nil;
 		}
+		else if ([@"dates" isEqualToString:section.type]) {
+			INDate *date = [section objectForRow:indexPath.row];
+			cell.textLabel.text = (0 == indexPath.row) ? @"Start" : @"Stop";
+			cell.detailTextLabel.text = [date isoString];
+		}
+		cell.accessoryView = [section accessoryViewForRow:indexPath.row];
 	}
 	
 	return cell;
@@ -165,7 +160,7 @@
 		
 		// collapsed level tapped
 		if ([section isCollapsed]) {
-			[self goToSection:indexPath.section];
+			[self goToSection:indexPath.section removeLower:(![@"drug" isEqualToString:section.type])];
 		}
 		
 		// tapped an expanded level
@@ -179,6 +174,12 @@
 				}
 				else {
 					DLog(@"Ohoh, the suggestion that was tapped was not found at %@", indexPath);
+					UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Dead End"
+																	message:@"You have hit a dead end, see debug log"
+																   delegate:nil
+														  cancelButtonTitle:@"Too Bad"
+														  otherButtonTitles:nil];
+					[alert show];
 				}
 			}
 			
@@ -242,9 +243,22 @@
  */
 - (void)loadSuggestionsFor:(NSString *)medString
 {
-	[self goToSection:1];
-	INTableSection *section = [sections objectOrNilAtIndex:1];
-	[section showIndicatorWith:@"Loading Suggestions..."];
+	[self goToSection:0 removeLower:YES];
+	
+	INTableSection *section = [INTableSection sectionWithType:@"suggestion"];
+	INTableSection *current = [self addSection:section animated:YES];
+	
+	// show action
+	UITextField *textField = nil;
+	UITableViewCell *iCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+	if (iCell) {
+		textField = (UITextField *)[[iCell contentView] viewWithTag:99];
+		if ([textField isKindOfClass:[UITextField class]]) {
+			UIActivityIndicatorView *act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+			textField.leftView = act;
+			[act startAnimating];
+		}
+	}
 	
 	self.currentMedString = medString;
 	[currentScores removeAllObjects];
@@ -259,7 +273,6 @@
 	
 	INURLLoader *loader = [[INURLLoader alloc] initWithURL:url];
 	[loader getWithCallback:^(BOOL didCancel, NSString *errorString) {
-		[section hideIndicator];
 		
 		// failed
 		if (errorString) {
@@ -268,7 +281,6 @@
 		
 		// got some suggestions!
 		else {
-			[section removeAllObjects];
 			
 			// create a node with the user's entries
 			INXMLNode *name = [INXMLNode nodeWithName:@"name" attributes:nil];
@@ -327,11 +339,9 @@
 						}
 						
 						// start fetching the suggestion's names
-						[section showIndicatorWith:@"Loading Names..."];
-						
 						INURLFetcher *fetcher = [INURLFetcher new];
 						[fetcher getURLs:urls callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-							[section hideIndicator];
+							[current hideIndicator];
 							[self fetcher:fetcher didLoadSuggestionsFor:medString];
 						}];
 						return;					// to skip the table updating just yet
@@ -340,7 +350,7 @@
 			}
 		}
 		
-		[section hideIndicator];
+		textField.leftView = nil;
 		[section updateAnimated:YES];
 	}];
 }
@@ -348,7 +358,7 @@
 - (void)fetcher:(INURLFetcher *)aFetcher didLoadSuggestionsFor:(NSString *)medString
 {
 	if ([currentMedString isEqualToString:medString]) {
-		INTableSection *section = [sections objectOrNilAtIndex:1];
+		INTableSection *section = [sections lastObject];
 		
 		if ([aFetcher.successfulLoads count] > 0) {
 			NSMutableArray *suggIN = [NSMutableArray array];
@@ -404,6 +414,15 @@
 	else {
 		DLog(@"Received suggestions for \"%@\", but we have moved on to \"%@\", discarding", medString, currentMedString);
 	}
+	
+	// stop action
+	UITableViewCell *iCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+	if (iCell) {
+		UITextField *textField = (UITextField *)[[iCell contentView] viewWithTag:99];
+		if ([textField isKindOfClass:[UITextField class]]) {
+			textField.leftView = nil;
+		}
+	}
 }
 
 
@@ -413,8 +432,6 @@
  */
 - (void)proceedWith:(INXMLNode *)aNode fromLevel:(NSUInteger)fromLevel
 {
-	INTableSection *section = [sections objectOrNilAtIndex:fromLevel];
-	
 	NSString *tty = [[aNode childNamed:@"tty"] text];
 	NSString *rxcui = [[aNode childNamed:@"rxcui"] text];
 	
@@ -431,20 +448,15 @@
 	
 	// continue
 	if (urlString) {
-		NSUInteger level = fromLevel + 1;
-		[self goToSection:level];
-		
-		[section showIndicatorWith:@"Loading Suggestions..."];
+		INTableSection *current = [self addSection:nil animated:YES];
+		[current collapseAnimated:YES];
+		[current showIndicator];
 		
 		DLog(@"->  %@", urlString);
 		NSURL *url = [NSURL URLWithString:urlString];
 		INURLLoader *loader = [[INURLLoader alloc] initWithURL:url];
 		[loader getWithCallback:^(BOOL didCancel, NSString *errorString) {
-			[section hideIndicator];
-			
-			// remove suggestions further down in the hierarchy
 			BOOL somethingFound = NO;
-			
 			
 			// got some suggestions!
 			if (!errorString) {
@@ -506,7 +518,7 @@
 						// no DF-sections found, just add them in one
 						if ([newSections count] < 1) {
 							INTableSection *lone = [INTableSection new];
-							lone.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";;
+							lone.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
 							[newSections addObject:lone];
 						}
 						
@@ -523,11 +535,16 @@
 								
 								// add drugs to sections
 								NSUInteger i = 0;
+								NSUInteger put = 0;
 								for (INTableSection *section in newSections) {
 									if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
 										[section addObject:drug];
+										put++;
 									}
 									i++;
+								}
+								if (put < 1) {
+									DLog(@"Warning: Drug %@ not put in any section!!!", drug);
 								}
 								
 								// strip from names
@@ -542,24 +559,11 @@
 							}
 							
 							// update table
-							[self.tableView beginUpdates];
-							NSUInteger i = [sections count];
-							while (i > level) {
-								INTableSection *last = [sections lastObject];
-								//DLog(@"Removing %@", last);
-								[last removeAnimated:NO];
-								[sections removeLastObject];
-								i--;
-							}
-							i = level;
+							[current hideIndicator];
+							INTableSection *last = [newSections lastObject];
 							for (INTableSection *section in newSections) {
-								//DLog(@"Adding %@", section);
-								[sections addObject:section];
-								[section addToTable:self.tableView withIndex:i animated:YES];
-								i++;
+								[self addSection:section animated:(section == last)];
 							}
-							[self.tableView endUpdates];
-							
 							return;
 						}
 						else {
@@ -586,25 +590,17 @@
 				nameNode.text = errorString;
 				[fakeNode addChild:nameNode];
 				
-				INTableSection *newSection = [sections objectOrNilAtIndex:level];
-				if (!newSection) {
-					newSection = [INTableSection new];
-					newSection.type = @"suggestion";
-					[sections addObject:newSection];
-				}
+				INTableSection *newSection = [INTableSection new];
+				newSection.type = @"suggestion";
 				[newSection addObject:fakeNode];
+				[self addSection:newSection animated:YES];
 			}
-			
-			[self goToSection:level];
+			[current hideIndicator];
 		}];
 	}
 	
 	// ok, we're happy with the selected drug, move on!
 	else {
-		[self.tableView beginUpdates];
-		[section collapseAnimated:YES];
-		[self.tableView endUpdates];
-		
 		[self useDrug:aNode];
 	}
 }
@@ -617,28 +613,13 @@
  */
 - (void)useDrug:(INXMLNode *)drugNode
 {
-	// update table
-	for (INTableSection *other in sections) {
-		other.collapsed = YES;
-	}
-	INTableSection *dates = [INTableSection sectionWithTitle:@"Timeframe"];
-//	dates.type = @"";
-	[dates addObject:drugNode];
-	[sections addObject:dates];
-	
-	INTableSection *instructions = [INTableSection sectionWithTitle:@"Instructions"];
-	[instructions addObject:drugNode];
-	[sections addObject:instructions];
-	
-	[self.tableView reloadData];
-	
 	// create medication document
 	IndivoMedication *med = [IndivoMedication newWithRecord:APP_DELEGATE.indivo.activeRecord];
 	if (!med) {
 		DLog(@"Did not get a medication document!");
 	}
 	
-	// populate drug name and coding schema
+	// brand name
 	NSString *rxcui = [[drugNode childNamed:@"rxcui"] text];
 	
 	med.brandName = [INCodedValue new];
@@ -651,10 +632,32 @@
 	}
 	med.brandName.value = [[drugNode childNamed:@"originalName"] text];
 	
+	// date started and stopped
+	med.dateStarted = [INDate dateWithDate:[NSDate date]];
+	med.dateStopped = [INDate new];
+	
+	INTableSection *dates = [INTableSection sectionWithTitle:@"Timeframe"];
+	dates.type = @"editable";
+	[dates addObject:med.dateStarted];
+	[dates addObject:med.dateStopped];
+	
+	// dose
 	med.dose = [INUnitValue new];
 	med.route = [INCodedValue new];
 	med.strength = [INUnitValue new];
 	med.frequency = [INCodedValue new];
+	
+	// instructions
+	INTableSection *instructions = [INTableSection sectionWithTitle:@"Instructions"];
+	instructions.type = @"editable";
+	[instructions addObject:drugNode];
+	
+	// update table
+	for (INTableSection *section in sections) {
+		[section collapseAnimated:YES];
+	}
+	[self addSection:dates animated:NO];
+	[self addSection:instructions animated:YES];
 }
 
 
@@ -672,53 +675,67 @@
 }
 
 /**
+ *	Pushes the given table section while returning the current section
+ */
+- (INTableSection *)addSection:(INTableSection *)newSection animated:(BOOL)animated
+{
+	INTableSection *current = [sections lastObject];
+	
+	// add new
+	[self.tableView beginUpdates];
+	if (newSection) {
+		NSUInteger section = [sections count];
+		[sections addObject:newSection];
+		[newSection addToTable:self.tableView asSection:section animated:animated];
+	}
+	[self.tableView endUpdates];
+	
+	return current;
+}
+
+/**
  *	Make the given level the active level
  */
-- (void)goToSection:(NSUInteger)sectionIdx
+- (void)goToSection:(NSUInteger)sectionIdx removeLower:(BOOL)remove
 {
-	//DLog(@"going to level %d", level);	
+	DLog(@"going to section %d", sectionIdx);
 	[self.tableView beginUpdates];
 	
 	NSInteger i = [sections count] - 1;
-	BOOL currentExists = NO;
-	while (i >= 0) {
+	while (i > 0) {						// if we use > 0 we let the first row/section in peace
 		INTableSection *existing = [sections objectAtIndex:i];
 		
-		// remove higher sections
+		// remove or expand higher sections
 		if (i > sectionIdx) {
-			//DLog(@"Removing %@", existing);
-			[existing removeAnimated:NO];
-			[sections removeLastObject];
+			if (remove || [@"suggestion" isEqualToString:existing.type] || [@"editable" isEqualToString:existing.type]) {
+				DLog(@"Removing %@", existing);
+				[existing removeAnimated:NO];
+				[sections removeLastObject];
+			}
+			else {
+				DLog(@"Expanding %@", existing);
+				[existing expandAnimated:YES];
+			}
 		}
 		
-		// our section, expand or add to table, if necessary
+		// target section, expand after adding to table (if necessary)
 		else if (i == sectionIdx) {
-			currentExists = YES;
-			if ([existing hasTable]) {
-				//DLog(@"Expanding current %@", existing);
+			DLog(@"Expanding current %@", existing);
+			[existing expandAnimated:YES];
+		}
+		
+		// expand or collapse lower levels
+		else {
+			if ([@"drug" isEqualToString:existing.type]) {
+				DLog(@"Expanding %@", existing);
 				[existing expandAnimated:YES];
 			}
 			else {
-				//DLog(@"Adding current to table %@", existing);
-				[existing addToTable:self.tableView withIndex:sectionIdx animated:YES];
+				DLog(@"Collapsing %@", existing);
+				[existing collapseAnimated:YES];
 			}
 		}
-		
-		// collapse lower levels
-		else {
-			//DLog(@"Collapsing %@", existing);
-			[existing collapseAnimated:YES];
-		}
 		i--;
-	}
-	
-	// current is not yet present, add
-	if (!currentExists) {
-		INTableSection *section = [INTableSection new];
-		section.type = @"suggestion";
-		//DLog(@"Adding new to table at %@", section);
-		[section addToTable:self.tableView withIndex:sectionIdx animated:YES];
-		[sections addObject:section];
 	}
 	
 	[self.tableView endUpdates];
