@@ -92,6 +92,30 @@
 }
 
 /**
+ *	Dims all but the given tile - all if nil is given
+ */
+- (void)dimAllBut:(INMedTile *)aTile
+{
+	for (INMedTile *tile in [self subviews]) {
+		if ([tile isKindOfClass:[INMedTile class]] && ![aTile isEqual:tile]) {
+			[tile dim:YES];
+		}
+	}
+}
+
+/**
+ *	Undims all tiles
+ */
+- (void)undimAll
+{
+	for (INMedTile *tile in [self subviews]) {
+		if ([tile isKindOfClass:[INMedTile class]]) {
+			[tile dim:NO];
+		}
+	}
+}
+
+/**
  *	Rearranges the existing tiles by comparing each tile's property and sorting accordingly
  */
 - (void)rearrangeByPropertyName:(NSString *)aProperty

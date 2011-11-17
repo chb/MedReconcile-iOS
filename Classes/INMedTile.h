@@ -23,7 +23,10 @@
 
 + (INMedTile *)tileWithMedication:(IndivoMedication *)aMed;
 
-- (void)showMedicationDetails:(id)sender;
+- (void)dim:(BOOL)flag;
+- (void)dimAnimated:(BOOL)animated;
+- (void)undimAnimated:(BOOL)animated;
+- (void)indicateAction:(BOOL)flag;
 
 
 @end

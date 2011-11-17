@@ -21,6 +21,7 @@
 @interface INMedListController ()
 
 @property (nonatomic, strong) INMedContainer *container;
+@property (nonatomic, strong) INMedTile *activeTile;
 
 - (void)showNewMedView:(id)sender;
 - (void)setRecordButtonTitle:(NSString *)aTitle;
@@ -34,7 +35,7 @@
 @synthesize scrollView;
 @synthesize record, medGroups;
 @synthesize recordSelectButton, addMedButton;
-@synthesize container;
+@synthesize container, activeTile;
 
 
 - (void)dealloc
@@ -141,7 +142,7 @@
 			NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
 			for (IndivoMedication *med in meds) {
 				INMedTile *tile = [INMedTile tileWithMedication:med];
-				[tile addTarget:self action:@selector(editMedicationFrom:) forControlEvents:UIControlEventTouchUpInside];
+				[tile addTarget:self action:@selector(showActionsFor:) forControlEvents:UIControlEventTouchUpInside];
 				[tiles addObjectIfNotNil:tile];
 			}
 			
@@ -149,6 +150,24 @@
 			scrollView.contentSize = [container frame].size;
 		}
 	}];
+}
+
+/**
+ *	Shows the actions for a medication
+ */
+- (void)showActionsFor:(INMedTile *)medTile
+{
+	if (medTile) {
+		[container dimAllBut:medTile];
+		
+		self.activeTile = medTile;
+		UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:nil
+														   delegate:self
+												  cancelButtonTitle:@"Cancel"
+											 destructiveButtonTitle:@"Archive"
+												  otherButtonTitles:@"Edit", nil];
+		[sheet showInView:self.view];
+	}
 }
 
 /**
@@ -256,6 +275,44 @@
 	if ([aRecord isEqual:self.record]) {		// will always be true anyway...
 		[self refresh:nil];
 	}
+}
+
+
+
+#pragma mark - UIActionSheetDelegate
+/**
+ *	A medication action was chosen
+ */
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	if (actionSheet.destructiveButtonIndex == buttonIndex) {
+		[activeTile indicateAction:YES];
+		__block INMedTile *theTile = activeTile;
+		[activeTile.med archive:YES forReason:@"no reason" callback:^(BOOL userDidCancel, NSString *errorMessage) {
+			if (errorMessage) {
+				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Archiving failed"
+																message:errorMessage
+															   delegate:nil
+													  cancelButtonTitle:@"Ok"
+													  otherButtonTitles:nil];
+				[alert show];
+			}
+			[theTile indicateAction:NO];
+		}];
+	}
+	else if (buttonIndex == actionSheet.cancelButtonIndex) {
+	}
+	else {
+		if (1 == buttonIndex) {
+			[self editMedicationFrom:activeTile];
+		}
+		else {
+			DLog(@"What should index %d do?", buttonIndex);
+		}
+	}
+	
+	[container undimAll];
+	self.activeTile = nil;
 }
 
 

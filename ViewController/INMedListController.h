@@ -12,7 +12,7 @@
 @class INMedTile;
 
 
-@interface INMedListController : UIViewController
+@interface INMedListController : UIViewController <UIActionSheetDelegate>
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 
@@ -25,6 +25,7 @@
 - (void)refresh:(id)sender;
 - (void)dismissModal:(id)sender;
 
+- (void)showActionsFor:(INMedTile *)medTile;
 - (void)editMedicationFrom:(INMedTile *)medTile;
 
 

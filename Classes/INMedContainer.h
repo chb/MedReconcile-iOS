@@ -20,6 +20,8 @@
 - (void)showTiles:(NSArray *)tileArray;
 - (void)addTile:(INMedTile *)aTile;
 
+- (void)dimAllBut:(INMedTile *)aTile;
+- (void)undimAll;
 - (void)rearrangeByPropertyName:(NSString *)aProperty;
 
 

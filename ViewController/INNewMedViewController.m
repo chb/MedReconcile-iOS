@@ -240,50 +240,6 @@
 
 
 
-#pragma mark - UITextFieldDelegate
-/**
- *	This method gets called whenever the text in our textfield changes. We use it to start loading medication suggestions matching the
- *	current string in the field
- */
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
-{
-	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	
-	NSString *current = [textField.text stringByReplacingCharactersInRange:range withString:string];
-	
-	// start loading suggestions
-	if ([current length] > 0) {
-		[self performSelector:@selector(loadSuggestionsFor:) withObject:current afterDelay:0.5];
-	}
-	
-	// remove all suggestions
-	else {
-		[self clearSuggestions];
-	}
-	
-	return YES;
-}
-
-/**
- *	Called when the user clears the field
- */
-- (BOOL)textFieldShouldClear:(UITextField *)textField
-{
-	[self clearSuggestions];
-	return YES;
-}
-
-/**
- *	Hitting the Done key on the keyboard hides the keyboard
- */
-- (BOOL)textFieldShouldReturn:(UITextField *)textField
-{
-	[textField resignFirstResponder];
-	return YES;
-}
-
-
-
 #pragma mark - Loading Suggestions
 /**
  *	Begin to start medication suggestions for the user entered string
@@ -796,10 +752,15 @@
  */
 - (void)clearSuggestions
 {
+	NSRange mostRange = NSMakeRange(1, [sections count]-1);
+	NSIndexSet *mostSections = [NSIndexSet indexSetWithIndexesInRange:mostRange];
+	
+	[self.tableView beginUpdates];
 	[sections removeAllObjects];
 	[sections addObject:[INTableSection new]];
 	
-	[self.tableView reloadData];
+	[self.tableView deleteSections:mostSections withRowAnimation:UITableViewRowAnimationBottom];
+	[self.tableView endUpdates];
 }
 
 /**
@@ -867,6 +828,51 @@
 	}
 	
 	[self.tableView endUpdates];
+}
+
+
+
+#pragma mark - UITextFieldDelegate
+/**
+ *	This method gets called whenever the text in our textfield changes. We use it to start loading medication suggestions matching the
+ *	current string in the field
+ */
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
+	
+	NSString *current = [textField.text stringByReplacingCharactersInRange:range withString:string];
+	
+	// start loading suggestions
+	if ([current length] > 0) {
+		[self performSelector:@selector(loadSuggestionsFor:) withObject:current afterDelay:0.5];
+	}
+	
+	// remove all suggestions
+	else {
+		textField.text = nil;
+		[self clearSuggestions];
+	}
+	
+	return YES;
+}
+
+/**
+ *	Called when the user clears the field
+ */
+- (BOOL)textFieldShouldClear:(UITextField *)textField
+{
+	[self clearSuggestions];
+	return YES;
+}
+
+/**
+ *	Hitting the Done key on the keyboard hides the keyboard
+ */
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+	[textField resignFirstResponder];
+	return YES;
 }
 
 
