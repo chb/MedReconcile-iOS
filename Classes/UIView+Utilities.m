@@ -1,14 +1,14 @@
 //
-//  UIView+FirstResponder.m
+//  UIView+Utilities.m
 //  MedReconcile
 //
 //  Created by Pascal Pfiffner on 11/16/11.
 //  Copyright (c) 2011 Children's Hospital Boston. All rights reserved.
 //
 
-#import "UIView+FirstResponder.h"
+#import "UIView+Utilities.h"
 
-@implementation UIView (FirstResponder)
+@implementation UIView (Utilities)
 
 - (UIView *)findFirstResponder
 {
@@ -25,6 +25,16 @@
 	}
 	
 	return nil;
+}
+
+
+- (void)centerInSuperview
+{
+	CGSize size = [[self superview] bounds].size;
+	CGRect myFrame = self.frame;
+	myFrame.origin.x = roundf((size.width - myFrame.size.width) / 2);
+	myFrame.origin.y = roundf((size.height - myFrame.size.height) / 2);
+	self.frame = myFrame;
 }
 
 

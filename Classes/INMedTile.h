@@ -28,5 +28,8 @@
 - (void)undimAnimated:(BOOL)animated;
 - (void)indicateAction:(BOOL)flag;
 
+- (void)indicateImageAction:(BOOL)flag;
+- (void)showImage:(UIImage *)anImage;
+
 
 @end

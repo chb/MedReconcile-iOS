@@ -1,5 +1,5 @@
 //
-//  UIView+FirstResponder.h
+//  UIView+Utilities.h
 //  MedReconcile
 //
 //  Created by Pascal Pfiffner on 11/16/11.
@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-@interface UIView (FirstResponder)
+@interface UIView (Utilities)
 
 - (UIView *)findFirstResponder;
+- (void)centerInSuperview;
 
 @end

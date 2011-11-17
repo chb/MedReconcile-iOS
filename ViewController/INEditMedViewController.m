@@ -8,7 +8,7 @@
 
 #import "INEditMedViewController.h"
 #import "IndivoMedication.h"
-#import "UIView+FirstResponder.h"
+#import "UIView+Utilities.h"
 
 
 @interface INEditMedViewController ()

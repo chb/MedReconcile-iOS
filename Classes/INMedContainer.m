@@ -8,9 +8,12 @@
 
 #import "INMedContainer.h"
 #import "INMedTile.h"
+#import <QuartzCore/QuartzCore.h>
 
 
 @interface INMedContainer ()
+
+@property (nonatomic, strong) CAGradientLayer *bottomShadow;
 
 - (void)layoutSubviewsAnimated:(BOOL)animated;
 
@@ -18,6 +21,8 @@
 
 
 @implementation INMedContainer
+
+@synthesize bottomShadow;
 
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -59,11 +64,17 @@
 	
 	// if we have an uneven number, stretch the last one
 	/// @todo this is only working for 2 per row with this cheap implementation
+	CGRect lastFrame = lastTile.frame;
 	if (0 != i % perRow) {
-		CGRect lastFrame = lastTile.frame;
 		lastFrame.size.width = [self bounds].size.width;
 		lastTile.frame = lastFrame;
 	}
+	
+	// bottom shadow
+	CGRect shadowFrame = self.bottomShadow.frame;
+	shadowFrame.origin = CGPointMake(0.f, lastFrame.origin.y + lastFrame.size.height);
+	shadowFrame.size.width = [self bounds].size.width;
+	bottomShadow.frame = shadowFrame;
 }
 
 
@@ -121,6 +132,33 @@
 - (void)rearrangeByPropertyName:(NSString *)aProperty
 {
 	
+}
+
+
+
+#pragma mark - KVC
+/**
+ *	Returns the bottom shadow layer
+ */
+- (CAGradientLayer *)bottomShadow
+{
+	if (!bottomShadow) {
+		self.bottomShadow = [CAGradientLayer new];
+		CGRect shadowFrame = CGRectMake(0.f, 0.f, [self bounds].size.width, 30.f);
+		bottomShadow.frame = shadowFrame;
+		
+		// create colors
+		NSMutableArray *colors = [NSMutableArray arrayWithCapacity:6];
+		CGFloat alphas[] = { 0.45f, 0.3125f, 0.2f, 0.1125f, 0.05f, 0.0125f, 0.f };		// y = 0.45 x^2
+		for (NSUInteger i = 0; i < 7; i++) {
+			CGColorRef color = CGColorRetain([[UIColor colorWithWhite:0.f alpha:alphas[i]] CGColor]);
+			[colors addObject:(__bridge_transfer id)color];
+		}
+		
+		bottomShadow.colors = colors;
+		[self.layer addSublayer:bottomShadow];
+	}
+	return bottomShadow;
 }
 
 

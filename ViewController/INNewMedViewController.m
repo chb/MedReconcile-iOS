@@ -474,7 +474,7 @@
 			if (!errorString) {
 				NSMutableArray *newSections = [NSMutableArray array];
 				NSMutableArray *stripFromNames = [NSMutableArray array];
-				NSMutableArray *scdc = [NSMutableArray array];
+				NSMutableDictionary *scdc = [NSMutableDictionary dictionary];
 				NSMutableArray *drugs = [NSMutableArray array];
 				NSMutableDictionary *routes = [NSMutableDictionary dictionary];
 				
@@ -515,7 +515,9 @@
 						
 						// ** got the SCDC, clinical drug component (e.g. "Metformin hydrochloride 500 MG")
 						else if ([@"SCDC" isEqualToString:tty]) {
-							[scdc addObjectIfNotNil:name];
+							if (name && rx) {
+								[scdc setObject:rx forKey:name];
+							}
 						}
 						
 						// ** got a drug (BN or SBD for now)
@@ -542,9 +544,17 @@
 						NSString *name = [drug objectForKey:@"name"];
 						[drug setObject:name forKey:@"fullName"];
 						
-						// add scdc as strength
-						for (NSString *strength in scdc) {
+						// use SCDC as non-branded name and for strength
+						for (NSString *strength in [scdc allKeys]) {
 							if (NSNotFound != [name rangeOfString:strength].location) {
+								if ([drug objectForKey:@"nonbranded"]) {
+									DLog(@"xx>  Found another scdc \"%@\", but already have one for drug \"%@\", skipping", strength, name);
+								}
+								else {
+									NSDictionary *nonbranded = [NSDictionary dictionaryWithObjectsAndKeys:strength, @"name", [scdc objectForKey:strength], @"rxcui", nil];
+									[drug setObject:nonbranded forKey:@"nonbranded"];
+								}
+								
 								NSMutableString *myStrength = [drug objectForKey:@"strength"];
 								if (!myStrength) {
 									myStrength = [NSMutableString string];
@@ -651,21 +661,27 @@
 		DLog(@"Did not get a medication document!");
 	}
 	
-	// name and brand name
-	NSString *rxcui = [drugDict objectForKey:@"rxcui"];
-	
+	// name and branded name
+	NSDictionary *nonbranded = [drugDict objectForKey:@"nonbranded"];
 	med.name = [INCodedValue newWithNodeName:@"name"];
+	if ([nonbranded objectForKey:@"rxcui"]) {
+		med.name.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
+		med.name.value = [nonbranded objectForKey:@"rxcui"];
+	}
+	else {
+		DLog(@"NO RX IDENTIFIER FOR NONBRANDED");
+	}
+	med.name.text = [nonbranded objectForKey:@"name"];
+	
+	NSString *rxcui = [drugDict objectForKey:@"rxcui"];
 	med.brandName = [INCodedValue newWithNodeName:@"brandName"];
 	if (rxcui) {
-		med.name.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
 		med.brandName.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
-		med.name.value = rxcui;
 		med.brandName.value = rxcui;
 	}
 	else {
-		DLog(@"NO RX IDENTIFIER");
+		DLog(@"NO RX IDENTIFIER FOR BRANDED");
 	}
-	med.name.text = [drugDict objectForKey:@"fullName"];
 	med.brandName.text = [drugDict objectForKey:@"fullName"];
 	
 	// dose

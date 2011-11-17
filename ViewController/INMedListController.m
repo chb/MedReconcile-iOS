@@ -144,6 +144,21 @@
 				INMedTile *tile = [INMedTile tileWithMedication:med];
 				[tile addTarget:self action:@selector(showActionsFor:) forControlEvents:UIControlEventTouchUpInside];
 				[tiles addObjectIfNotNil:tile];
+				
+				// load pill image
+				if (med.pillImage) {
+					[tile showImage:med.pillImage];
+				}
+				else {
+					[tile indicateImageAction:YES];
+					[med loadPillImageBypassingCache:NO callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+						if (errorMessage) {
+							DLog(@"%@", errorMessage);
+						}
+						[tile showImage:med.pillImage];
+						[tile indicateImageAction:NO];
+					}];
+				}
 			}
 			
 			[container showTiles:tiles];

@@ -20,10 +20,14 @@
 		EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */; };
 		EE6461E5145F1AAE0007C6B9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4C8145B91C30077E832 /* main.m */; };
 		EE72154414748CA4008835C5 /* tile.png in Resources */ = {isa = PBXBuildFile; fileRef = EE72154314748CA4008835C5 /* tile.png */; };
-		EE72154714749299008835C5 /* UIView+FirstResponder.m in Sources */ = {isa = PBXBuildFile; fileRef = EE72154614749299008835C5 /* UIView+FirstResponder.m */; };
+		EE72154714749299008835C5 /* UIView+Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = EE72154614749299008835C5 /* UIView+Utilities.m */; };
 		EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9F067714688252000412C4 /* NSArray+NilProtection.m */; };
 		EEA4507F146D764500DC9EB1 /* INMedContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA4507E146D764500DC9EB1 /* INMedContainer.m */; };
 		EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA45083146D768500DC9EB1 /* INMedTile.m */; };
+		EECEC44814758415009D85FC /* statusGreen.png in Resources */ = {isa = PBXBuildFile; fileRef = EECEC44714758415009D85FC /* statusGreen.png */; };
+		EECEC44B1475854B009D85FC /* white_carbon.png in Resources */ = {isa = PBXBuildFile; fileRef = EECEC44A1475854B009D85FC /* white_carbon.png */; };
+		EECEC44D1475891D009D85FC /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EECEC44C1475891D009D85FC /* QuartzCore.framework */; };
+		EECEC44F1475A0D8009D85FC /* statusGreen@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = EECEC44E1475A0D8009D85FC /* statusGreen@2x.png */; };
 		EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB2145CE695001C6C2C /* Security.framework */; };
 		EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */; };
 		EEE62F92146ACB75000DA370 /* libIndivoServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE62F91146ACB75000DA370 /* libIndivoServer.a */; };
@@ -52,14 +56,18 @@
 		EE6461D3145F17FC0007C6B9 /* INNewMedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INNewMedViewController.h; sourceTree = "<group>"; };
 		EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INNewMedViewController.m; sourceTree = "<group>"; };
 		EE72154314748CA4008835C5 /* tile.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tile.png; sourceTree = "<group>"; };
-		EE72154514749298008835C5 /* UIView+FirstResponder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIView+FirstResponder.h"; path = "Classes/UIView+FirstResponder.h"; sourceTree = SOURCE_ROOT; };
-		EE72154614749299008835C5 /* UIView+FirstResponder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIView+FirstResponder.m"; path = "Classes/UIView+FirstResponder.m"; sourceTree = SOURCE_ROOT; };
+		EE72154514749298008835C5 /* UIView+Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIView+Utilities.h"; path = "Classes/UIView+Utilities.h"; sourceTree = SOURCE_ROOT; };
+		EE72154614749299008835C5 /* UIView+Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIView+Utilities.m"; path = "Classes/UIView+Utilities.m"; sourceTree = SOURCE_ROOT; };
 		EE9F067614688252000412C4 /* NSArray+NilProtection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+NilProtection.h"; path = "Classes/NSArray+NilProtection.h"; sourceTree = SOURCE_ROOT; };
 		EE9F067714688252000412C4 /* NSArray+NilProtection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSArray+NilProtection.m"; path = "Classes/NSArray+NilProtection.m"; sourceTree = SOURCE_ROOT; };
 		EEA4507D146D764500DC9EB1 /* INMedContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INMedContainer.h; path = Classes/INMedContainer.h; sourceTree = "<group>"; };
 		EEA4507E146D764500DC9EB1 /* INMedContainer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INMedContainer.m; path = Classes/INMedContainer.m; sourceTree = "<group>"; };
 		EEA45082146D768500DC9EB1 /* INMedTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INMedTile.h; path = Classes/INMedTile.h; sourceTree = "<group>"; };
 		EEA45083146D768500DC9EB1 /* INMedTile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INMedTile.m; path = Classes/INMedTile.m; sourceTree = "<group>"; };
+		EECEC44714758415009D85FC /* statusGreen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = statusGreen.png; sourceTree = "<group>"; };
+		EECEC44A1475854B009D85FC /* white_carbon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = white_carbon.png; sourceTree = "<group>"; };
+		EECEC44C1475891D009D85FC /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		EECEC44E1475A0D8009D85FC /* statusGreen@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "statusGreen@2x.png"; sourceTree = "<group>"; };
 		EEDB8DAD145CE260001C6C2C /* libIndivoServer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivoServer.a; path = "../IndivoFramework/IndivoFramework/build/Release-iphoneos/libIndivoServer.a"; sourceTree = "<group>"; };
 		EEDB8DB2145CE695001C6C2C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
@@ -73,6 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EECEC44D1475891D009D85FC /* QuartzCore.framework in Frameworks */,
 				EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */,
 				EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */,
 				EEE62F92146ACB75000DA370 /* libIndivoServer.a in Frameworks */,
@@ -88,6 +97,7 @@
 		EE30A4AD145B91C30077E832 = {
 			isa = PBXGroup;
 			children = (
+				EECEC44C1475891D009D85FC /* QuartzCore.framework */,
 				EE30A4C2145B91C30077E832 /* MedReconcile */,
 				EE30A4BB145B91C30077E832 /* Frameworks */,
 				EE30A4B9145B91C30077E832 /* Products */,
@@ -144,6 +154,9 @@
 		EE472612147308F100EAFDA3 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				EECEC44E1475A0D8009D85FC /* statusGreen@2x.png */,
+				EECEC44A1475854B009D85FC /* white_carbon.png */,
+				EECEC44714758415009D85FC /* statusGreen.png */,
 				EE72154314748CA4008835C5 /* tile.png */,
 				EE472610147308EA00EAFDA3 /* pillDefault.png */,
 			);
@@ -162,8 +175,8 @@
 				EE4726161473102B00EAFDA3 /* INEditMedViewController.xib */,
 				EE9F067614688252000412C4 /* NSArray+NilProtection.h */,
 				EE9F067714688252000412C4 /* NSArray+NilProtection.m */,
-				EE72154514749298008835C5 /* UIView+FirstResponder.h */,
-				EE72154614749299008835C5 /* UIView+FirstResponder.m */,
+				EE72154514749298008835C5 /* UIView+Utilities.h */,
+				EE72154614749299008835C5 /* UIView+Utilities.m */,
 			);
 			name = "View Controller";
 			path = ViewController;
@@ -246,6 +259,9 @@
 				EE472611147308EA00EAFDA3 /* pillDefault.png in Resources */,
 				EE4726171473102B00EAFDA3 /* INEditMedViewController.xib in Resources */,
 				EE72154414748CA4008835C5 /* tile.png in Resources */,
+				EECEC44814758415009D85FC /* statusGreen.png in Resources */,
+				EECEC44B1475854B009D85FC /* white_carbon.png in Resources */,
+				EECEC44F1475A0D8009D85FC /* statusGreen@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -266,7 +282,7 @@
 				EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */,
 				EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */,
 				EE47261514730FC400EAFDA3 /* INEditMedViewController.m in Sources */,
-				EE72154714749299008835C5 /* UIView+FirstResponder.m in Sources */,
+				EE72154714749299008835C5 /* UIView+Utilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

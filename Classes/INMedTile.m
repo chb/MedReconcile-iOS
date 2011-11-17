@@ -9,6 +9,7 @@
 #import "INMedTile.h"
 #import <QuartzCore/QuartzCore.h>
 #import "IndivoMedication.h"
+#import "UIView+Utilities.h"
 
 
 @interface INMedTile ()
@@ -20,6 +21,7 @@
 
 @property (nonatomic, strong) UIView *dimView;
 @property (nonatomic, strong) UIActivityIndicatorView *activityView;
+@property (nonatomic, strong) UIActivityIndicatorView *imageActivityView;
 @property (nonatomic, assign) BOOL keepDimmedAfterAction;
 
 @end
@@ -30,17 +32,14 @@
 @synthesize med;
 @synthesize container;
 @synthesize bgView, imageView, statusView, nameLabel;
-@synthesize dimView, activityView, keepDimmedAfterAction;
+@synthesize dimView, activityView, imageActivityView, keepDimmedAfterAction;
 
 
 - (id)initWithFrame:(CGRect)aFrame
 {
 	if ((self = [super initWithFrame:aFrame])) {
 		self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		self.backgroundColor = [UIColor whiteColor];
-		self.layer.shadowColor = [[UIColor colorWithWhite:0.f alpha:0.5f] CGColor];
-		self.layer.shadowOffset = CGSizeMake(0.f, 1.f);
-		self.layer.shadowRadius = 4.f;
+		self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_carbon.png"]];
 		
 		//UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(0.f, 0.f, 1.f, 1.f)];		// iOS 5+ only
 		UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] stretchableImageWithLeftCapWidth:1 topCapHeight:1];
@@ -70,12 +69,19 @@
 	bgView.frame = bnds;
 	dimView.frame = bnds;
 	
-	// image
 	CGFloat horiPad = 15.f;
 	CGFloat vertPad = roundf(size.height / 10);
+	
+	// image
 	CGFloat imgWidth = roundf(size.height / 2);
 	CGRect imgFrame = CGRectMake(horiPad, vertPad, imgWidth, imgWidth);
 	self.imageView.frame = imgFrame;
+	
+	// status
+	CGRect statFrame = self.statusView.frame;
+	statFrame.origin.x = size.width - horiPad - statFrame.size.width;
+	statFrame.origin.y = imgFrame.origin.y + roundf((imgFrame.size.height - statFrame.size.height) / 2);
+	self.statusView.frame = statFrame;
 	
 	// name label
 	CGRect lblFrame = CGRectMake(horiPad, 0.f, size.width - 2* horiPad, 21.f);
@@ -140,11 +146,7 @@
 	// show activity indicator
 	if (flag) {
 		[self.dimView addSubview:self.activityView];
-		CGSize dimSize = [dimView bounds].size;
-		CGRect actFrame = activityView.frame;
-		actFrame.origin.x = roundf((dimSize.width - actFrame.size.width) / 2);
-		actFrame.origin.y = roundf((dimSize.height - actFrame.size.height) / 2);
-		activityView.frame = actFrame;
+		[activityView centerInSuperview];
 		[activityView startAnimating];
 		
 		[self dimAnimated:YES];
@@ -175,23 +177,70 @@
 
 
 
+#pragma mark - Image Handling
+/**
+ *	Starts or stops the activity indicator on the image view
+ */
+- (void)indicateImageAction:(BOOL)flag
+{
+	if (flag) {
+		[imageView addSubview:self.imageActivityView];
+		[imageActivityView centerInSuperview];
+		[imageActivityView startAnimating];
+	}
+	else {
+		[imageActivityView stopAnimating];
+		[imageActivityView removeFromSuperview];
+		self.imageActivityView = nil;
+	}
+}
+
+/**
+ *	Displays the given image instead of the default image
+ */
+- (void)showImage:(UIImage *)anImage
+{
+	imageView.image = anImage ? anImage : [UIImage imageNamed:@"pillDefault.png"];
+}
+
+
+
 #pragma mark - KVC
 - (void)setMed:(IndivoMedication *)newMed
 {
 	if (newMed != med) {
 		med = newMed;
 		
-		self.nameLabel.text = med.name.text;
+		self.nameLabel.text = med.brandName ? med.brandName.text : med.name.text;
 	}
 }
 
 - (UIImageView *)imageView
 {
 	if (!imageView) {
-		self.imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pillDefault"]];
+		self.imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pillDefault.png"]];
+		imageView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+		imageView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+		imageView.layer.borderWidth = 1.f;
+		imageView.layer.cornerRadius = 5.f;
+		imageView.contentMode = UIViewContentModeScaleAspectFit;
+		imageView.backgroundColor = [UIColor blackColor];
 		[self addSubview:imageView];
 	}
 	return imageView;
+}
+
+- (UIImageView *)statusView
+{
+	if (!statusView) {
+		self.statusView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"statusGreen.png"]];
+		statusView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
+		//statusView.layer.shadowOpacity = 0.3f;
+		//statusView.layer.shadowOffset = CGSizeMake(0.f, 2.f);
+		//statusView.layer.shadowRadius = 3.f;
+		[self addSubview:statusView];
+	}
+	return statusView;
 }
 
 - (UILabel *)nameLabel
@@ -229,6 +278,15 @@
 		activityView.hidesWhenStopped = YES;
 	}
 	return activityView;
+}
+
+- (UIActivityIndicatorView *)imageActivityView
+{
+	if (!imageActivityView) {
+		self.imageActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+		imageActivityView.hidesWhenStopped = YES;
+	}
+	return imageActivityView;
 }
 
 
