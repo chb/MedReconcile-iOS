@@ -13,6 +13,7 @@
 
 @interface INMedTile ()
 
+@property (nonatomic, strong) UIImageView *bgView;
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UIImageView *statusView;
 @property (nonatomic, strong) UILabel *nameLabel;
@@ -24,16 +25,24 @@
 
 @synthesize med;
 @synthesize container;
-@synthesize imageView, statusView, nameLabel;
+@synthesize bgView, imageView, statusView, nameLabel;
 
 
 - (id)initWithFrame:(CGRect)aFrame
 {
 	if ((self = [super initWithFrame:aFrame])) {
 		self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		self.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
-		self.layer.borderColor = [[UIColor blackColor] CGColor];
-		self.layer.borderWidth = 1.f;
+		self.backgroundColor = [UIColor whiteColor];
+		self.layer.shadowColor = [[UIColor colorWithWhite:0.f alpha:0.5f] CGColor];
+		self.layer.shadowOffset = CGSizeMake(0.f, 1.f);
+		self.layer.shadowRadius = 4.f;
+		
+		//UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(0.f, 0.f, 1.f, 1.f)];		// iOS 5+ only
+		UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] stretchableImageWithLeftCapWidth:1 topCapHeight:1];
+		self.bgView = [[UIImageView alloc] initWithImage:bgImage];
+		self.bgView.frame = self.bounds;
+		self.bgView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		[self addSubview:bgView];
 	}
 	return self;
 }
@@ -50,7 +59,9 @@
 #pragma mark - Layout
 - (void)layoutSubviews
 {
-	CGSize size = [self bounds].size;
+	CGRect bnds = [self bounds];
+	bgView.frame = bnds;
+	CGSize size = bnds.size;
 	
 	// image
 	CGFloat sixth = roundf(size.height / 6);

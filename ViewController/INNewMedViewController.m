@@ -212,7 +212,7 @@
 				[self useDrug:tappedObject];
 			}
 			
-			// tapped the accept button, ADD MEDICATION AND DISMISS *********************
+			// tapped the accept button, ADD MEDICATION *********************
 			else if ([@"button" isEqualToString:section.type]) {
 				IndivoMedication *med = [section objectForRow:indexPath.row];
 				[med push:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
@@ -228,7 +228,8 @@
 						[alert show];
 					}
 					else {
-						[listController performSelector:@selector(refresh:) withObject:nil afterDelay:0.0];
+						
+						// successfully added medication
 						[listController dismissModal:nil];
 					}
 				}];
@@ -322,7 +323,13 @@
 		
 		// failed
 		if (errorString) {
-			DLog(@"Error Loading: %@", errorString);
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to load suggestions"
+															message:errorString
+														   delegate:nil
+												  cancelButtonTitle:@"Too Bad"
+												  otherButtonTitles:nil];
+			[alert show];
+			[section removeAnimated:NO];
 		}
 		
 		// got some suggestions!
@@ -336,7 +343,12 @@
 			NSError *error = nil;
 			INXMLNode *body = [INXMLParser parseXML:loader.responseString error:&error];
 			if (!body) {
-				DLog(@"Error Parsing: %@", [error localizedDescription]);
+				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to parse suggestions"
+																message:[error localizedDescription]
+															   delegate:nil
+													  cancelButtonTitle:@"Too Bad"
+													  otherButtonTitles:nil];
+				[alert show];
 			}
 			
 			// parsed successfully, drill down
@@ -391,10 +403,10 @@
 					}
 				}
 			}
+			[section updateAnimated:YES];
 		}
 		
 		textField.leftView = nil;
-		[section updateAnimated:YES];
 	}];
 }
 

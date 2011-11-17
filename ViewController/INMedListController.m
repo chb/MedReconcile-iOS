@@ -24,6 +24,7 @@
 
 - (void)showNewMedView:(id)sender;
 - (void)setRecordButtonTitle:(NSString *)aTitle;
+- (void)documentsDidChange:(NSNotification *)aNotification;
 
 @end
 
@@ -36,10 +37,15 @@
 @synthesize container;
 
 
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self name:INRecordDocumentsDidChangeNotification object:nil];
+}
+
 - (id)init
 {
 	if ((self = [super initWithNibName:nil bundle:nil])) {
-		
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(documentsDidChange:) name:INRecordDocumentsDidChangeNotification object:nil];
 	}
 	return self;
 }
@@ -116,10 +122,11 @@
 	}
 	
 	// fetch this record's medications
-	[record fetchReportsOfClass:[IndivoMedication class] callback:^(BOOL userDidCancel, NSString *errorMessage) {
+	[record fetchReportsOfClass:[IndivoMedication class] callback:^(BOOL success, NSDictionary *userInfo) {
 		
 		// error fetching medications
-		if (errorMessage) {
+		if (!success) {
+			NSString *errorMessage = [[userInfo objectForKey:INErrorKey] localizedDescription];
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to get medications"
 															message:errorMessage
 														   delegate:nil
@@ -129,9 +136,8 @@
 		}
 		
 		// successfully fetched medications, display
-		else if (!userDidCancel) {
-			NSArray *meds = [record documentsOfType:@"Medication"];
-			DLog(@"Medications: %@", meds);
+		else {
+			NSArray *meds = [userInfo objectForKey:INResponseArrayKey];
 			NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
 			for (IndivoMedication *med in meds) {
 				INMedTile *tile = [INMedTile tileWithMedication:med];
@@ -173,6 +179,7 @@
 		newMed.listController = self;
 		
 		UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:newMed];
+		navi.navigationBar.tintColor = [APP_DELEGATE naviTintColor];
 		if ([self respondsToSelector:@selector(presentViewController:animated:completion:)]) {		// iOS 5+ only
 			[self presentViewController:navi animated:YES completion:NULL];
 		}
@@ -240,6 +247,20 @@
 	[self setRecordButtonTitle:nil];
 }
 
+/**
+ *	We subscribe to notifications when the documents change with this method
+ */
+- (void)documentsDidChange:(NSNotification *)aNotification
+{
+	IndivoRecord *aRecord = [[aNotification userInfo] objectForKey:INRecordUserInfoKey];
+	if ([aRecord isEqual:self.record]) {		// will always be true anyway...
+		[self refresh:nil];
+	}
+}
+
+
+
+#pragma mark - UI Actions
 /**
  *	Reverts the navigation bar "connect" button
  */

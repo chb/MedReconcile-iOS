@@ -14,11 +14,13 @@
 		EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */; };
 		EE472611147308EA00EAFDA3 /* pillDefault.png in Resources */ = {isa = PBXBuildFile; fileRef = EE472610147308EA00EAFDA3 /* pillDefault.png */; };
 		EE47261514730FC400EAFDA3 /* INEditMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE47261414730FC400EAFDA3 /* INEditMedViewController.m */; };
-		EE4726171473102B00EAFDA3 /* MedEdit.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE4726161473102B00EAFDA3 /* MedEdit.xib */; };
+		EE4726171473102B00EAFDA3 /* INEditMedViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE4726161473102B00EAFDA3 /* INEditMedViewController.xib */; };
 		EE6461E2145F1AA20007C6B9 /* INAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CC145B91C30077E832 /* INAppDelegate.m */; };
 		EE6461E3145F1AA60007C6B9 /* INMedListController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CF145B91C30077E832 /* INMedListController.m */; };
 		EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */; };
 		EE6461E5145F1AAE0007C6B9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4C8145B91C30077E832 /* main.m */; };
+		EE72154414748CA4008835C5 /* tile.png in Resources */ = {isa = PBXBuildFile; fileRef = EE72154314748CA4008835C5 /* tile.png */; };
+		EE72154714749299008835C5 /* UIView+FirstResponder.m in Sources */ = {isa = PBXBuildFile; fileRef = EE72154614749299008835C5 /* UIView+FirstResponder.m */; };
 		EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9F067714688252000412C4 /* NSArray+NilProtection.m */; };
 		EEA4507F146D764500DC9EB1 /* INMedContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA4507E146D764500DC9EB1 /* INMedContainer.m */; };
 		EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA45083146D768500DC9EB1 /* INMedTile.m */; };
@@ -46,9 +48,12 @@
 		EE472610147308EA00EAFDA3 /* pillDefault.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pillDefault.png; sourceTree = "<group>"; };
 		EE47261314730FC400EAFDA3 /* INEditMedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INEditMedViewController.h; sourceTree = "<group>"; };
 		EE47261414730FC400EAFDA3 /* INEditMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INEditMedViewController.m; sourceTree = "<group>"; };
-		EE4726161473102B00EAFDA3 /* MedEdit.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = MedEdit.xib; path = ViewController/MedEdit.xib; sourceTree = "<group>"; };
+		EE4726161473102B00EAFDA3 /* INEditMedViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = INEditMedViewController.xib; sourceTree = "<group>"; };
 		EE6461D3145F17FC0007C6B9 /* INNewMedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INNewMedViewController.h; sourceTree = "<group>"; };
 		EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INNewMedViewController.m; sourceTree = "<group>"; };
+		EE72154314748CA4008835C5 /* tile.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tile.png; sourceTree = "<group>"; };
+		EE72154514749298008835C5 /* UIView+FirstResponder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIView+FirstResponder.h"; path = "Classes/UIView+FirstResponder.h"; sourceTree = SOURCE_ROOT; };
+		EE72154614749299008835C5 /* UIView+FirstResponder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIView+FirstResponder.m"; path = "Classes/UIView+FirstResponder.m"; sourceTree = SOURCE_ROOT; };
 		EE9F067614688252000412C4 /* NSArray+NilProtection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+NilProtection.h"; path = "Classes/NSArray+NilProtection.h"; sourceTree = SOURCE_ROOT; };
 		EE9F067714688252000412C4 /* NSArray+NilProtection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSArray+NilProtection.m"; path = "Classes/NSArray+NilProtection.m"; sourceTree = SOURCE_ROOT; };
 		EEA4507D146D764500DC9EB1 /* INMedContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INMedContainer.h; path = Classes/INMedContainer.h; sourceTree = "<group>"; };
@@ -132,7 +137,6 @@
 				EE30A4C5145B91C30077E832 /* InfoPlist.strings */,
 				EE30A4C8145B91C30077E832 /* main.m */,
 				EE30A4CA145B91C30077E832 /* MedReconcile-Prefix.pch */,
-				EE4726161473102B00EAFDA3 /* MedEdit.xib */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -140,6 +144,7 @@
 		EE472612147308F100EAFDA3 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				EE72154314748CA4008835C5 /* tile.png */,
 				EE472610147308EA00EAFDA3 /* pillDefault.png */,
 			);
 			name = Images;
@@ -154,8 +159,11 @@
 				EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */,
 				EE47261314730FC400EAFDA3 /* INEditMedViewController.h */,
 				EE47261414730FC400EAFDA3 /* INEditMedViewController.m */,
+				EE4726161473102B00EAFDA3 /* INEditMedViewController.xib */,
 				EE9F067614688252000412C4 /* NSArray+NilProtection.h */,
 				EE9F067714688252000412C4 /* NSArray+NilProtection.m */,
+				EE72154514749298008835C5 /* UIView+FirstResponder.h */,
+				EE72154614749299008835C5 /* UIView+FirstResponder.m */,
 			);
 			name = "View Controller";
 			path = ViewController;
@@ -236,7 +244,8 @@
 			files = (
 				EE30A4C7145B91C30077E832 /* InfoPlist.strings in Resources */,
 				EE472611147308EA00EAFDA3 /* pillDefault.png in Resources */,
-				EE4726171473102B00EAFDA3 /* MedEdit.xib in Resources */,
+				EE4726171473102B00EAFDA3 /* INEditMedViewController.xib in Resources */,
+				EE72154414748CA4008835C5 /* tile.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +266,7 @@
 				EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */,
 				EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */,
 				EE47261514730FC400EAFDA3 /* INEditMedViewController.m in Sources */,
+				EE72154714749299008835C5 /* UIView+FirstResponder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

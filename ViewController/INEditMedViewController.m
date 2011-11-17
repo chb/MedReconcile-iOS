@@ -8,6 +8,7 @@
 
 #import "INEditMedViewController.h"
 #import "IndivoMedication.h"
+#import "UIView+FirstResponder.h"
 
 
 @interface INEditMedViewController ()
@@ -33,7 +34,7 @@
 
 - (id)init
 {
-	return [self initWithNibName:@"MedEdit" bundle:nil];
+	return [self initWithNibName:@"INEditMedViewController" bundle:nil];
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -126,8 +127,10 @@
 	}
 }
 
-- (void)viewWillAppear:(BOOL)animated
+- (void)viewDidAppear:(BOOL)animated
 {
+	[super viewDidAppear:animated];
+	
 	CGFloat lowest = 0.f;
 	for (UIView *sub in [scroller subviews]) {
 		CGRect subFrame = sub.frame;
@@ -141,6 +144,12 @@
 
 
 #pragma mark - UITextFieldDelegate
+- (void)textFieldDidBeginEditing:(UITextField *)textField
+{
+	CGRect fieldFrame = [scroller convertRect:textField.frame fromView:[textField superview]];
+	[scroller scrollRectToVisible:fieldFrame animated:YES];
+}
+
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
 	[textField resignFirstResponder];
@@ -156,9 +165,22 @@
 	boardRect = [self.view convertRect:boardRect fromView:self.view.window];
 	CGRect overlay = CGRectIntersection(boardRect, self.view.bounds);
 	
-	CGRect myFrame = self.view.frame;
-	myFrame.size.height = overlay.origin.y;
-	self.view.frame = myFrame;
+	NSTimeInterval duration = [[[aNotification userInfo] objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+	[UIView animateWithDuration:duration
+					 animations:^{
+						 CGRect myFrame = self.view.frame;
+						 myFrame.size.height = overlay.origin.y;
+						 self.view.frame = myFrame;
+					 }
+					 completion:^(BOOL finished) {
+						 
+						 // make sure first responder is visible
+						 UIView *first = [scroller findFirstResponder];
+						 if (first) {
+							 CGRect firstFrame = [scroller convertRect:first.frame fromView:[first superview]];
+							 [scroller scrollRectToVisible:firstFrame animated:YES];
+						 }
+					 }];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification

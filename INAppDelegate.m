@@ -21,9 +21,9 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	
 	// create Indivo Instance
-	NSURL *serverURL = [NSURL URLWithString:@"http://10.17.16.94:8000"];
-	NSURL *uiURL = [NSURL URLWithString:@"http://10.17.16.94:8001"];
-	self.indivo = [IndivoServer serverWithURL:serverURL uiURL:uiURL];
+//	NSURL *baseURL = [NSURL URLWithString:@"http://10.17.16.94"];
+	NSURL *baseURL = [NSURL URLWithString:@"http://10.0.1.2"];
+	self.indivo = [IndivoServer serverWithBaseURL:baseURL];
 	indivo.consumerKey = @"medreconcile@apps.indivo.org";
 	indivo.consumerSecret = @"medreconcile";
 	indivo.delegate = self;
@@ -37,6 +37,7 @@
 	
 	// wrap in a navi controller
 	UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:medListController];
+	nav.navigationBar.tintColor = [self naviTintColor];
 	self.window.rootViewController = nav;
     [self.window makeKeyAndVisible];
 	
@@ -92,6 +93,17 @@
 
 - (void)userDidLogout:(IndivoServer *)fromServer
 {
+}
+
+
+
+#pragma mark - Utilities
+/**
+ *	Returns the tint color for navigation bars used throughout our app
+ */
+- (UIColor *)naviTintColor
+{
+	return [UIColor colorWithRed:0.5f green:0.2f blue:0.f alpha:1.f];
 }
 
 

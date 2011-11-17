@@ -20,4 +20,6 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) INMedListController *medListController;
 
+- (UIColor *)naviTintColor;
+
 @end

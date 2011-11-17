@@ -23,7 +23,7 @@
 - (id)initWithFrame:(CGRect)aFrame
 {
 	if ((self = [super initWithFrame:aFrame])) {
-		self.backgroundColor = [UIColor viewFlipsideBackgroundColor];
+		self.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
 	}
 	return self;
 }
