@@ -9,6 +9,7 @@
 #import "INMedTile.h"
 #import <QuartzCore/QuartzCore.h>
 #import "IndivoMedication.h"
+#import "INDateRangeFormatter.h"
 #import "UIView+Utilities.h"
 
 
@@ -17,6 +18,7 @@
 @property (nonatomic, strong) UIImageView *bgView;
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UIImageView *statusView;
+@property (nonatomic, strong) UILabel *durationLabel;
 @property (nonatomic, strong) UILabel *nameLabel;
 
 @property (nonatomic, strong) UIView *dimView;
@@ -31,7 +33,7 @@
 
 @synthesize med;
 @synthesize container;
-@synthesize bgView, imageView, statusView, nameLabel;
+@synthesize bgView, imageView, statusView, durationLabel, nameLabel;
 @synthesize dimView, activityView, imageActivityView, keepDimmedAfterAction;
 
 
@@ -77,11 +79,19 @@
 	CGRect imgFrame = CGRectMake(horiPad, vertPad, imgWidth, imgWidth);
 	self.imageView.frame = imgFrame;
 	
-	// status
+	// duration
+	CGRect durFrame = durationLabel.frame;
+	durFrame.origin.x = imgFrame.origin.x + imgFrame.size.width + horiPad;
+	durFrame.origin.y = imgFrame.origin.y;
+	durFrame.size.width = size.width - durFrame.origin.x - horiPad;
+	durationLabel.frame = durFrame;
+	
+	
+	/*
 	CGRect statFrame = self.statusView.frame;
 	statFrame.origin.x = size.width - horiPad - statFrame.size.width;
 	statFrame.origin.y = imgFrame.origin.y + roundf((imgFrame.size.height - statFrame.size.height) / 2);
-	self.statusView.frame = statFrame;
+	self.statusView.frame = statFrame;	*/
 	
 	// name label
 	CGRect lblFrame = CGRectMake(horiPad, 0.f, size.width - 2* horiPad, 21.f);

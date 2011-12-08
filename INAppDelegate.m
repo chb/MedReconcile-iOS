@@ -103,7 +103,7 @@
  */
 - (UIColor *)naviTintColor
 {
-	return [UIColor colorWithRed:0.5f green:0.2f blue:0.f alpha:1.f];
+	return [UIColor colorWithRed:0.5f green:0.15f blue:0.f alpha:1.f];
 }
 
 
