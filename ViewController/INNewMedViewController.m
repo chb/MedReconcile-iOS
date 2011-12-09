@@ -149,7 +149,7 @@
 			cell.detailTextLabel.text = [(INCodedValue *)obj text];
 		}
 		else if ([obj isKindOfClass:[INUnitValue class]]) {
-			cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ %@", [(INUnitValue *)obj value], [(INUnitValue *)obj unit].value];
+			cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ %@", [(INUnitValue *)obj value] ? [(INUnitValue *)obj value] : @"?", [(INUnitValue *)obj unit].value ? [(INUnitValue *)obj unit].value : @""];
 		}
 		else if ([obj isKindOfClass:[IndivoMedication class]]) {
 			cell.detailTextLabel.text = @"...";
@@ -210,6 +210,18 @@
 			// tapped a drug row
 			else if ([@"drug" isEqualToString:section.type]) {
 				[self useDrug:tappedObject];
+			}
+			
+			// tapped an editable row
+			else if ([@"editable" isEqualToString:section.type]) {
+				INObject *obj = [section objectForRow:indexPath.row];
+				
+				if ([obj isKindOfClass:[INDate class]]) {
+				}
+				else if ([obj isKindOfClass:[INCodedValue class]]) {
+				}
+				else if ([obj isKindOfClass:[INUnitValue class]]) {
+				}
 			}
 			
 			// tapped the accept button, ADD MEDICATION *********************
@@ -706,17 +718,19 @@
 	//	% - Percent
 	//	ACTUAT
 	//	 and combinations thereof as fractions (e.g. CELLS/ML)
-	NSString *value = strength;
-	NSMutableArray *units = [NSMutableArray arrayWithCapacity:2];
-	for (NSString *unit in [NSArray arrayWithObjects:@"CELLS", @"MEQ", @"MG", @"ML", @"UNT", @"%", @"ACTUAT", @"/", nil]) {
-		if (NSNotFound != [value rangeOfString:unit].location) {
-			[units addObject:unit];
-			value = [value stringByReplacingOccurrencesOfString:unit withString:@""];
+	if (strength) {
+		NSString *value = strength;
+		NSMutableArray *units = [NSMutableArray arrayWithCapacity:2];
+		for (NSString *unit in [NSArray arrayWithObjects:@"CELLS", @"MEQ", @"MG", @"ML", @"UNT", @"%", @"ACTUAT", @"/", nil]) {
+			if (NSNotFound != [value rangeOfString:unit].location) {
+				[units addObject:unit];
+				value = [value stringByReplacingOccurrencesOfString:unit withString:@""];
+			}
 		}
+		med.strength.value = [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+		med.strength.unit.type = @"http://rxnav.nlm.nih.gov/";			// no real URL for RxNorm units...
+		med.strength.unit.value = [units componentsJoinedByString:@"/"];
 	}
-	med.strength.value = [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-	med.strength.unit.type = @"http://rxnav.nlm.nih.gov/";			// no real URL for RxNorm units...
-	med.strength.unit.value = [units componentsJoinedByString:@"/"];
 	
 	// frequency
 	med.frequency = [INCodedValue newWithNodeName:@"frequency"];

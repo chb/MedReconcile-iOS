@@ -9,16 +9,21 @@
 #import <UIKit/UIKit.h>
 
 @class INMedTile;
+@class INMedDetailTile;
 
 
 /**
  *	Container view to display INMedTile view objects.
- *	If you add non-INMedTile views to this view, the behavior is undefined
+ *	If you add non-INMedTile/INMedDetailTile views to this view, the behavior is undefined
  */
 @interface INMedContainer : UIView
 
+@property (nonatomic, strong) INMedDetailTile *detailTile;				///< Only one detail tile at a time can be shown
+
 - (void)showTiles:(NSArray *)tileArray;
 - (void)addTile:(INMedTile *)aTile;
+- (void)addDetailTile:(INMedDetailTile *)detailTile forTile:(INMedTile *)aTile;
+- (void)removeDetailTile;
 
 - (void)dimAllBut:(INMedTile *)aTile;
 - (void)undimAll;

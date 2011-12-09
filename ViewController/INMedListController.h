@@ -25,7 +25,7 @@
 - (void)refresh:(id)sender;
 - (void)dismissModal:(id)sender;
 
-- (void)showActionsFor:(INMedTile *)medTile;
+- (void)didTapTile:(INMedTile *)medTile;
 - (void)editMedicationFrom:(INMedTile *)medTile;
 
 

@@ -26,6 +26,10 @@
 @property (nonatomic, strong) UIActivityIndicatorView *imageActivityView;
 @property (nonatomic, assign) BOOL keepDimmedAfterAction;
 
+@property (nonatomic, strong) INDateRangeFormatter *drFormatter;
+
+- (void)updateDurationLabel;
+
 @end
 
 
@@ -35,6 +39,7 @@
 @synthesize container;
 @synthesize bgView, imageView, statusView, durationLabel, nameLabel;
 @synthesize dimView, activityView, imageActivityView, keepDimmedAfterAction;
+@synthesize drFormatter;
 
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -49,6 +54,8 @@
 		self.bgView.frame = self.bounds;
 		self.bgView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		[self addSubview:bgView];
+		
+		self.drFormatter = [INDateRangeFormatter new];
 	}
 	return self;
 }
@@ -80,12 +87,13 @@
 	self.imageView.frame = imgFrame;
 	
 	// duration
-	CGRect durFrame = durationLabel.frame;
-	durFrame.origin.x = imgFrame.origin.x + imgFrame.size.width + horiPad;
+	CGRect durFrame = self.durationLabel.frame;
+	durFrame.origin.x = imgFrame.origin.x + imgFrame.size.width + roundf(horiPad / 2);
 	durFrame.origin.y = imgFrame.origin.y;
 	durFrame.size.width = size.width - durFrame.origin.x - horiPad;
 	durationLabel.frame = durFrame;
 	
+	[self updateDurationLabel];
 	
 	/*
 	CGRect statFrame = self.statusView.frame;
@@ -97,6 +105,15 @@
 	CGRect lblFrame = CGRectMake(horiPad, 0.f, size.width - 2* horiPad, 21.f);
 	lblFrame.origin.y = size.height - lblFrame.size.height - vertPad;
 	self.nameLabel.frame = lblFrame;
+}
+
+- (void)updateDurationLabel
+{
+	drFormatter.from = med.dateStarted.date;
+	drFormatter.to = med.dateStopped.date;
+	durationLabel.text = [drFormatter formattedRangeForMaxWidth:[durationLabel frame].size.width withFont:durationLabel.font];
+	
+	durationLabel.textColor = (drFormatter.to == [[NSDate date] earlierDate:drFormatter.to]) ? [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f] : [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
 }
 
 
@@ -267,6 +284,23 @@
 		[self addSubview:nameLabel];
 	}
 	return nameLabel;
+}
+
+- (UILabel *)durationLabel
+{
+	if (!durationLabel) {
+		self.durationLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 10.f, 10.f)];
+		durationLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+		durationLabel.opaque = NO;
+		durationLabel.backgroundColor = [UIColor clearColor];
+		durationLabel.textColor = [UIColor blackColor];
+		durationLabel.textAlignment = UITextAlignmentRight;
+		durationLabel.font = [UIFont systemFontOfSize:15.f];
+		durationLabel.adjustsFontSizeToFitWidth = YES;
+		durationLabel.minimumFontSize = 10.f;
+		[self addSubview:durationLabel];
+	}
+	return durationLabel;
 }
 
 - (UIView *)dimView

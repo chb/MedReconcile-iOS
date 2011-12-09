@@ -8,6 +8,7 @@
 
 #import "INMedContainer.h"
 #import "INMedTile.h"
+#import "INMedDetailTile.h"
 #import <QuartzCore/QuartzCore.h>
 
 
@@ -22,7 +23,7 @@
 
 @implementation INMedContainer
 
-@synthesize bottomShadow;
+@synthesize detailTile, bottomShadow;
 
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -47,27 +48,35 @@
 	CGFloat width = roundf([self bounds].size.width / perRow);			/// @todo compensate for rounded pixels
 	NSUInteger i = 0;
 	INMedTile *lastTile = nil;
+	CGRect lastFrame = CGRectZero;
 	for (INMedTile *tile in [self subviews]) {
-		if ([tile isKindOfClass:[INMedTile class]]) {
-			CGRect tileFrame = tile.frame;
-			if (i > 0 && 0 == i % perRow) {
-				y += height;
-			}
+		CGRect tileFrame = tile.frame;
+		if ([tile isKindOfClass:[INMedTile class]]) {							// a tile
 			tileFrame.origin = CGPointMake((0 == i % perRow) ? 0.f : width, y);
 			tileFrame.size = CGSizeMake(width, height);
 			tile.frame = tileFrame;
 			
 			lastTile = tile;
 			i++;
+			if (i > 0 && 0 == i % perRow) {
+				y += height;
+			}
 		}
+		else if ([tile isKindOfClass:[INMedDetailTile class]]) {				// the detail tile
+			tileFrame.origin.y = y;
+			tile.frame = tileFrame;
+			
+			y += tileFrame.size.height;
+			i = 0;
+		}
+		lastFrame = tileFrame;
 	}
 	
 	// if we have an uneven number, stretch the last one
-	/// @todo this is only working for 2 per row with this cheap implementation
-	CGRect lastFrame = lastTile.frame;
 	if (0 != i % perRow) {
-		lastFrame.size.width = [self bounds].size.width;
-		lastTile.frame = lastFrame;
+		CGRect lastTileFrame = lastTile.frame;
+		lastTileFrame.size.width = [self bounds].size.width;
+		lastTile.frame = lastTileFrame;
 	}
 	
 	// bottom shadow
@@ -77,7 +86,19 @@
 	bottomShadow.frame = shadowFrame;
 }
 
+- (void)didAddSubview:(UIView *)subview
+{
+	/// @todo adjust shadows
+}
 
+- (void)willRemoveSubview:(UIView *)subview
+{
+	/// @todo adjust shadows
+}
+
+
+
+#pragma mark - Adding & Removing Tiles
 /**
  *	Given an array of INMedTile objects, shows these tiles
  */
@@ -102,6 +123,43 @@
 	[self layoutSubviews];
 }
 
+/**
+ *	Adds a detail tile for a given tile
+ */
+- (void)addDetailTile:(INMedDetailTile *)aDetailTile forTile:(INMedTile *)aTile
+{
+	if (aDetailTile == detailTile) {
+		/// @todo move to correct position
+		return;
+	}
+	
+	[self removeDetailTile];
+	
+	DLog(@"1: %@", [self subviews]);
+	NSUInteger i = [[self subviews] indexOfObject:aTile];
+	DLog(@"Index: %d", i);
+	if ((i + 1) < [[self subviews] count]) {
+		[self insertSubview:aDetailTile atIndex:(i + 1)];
+	}
+	else {
+		[self addSubview:aDetailTile];
+	}
+	self.detailTile = aDetailTile;
+	[self setNeedsLayout];
+	
+	DLog(@"2: %@", [self subviews]);
+}
+
+- (void)removeDetailTile
+{
+	if (self == [detailTile superview]) {
+		[detailTile removeFromSuperview];
+	}
+}
+
+
+
+#pragma mark - Dimming
 /**
  *	Dims all but the given tile - all if nil is given
  */

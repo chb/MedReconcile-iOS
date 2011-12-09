@@ -1,0 +1,13 @@
+//
+//  INMedEditViewController.m
+//  MedReconcile
+//
+//  Created by Pascal Pfiffner on 12/8/11.
+//  Copyright (c) 2011 Children's Hospital Boston. All rights reserved.
+//
+
+#import "INMedEditViewController.h"
+
+@implementation INMedEditViewController
+
+@end

@@ -11,6 +11,15 @@
 		EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BE145B91C30077E832 /* Foundation.framework */; };
 		EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4C0145B91C30077E832 /* CoreGraphics.framework */; };
 		EE30A4C7145B91C30077E832 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = EE30A4C5145B91C30077E832 /* InfoPlist.strings */; };
+		EE4434B914915FAC00CC6344 /* INMedEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE4434B814915FAC00CC6344 /* INMedEditViewController.m */; };
+		EE4434BD1491608000CC6344 /* INMedDetailTile.m in Sources */ = {isa = PBXBuildFile; fileRef = EE4434BC1491608000CC6344 /* INMedDetailTile.m */; };
+		EE4434BF149168BA00CC6344 /* INMedDetailTile.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE4434BE149168BA00CC6344 /* INMedDetailTile.xib */; };
+		EE4434C11491726C00CC6344 /* buttonGray.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4434C01491726C00CC6344 /* buttonGray.png */; };
+		EE4434C314917CF500CC6344 /* buttonRed.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4434C214917CF500CC6344 /* buttonRed.png */; };
+		EE4434C514917F7500CC6344 /* buttonBlue.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4434C414917F7500CC6344 /* buttonBlue.png */; };
+		EE4434C7149188A500CC6344 /* buttonPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4434C6149188A500CC6344 /* buttonPressed.png */; };
+		EE4434C9149188AB00CC6344 /* buttonDisabled.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4434C8149188AB00CC6344 /* buttonDisabled.png */; };
+		EE4434CB1491892600CC6344 /* buttonGreen.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4434CA1491892600CC6344 /* buttonGreen.png */; };
 		EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */; };
 		EE472611147308EA00EAFDA3 /* pillDefault.png in Resources */ = {isa = PBXBuildFile; fileRef = EE472610147308EA00EAFDA3 /* pillDefault.png */; };
 		EE47261514730FC400EAFDA3 /* INEditMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE47261414730FC400EAFDA3 /* INEditMedViewController.m */; };
@@ -47,6 +56,17 @@
 		EE30A4CC145B91C30077E832 /* INAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INAppDelegate.m; sourceTree = "<group>"; };
 		EE30A4CE145B91C30077E832 /* INMedListController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = INMedListController.h; sourceTree = "<group>"; };
 		EE30A4CF145B91C30077E832 /* INMedListController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INMedListController.m; sourceTree = "<group>"; };
+		EE4434B714915FAB00CC6344 /* INMedEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INMedEditViewController.h; sourceTree = "<group>"; };
+		EE4434B814915FAC00CC6344 /* INMedEditViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INMedEditViewController.m; sourceTree = "<group>"; };
+		EE4434BB1491608000CC6344 /* INMedDetailTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INMedDetailTile.h; path = Classes/INMedDetailTile.h; sourceTree = "<group>"; };
+		EE4434BC1491608000CC6344 /* INMedDetailTile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INMedDetailTile.m; path = Classes/INMedDetailTile.m; sourceTree = "<group>"; };
+		EE4434BE149168BA00CC6344 /* INMedDetailTile.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = INMedDetailTile.xib; path = Views/INMedDetailTile.xib; sourceTree = "<group>"; };
+		EE4434C01491726C00CC6344 /* buttonGray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonGray.png; sourceTree = "<group>"; };
+		EE4434C214917CF500CC6344 /* buttonRed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonRed.png; sourceTree = "<group>"; };
+		EE4434C414917F7500CC6344 /* buttonBlue.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonBlue.png; sourceTree = "<group>"; };
+		EE4434C6149188A500CC6344 /* buttonPressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonPressed.png; sourceTree = "<group>"; };
+		EE4434C8149188AB00CC6344 /* buttonDisabled.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonDisabled.png; sourceTree = "<group>"; };
+		EE4434CA1491892600CC6344 /* buttonGreen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonGreen.png; sourceTree = "<group>"; };
 		EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INRxNormLoader.h; path = Classes/INRxNormLoader.h; sourceTree = "<group>"; };
 		EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INRxNormLoader.m; path = Classes/INRxNormLoader.m; sourceTree = "<group>"; };
 		EE472610147308EA00EAFDA3 /* pillDefault.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pillDefault.png; sourceTree = "<group>"; };
@@ -159,6 +179,12 @@
 				EECEC44714758415009D85FC /* statusGreen.png */,
 				EE72154314748CA4008835C5 /* tile.png */,
 				EE472610147308EA00EAFDA3 /* pillDefault.png */,
+				EE4434C01491726C00CC6344 /* buttonGray.png */,
+				EE4434C214917CF500CC6344 /* buttonRed.png */,
+				EE4434C414917F7500CC6344 /* buttonBlue.png */,
+				EE4434CA1491892600CC6344 /* buttonGreen.png */,
+				EE4434C6149188A500CC6344 /* buttonPressed.png */,
+				EE4434C8149188AB00CC6344 /* buttonDisabled.png */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -170,6 +196,8 @@
 				EE30A4CF145B91C30077E832 /* INMedListController.m */,
 				EE6461D3145F17FC0007C6B9 /* INNewMedViewController.h */,
 				EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */,
+				EE4434B714915FAB00CC6344 /* INMedEditViewController.h */,
+				EE4434B814915FAC00CC6344 /* INMedEditViewController.m */,
 				EE47261314730FC400EAFDA3 /* INEditMedViewController.h */,
 				EE47261414730FC400EAFDA3 /* INEditMedViewController.m */,
 				EE4726161473102B00EAFDA3 /* INEditMedViewController.xib */,
@@ -189,6 +217,9 @@
 				EEA4507E146D764500DC9EB1 /* INMedContainer.m */,
 				EEA45082146D768500DC9EB1 /* INMedTile.h */,
 				EEA45083146D768500DC9EB1 /* INMedTile.m */,
+				EE4434BB1491608000CC6344 /* INMedDetailTile.h */,
+				EE4434BC1491608000CC6344 /* INMedDetailTile.m */,
+				EE4434BE149168BA00CC6344 /* INMedDetailTile.xib */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -262,6 +293,13 @@
 				EECEC44814758415009D85FC /* statusGreen.png in Resources */,
 				EECEC44B1475854B009D85FC /* white_carbon.png in Resources */,
 				EECEC44F1475A0D8009D85FC /* statusGreen@2x.png in Resources */,
+				EE4434BF149168BA00CC6344 /* INMedDetailTile.xib in Resources */,
+				EE4434C11491726C00CC6344 /* buttonGray.png in Resources */,
+				EE4434C314917CF500CC6344 /* buttonRed.png in Resources */,
+				EE4434C514917F7500CC6344 /* buttonBlue.png in Resources */,
+				EE4434C7149188A500CC6344 /* buttonPressed.png in Resources */,
+				EE4434C9149188AB00CC6344 /* buttonDisabled.png in Resources */,
+				EE4434CB1491892600CC6344 /* buttonGreen.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,6 +321,8 @@
 				EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */,
 				EE47261514730FC400EAFDA3 /* INEditMedViewController.m in Sources */,
 				EE72154714749299008835C5 /* UIView+Utilities.m in Sources */,
+				EE4434B914915FAC00CC6344 /* INMedEditViewController.m in Sources */,
+				EE4434BD1491608000CC6344 /* INMedDetailTile.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,10 +398,6 @@
 				GCC_PREFIX_HEADER = "MedReconcile-Prefix.pch";
 				INFOPLIST_FILE = "MedReconcile-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/MedicationReconciliation-aglgthohrfcqnagvmblvlhwzellq/Build/Products/Debug-iphoneos\"",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -374,10 +410,6 @@
 				GCC_PREFIX_HEADER = "MedReconcile-Prefix.pch";
 				INFOPLIST_FILE = "MedReconcile-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../Library/Developer/Xcode/DerivedData/MedicationReconciliation-aglgthohrfcqnagvmblvlhwzellq/Build/Products/Debug-iphoneos\"",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

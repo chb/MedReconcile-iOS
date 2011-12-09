@@ -15,6 +15,7 @@
 #import "INEditMedViewController.h"
 #import "INMedContainer.h"
 #import "INMedTile.h"
+#import "INMedDetailTile.h"
 #import "NSArray+NilProtection.h"
 
 
@@ -142,7 +143,7 @@
 			NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
 			for (IndivoMedication *med in meds) {
 				INMedTile *tile = [INMedTile tileWithMedication:med];
-				[tile addTarget:self action:@selector(showActionsFor:) forControlEvents:UIControlEventTouchUpInside];
+				[tile addTarget:self action:@selector(didTapTile:) forControlEvents:UIControlEventTouchUpInside];
 				[tiles addObjectIfNotNil:tile];
 				
 				// load pill image
@@ -168,20 +169,27 @@
 }
 
 /**
- *	Shows the actions for a medication
+ *	Shows the details for a medication
  */
-- (void)showActionsFor:(INMedTile *)medTile
+- (void)didTapTile:(INMedTile *)medTile
 {
 	if (medTile) {
-		[container dimAllBut:medTile];
 		
-		self.activeTile = medTile;
-		UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:nil
-														   delegate:self
-												  cancelButtonTitle:@"Cancel"
-											 destructiveButtonTitle:@"Archive"
-												  otherButtonTitles:@"Edit", nil];
-		[sheet showInView:self.view];
+		// newly activated tile
+		if (medTile != activeTile) {
+			[container dimAllBut:medTile];
+			self.activeTile = medTile;
+			
+			INMedDetailTile *detailTile = [INMedDetailTile new];
+			detailTile.med = medTile.med;
+			[container addDetailTile:detailTile forTile:medTile];
+		}
+		
+		// deactivate tile
+		else {
+			[container removeDetailTile];
+			[container undimAll];
+		}
 	}
 }
 
