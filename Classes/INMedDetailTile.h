@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @class IndivoMedication;
+@class INMedTile;
 
 
 /**
@@ -17,6 +18,7 @@
 @interface INMedDetailTile : UIView
 
 @property (nonatomic, strong) IndivoMedication *med;
+@property (nonatomic, strong) INMedTile *forTile;
 
 @property (nonatomic, strong) IBOutlet UIImageView *imageView;
 @property (nonatomic, strong) IBOutlet UILabel *agentName;

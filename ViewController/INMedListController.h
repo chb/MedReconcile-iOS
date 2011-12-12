@@ -14,8 +14,6 @@
 
 @interface INMedListController : UIViewController <UIActionSheetDelegate>
 
-@property (nonatomic, strong) UIScrollView *scrollView;
-
 @property (nonatomic, strong) IndivoRecord *record;
 @property (nonatomic, strong) NSMutableArray *medGroups;
 

@@ -30,6 +30,7 @@
 {
 	if ((self = [super initWithFrame:aFrame])) {
 		self.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
+		self.showsHorizontalScrollIndicator = NO;
 	}
 	return self;
 }
@@ -42,58 +43,59 @@
 
 - (void)layoutSubviews
 {
+	CGFloat myWidth = [self bounds].size.width;
+	NSUInteger perRow = 2;								/// @todo determine based on view width
+	CGFloat tileWidth = roundf(myWidth / perRow);		/// @todo compensate for rounded pixels
+	CGFloat tileHeight = 90.f;
+	
 	CGFloat y = 0.f;
-	CGFloat height = 90.f;
-	NSUInteger perRow = 2;			/// @todo determine based on view width
-	CGFloat width = roundf([self bounds].size.width / perRow);			/// @todo compensate for rounded pixels
-	NSUInteger i = 0;
+	CGFloat lastBottom = 0.f;
+	NSUInteger tileNum = 0;
 	INMedTile *lastTile = nil;
-	CGRect lastFrame = CGRectZero;
-	for (INMedTile *tile in [self subviews]) {
+	
+	for (UIView *tile in [self subviews]) {
 		CGRect tileFrame = tile.frame;
-		if ([tile isKindOfClass:[INMedTile class]]) {							// a tile
-			tileFrame.origin = CGPointMake((0 == i % perRow) ? 0.f : width, y);
-			tileFrame.size = CGSizeMake(width, height);
-			tile.frame = tileFrame;
-			
-			lastTile = tile;
-			i++;
-			if (i > 0 && 0 == i % perRow) {
-				y += height;
+		
+		// a tile
+		if ([tile isKindOfClass:[INMedTile class]]) {
+			if (tileNum > 0 && 0 == tileNum % perRow) {
+				y = lastBottom;
 			}
-		}
-		else if ([tile isKindOfClass:[INMedDetailTile class]]) {				// the detail tile
-			tileFrame.origin.y = y;
+			tileFrame.origin = CGPointMake((0 == tileNum % perRow) ? 0.f : tileWidth, y);
+			tileFrame.size = CGSizeMake(tileWidth, tileHeight);
 			tile.frame = tileFrame;
 			
-			y += tileFrame.size.height;
-			i = 0;
+			lastTile = (INMedTile *)tile;
+			tileNum++;
+			
+			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
 		}
-		lastFrame = tileFrame;
+		
+		// the detail tile
+		else if ([tile isKindOfClass:[INMedDetailTile class]]) {
+			tileFrame.origin.y = y + tileHeight;
+			tileFrame.size.width = myWidth;
+			tile.frame = tileFrame;
+			
+			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
+		}
 	}
 	
 	// if we have an uneven number, stretch the last one
-	if (0 != i % perRow) {
+	if (0 != tileNum % perRow) {
 		CGRect lastTileFrame = lastTile.frame;
-		lastTileFrame.size.width = [self bounds].size.width;
+		lastTileFrame.size.width = myWidth;
 		lastTile.frame = lastTileFrame;
 	}
 	
 	// bottom shadow
 	CGRect shadowFrame = self.bottomShadow.frame;
-	shadowFrame.origin = CGPointMake(0.f, lastFrame.origin.y + lastFrame.size.height);
-	shadowFrame.size.width = [self bounds].size.width;
+	shadowFrame.origin = CGPointMake(0.f, lastBottom);
+	shadowFrame.size.width = myWidth;
 	bottomShadow.frame = shadowFrame;
-}
-
-- (void)didAddSubview:(UIView *)subview
-{
-	/// @todo adjust shadows
-}
-
-- (void)willRemoveSubview:(UIView *)subview
-{
-	/// @todo adjust shadows
+	
+	// aaand our own height (the bottom shadow overflows)
+	self.contentSize = CGSizeMake(myWidth, lastBottom);
 }
 
 
@@ -126,33 +128,40 @@
 /**
  *	Adds a detail tile for a given tile
  */
-- (void)addDetailTile:(INMedDetailTile *)aDetailTile forTile:(INMedTile *)aTile
+- (void)addDetailTile:(INMedDetailTile *)aDetailTile forTile:(INMedTile *)aTile animated:(BOOL)animated
 {
 	if (aDetailTile == detailTile) {
-		/// @todo move to correct position
+		if (aTile != aDetailTile.forTile) {
+			/// @todo Move to correct position and scroll visible
+		}
 		return;
 	}
-	
 	[self removeDetailTile];
 	
-	DLog(@"1: %@", [self subviews]);
-	NSUInteger i = [[self subviews] indexOfObject:aTile];
-	DLog(@"Index: %d", i);
-	if ((i + 1) < [[self subviews] count]) {
-		[self insertSubview:aDetailTile atIndex:(i + 1)];
+	// add detail tile
+	self.detailTile = aDetailTile;
+	if ([[self subviews] count] > 0) {
+		if (![[self subviews] containsObject:aTile]) {
+			aTile = [[self subviews] lastObject];
+		}
+		detailTile.forTile = aTile;
+		[self insertSubview:aDetailTile aboveSubview:aTile];
 	}
 	else {
 		[self addSubview:aDetailTile];
 	}
-	self.detailTile = aDetailTile;
-	[self setNeedsLayout];
+	[self layoutSubviewsAnimated:animated];
 	
-	DLog(@"2: %@", [self subviews]);
+	// scroll visible
+	CGRect targetRect = detailTile.forTile.frame;
+	targetRect.size.height += [aDetailTile frame].size.height;
+	[self scrollRectToVisible:targetRect animated:animated];
 }
 
 - (void)removeDetailTile
 {
 	if (self == [detailTile superview]) {
+		detailTile.forTile = nil;
 		[detailTile removeFromSuperview];
 	}
 }
@@ -212,8 +221,11 @@
 			CGColorRef color = CGColorRetain([[UIColor colorWithWhite:0.f alpha:alphas[i]] CGColor]);
 			[colors addObject:(__bridge_transfer id)color];
 		}
-		
 		bottomShadow.colors = colors;
+		
+		// prevent frame animation
+		bottomShadow.actions = [NSDictionary dictionaryWithObject:[NSNull null] forKey:@"position"];
+		
 		[self.layer addSublayer:bottomShadow];
 	}
 	return bottomShadow;

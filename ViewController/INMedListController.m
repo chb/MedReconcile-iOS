@@ -33,7 +33,6 @@
 
 @implementation INMedListController
 
-@synthesize scrollView;
 @synthesize record, medGroups;
 @synthesize recordSelectButton, addMedButton;
 @synthesize container, activeTile;
@@ -60,13 +59,9 @@
     CGRect fullFrame = [[UIScreen mainScreen] applicationFrame];
 	fullFrame.origin = CGPointZero;
 	
-	self.scrollView = [[UIScrollView alloc] initWithFrame:fullFrame];
-	scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	self.view = scrollView;
-	
 	self.container = [[INMedContainer alloc] initWithFrame:fullFrame];
 	container.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	[self.view addSubview:container];
+	self.view = container;
 	
 	// connect to indivo button
 	self.recordSelectButton = [[UIBarButtonItem alloc] initWithTitle:@"Connect" style:UIBarButtonItemStyleBordered target:self action:@selector(selectRecord:)];
@@ -163,7 +158,6 @@
 			}
 			
 			[container showTiles:tiles];
-			scrollView.contentSize = [container frame].size;
 		}
 	}];
 }
@@ -182,13 +176,14 @@
 			
 			INMedDetailTile *detailTile = [INMedDetailTile new];
 			detailTile.med = medTile.med;
-			[container addDetailTile:detailTile forTile:medTile];
+			[container addDetailTile:detailTile forTile:medTile animated:YES];
 		}
 		
 		// deactivate tile
 		else {
 			[container removeDetailTile];
 			[container undimAll];
+			self.activeTile = nil;
 		}
 	}
 }

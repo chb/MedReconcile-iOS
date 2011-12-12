@@ -289,7 +289,7 @@
 - (UILabel *)durationLabel
 {
 	if (!durationLabel) {
-		self.durationLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 10.f, 10.f)];
+		self.durationLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 10.f, 19.f)];
 		durationLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
 		durationLabel.opaque = NO;
 		durationLabel.backgroundColor = [UIColor clearColor];

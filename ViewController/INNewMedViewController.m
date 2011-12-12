@@ -102,6 +102,8 @@
 		cell.textLabel.minimumFontSize = 10.f;
 	}
 	cell.textLabel.textAlignment = UITextAlignmentLeft;
+	cell.detailTextLabel.text = nil;
+	cell.accessoryView = nil;
 	
 	// name input field
 	if (0 == indexPath.section) {
@@ -135,7 +137,22 @@
 		NSDictionary *drug = [section objectForRow:indexPath.row];
 		
 		cell.textLabel.text = drug ? [drug objectForKey:@"name"] : @"Unknown";
-		cell.detailTextLabel.text = [drug objectForKey:@"tty"];
+		// cell.detailTextLabel.text = [drug objectForKey:@"tty"];
+		
+		//--
+		UIImage *greenButtonImage = [[UIImage imageNamed:@"buttonGreen.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+		UIImage *disabledButtonImage = [[UIImage imageNamed:@"buttonDisabled.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+		UIImage *pressedButtonImage = [[UIImage imageNamed:@"buttonPressed.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+		UIButton *use = [UIButton buttonWithType:UIButtonTypeCustom];
+		use.frame = CGRectMake(0.f, 0.f, 60.f, 39.f);
+		[use setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
+		[use setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
+		[use setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
+		[use addTarget:self action:@selector(useDrug:) forControlEvents:UIControlEventTouchUpInside];
+		[use setTitle:@"Use" forState:UIControlStateNormal];
+		
+		cell.accessoryView = use;
+		//--
 	}
 	
 	// med detail nodes
@@ -163,7 +180,7 @@
 		cell.detailTextLabel.text = @"";
 	}
 	
-	cell.accessoryView = [section accessoryViewForRow:indexPath.row];
+	//cell.accessoryView = [section accessoryViewForRow:indexPath.row];		// returns the indicator view for the active row
 	
 	return cell;
 }
@@ -279,8 +296,6 @@
 	[currentScores removeAllObjects];
 	
 	// start loading suggestions
-	//	NSString *apiKey = @"HELUUSPMYB";
-	//	NSString *urlBase = [NSString stringWithFormat:@"http://pillbox.nlm.nih.gov/PHP/pillboxAPIService.php?key=%@", apiKey];
 	NSString *urlBase = @"http://rxnav.nlm.nih.gov/REST";
 	NSString *urlString = [NSString stringWithFormat:@"%@/approxMatch/%@", urlBase, [medString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 	NSURL *url = [NSURL URLWithString:urlString];
@@ -383,6 +398,11 @@
 	if ([currentMedString isEqualToString:medString]) {
 		INTableSection *section = [sections lastObject];
 		
+		// the section currently holds a representation of the user's string. If we get an exact match, remove the user's string
+		NSDictionary *userSuggestion = [section.objects firstObject];
+		[section removeAllObjects];
+		
+		// apply the names
 		if ([aFetcher.successfulLoads count] > 0) {
 			NSMutableArray *suggIN = [NSMutableArray array];
 			NSMutableArray *suggBN = [NSMutableArray array];
@@ -400,12 +420,16 @@
 				else {
 					INXMLNode *drug = [node childNamed:@"properties"];
 					if (drug) {
+						NSString *name = [[drug childNamed:@"name"] text];
+						if (NSOrderedSame == [name compare:[userSuggestion objectForKey:@"name"] options:(NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch)]) {
+							userSuggestion = nil;
+						}
 						
 						// we are going to show suggestions with type: IN (ingredient) and BN (Brand Name)
 						NSString *tty = [[drug childNamed:@"tty"] text];
 						NSMutableDictionary *drugDict = [NSMutableDictionary dictionaryWithObject:tty forKey:@"tty"];
 						[drugDict setObject:[[drug childNamed:@"rxcui"] text] forKey:@"rxcui"];
-						[drugDict setObject:[[drug childNamed:@"name"] text] forKey:@"name"];
+						[drugDict setObject:name forKey:@"name"];
 						
 						DLog(@"-->  %@  [%@]  (%@, %@)", tty, [currentScores objectForKey:[[drug childNamed:@"rxcui"] text]], [[drug childNamed:@"name"] text], [[drug childNamed:@"rxcui"] text]);
 						if ([tty isEqualToString:@"IN"]) {
@@ -419,6 +443,11 @@
 						}
 					}
 				}
+			}
+			
+			// re-add the user suggestion if we're still holding on to it
+			if (userSuggestion) {
+				[section addObject:userSuggestion];
 			}
 			
 			// decide which ones to use

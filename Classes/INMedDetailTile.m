@@ -16,12 +16,14 @@
 
 @property (nonatomic, strong) INDateRangeFormatter *drFormatter;
 
+- (void)setup;
+
 @end
 
 
 @implementation INMedDetailTile
 
-@synthesize med, drFormatter;
+@synthesize med, forTile, drFormatter;
 @synthesize imageView, agentName, rxNormButton, versionsButton;
 @synthesize prescName, prescDuration, prescInstructions, prescDoctor, prescMainButton, prescChangeButton;
 
@@ -34,32 +36,7 @@
 		return nil;
 	}
 	INMedDetailTile *t = [parts objectAtIndex:0];
-	
-	// loaded XIB, setup buttons
-	UIImage *redButtonImage = [[UIImage imageNamed:@"buttonRed.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
-	UIImage *blueButtonImage = [[UIImage imageNamed:@"buttonBlue.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
-	UIImage *grayButtonImage = [[UIImage imageNamed:@"buttonGray.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
-	UIImage *disabledButtonImage = [[UIImage imageNamed:@"buttonDisabled.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
-	UIImage *pressedButtonImage = [[UIImage imageNamed:@"buttonPressed.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
-	[t.prescMainButton setBackgroundImage:redButtonImage forState:UIControlStateNormal];
-	[t.prescMainButton setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
-	[t.prescMainButton setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
-	[t.prescChangeButton setBackgroundImage:blueButtonImage forState:UIControlStateNormal];
-	[t.prescChangeButton setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
-	[t.prescChangeButton setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
-	[t.rxNormButton setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
-	[t.rxNormButton setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
-	[t.rxNormButton setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
-	[t.versionsButton setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
-	[t.versionsButton setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
-	[t.versionsButton setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
-	
-	// tune imageView
-	t.imageView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
-	t.imageView.layer.borderWidth = 1.f;
-	t.imageView.layer.cornerRadius = 5.f;
-	t.imageView.contentMode = UIViewContentModeScaleAspectFit;
-	t.imageView.backgroundColor = [UIColor blackColor];
+	[t setup];
 	
 	return t;
 }
@@ -70,6 +47,37 @@
 	t.frame = frame;
 	/// @todo how does this play with ARC??
 	return t;
+}
+
+- (void)setup
+{
+	self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_carbon.png"]];
+	
+	// loaded XIB, setup buttons
+	UIImage *redButtonImage = [[UIImage imageNamed:@"buttonRed.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+	UIImage *blueButtonImage = [[UIImage imageNamed:@"buttonBlue.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+	UIImage *grayButtonImage = [[UIImage imageNamed:@"buttonGray.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+	UIImage *disabledButtonImage = [[UIImage imageNamed:@"buttonDisabled.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+	UIImage *pressedButtonImage = [[UIImage imageNamed:@"buttonPressed.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
+	[self.prescMainButton setBackgroundImage:redButtonImage forState:UIControlStateNormal];
+	[self.prescMainButton setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
+	[self.prescMainButton setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
+	[self.prescChangeButton setBackgroundImage:blueButtonImage forState:UIControlStateNormal];
+	[self.prescChangeButton setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
+	[self.prescChangeButton setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
+	[self.rxNormButton setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
+	[self.rxNormButton setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
+	[self.rxNormButton setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
+	[self.versionsButton setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
+	[self.versionsButton setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
+	[self.versionsButton setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
+	
+	// tune imageView
+	self.imageView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+	self.imageView.layer.borderWidth = 1.f;
+	self.imageView.layer.cornerRadius = 5.f;
+	self.imageView.contentMode = UIViewContentModeScaleAspectFit;
+	self.imageView.backgroundColor = [UIColor blackColor];
 }
 
 
