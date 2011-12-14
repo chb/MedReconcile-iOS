@@ -7,10 +7,12 @@
 //
 
 #import "INMedTile.h"
-#import <QuartzCore/QuartzCore.h>
+#import "INMedContainer.h"
+#import "INMedDetailTile.h"
 #import "IndivoMedication.h"
 #import "INDateRangeFormatter.h"
 #import "UIView+Utilities.h"
+#import <QuartzCore/QuartzCore.h>
 
 
 @interface INMedTile ()
@@ -21,7 +23,7 @@
 @property (nonatomic, strong) UILabel *durationLabel;
 @property (nonatomic, strong) UILabel *nameLabel;
 
-@property (nonatomic, strong) UIView *dimView;
+@property (nonatomic, strong) UIControl *dimView;
 @property (nonatomic, strong) UIActivityIndicatorView *activityView;
 @property (nonatomic, strong) UIActivityIndicatorView *imageActivityView;
 @property (nonatomic, assign) BOOL keepDimmedAfterAction;
@@ -39,7 +41,7 @@
 @synthesize container;
 @synthesize bgView, imageView, statusView, durationLabel, nameLabel;
 @synthesize dimView, activityView, imageActivityView, keepDimmedAfterAction;
-@synthesize drFormatter;
+@synthesize drFormatter, showsDetailTile;
 
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -47,8 +49,9 @@
 	if ((self = [super initWithFrame:aFrame])) {
 		self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_carbon.png"]];
+		self.clipsToBounds = YES;
 		
-		//UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(0.f, 0.f, 1.f, 1.f)];		// iOS 5+ only
+		//UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(1.f, 1.f, 1.f, 1.f)];		// iOS 5+ only
 		UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] stretchableImageWithLeftCapWidth:1 topCapHeight:1];
 		self.bgView = [[UIImageView alloc] initWithImage:bgImage];
 		self.bgView.frame = self.bounds;
@@ -56,6 +59,7 @@
 		[self addSubview:bgView];
 		
 		self.drFormatter = [INDateRangeFormatter new];
+		[self addTarget:self action:@selector(showMedicationDetails:) forControlEvents:UIControlEventTouchUpInside];
 	}
 	return self;
 }
@@ -118,24 +122,15 @@
 
 
 
-#pragma mark - Action Handling
+#pragma mark - Dimming and Indicating Actions
 /**
- *	Dims or undims a tile
+ *	Dims a tile
  */
-- (void)dim:(BOOL)flag
-{
-	if (flag) {
-		[self dimAnimated:YES];
-	}
-	else {
-		[self undimAnimated:YES];
-	}
-}
-
 - (void)dimAnimated:(BOOL)animated
 {
 	if (![activityView superview]) {
 		keepDimmedAfterAction = YES;
+		[self.dimView addTarget:self action:@selector(hideMedicationDetails:) forControlEvents:UIControlEventTouchUpInside];
 	}
 	if ([dimView superview]) {
 		return;
@@ -149,6 +144,9 @@
 					 }];
 }
 
+/**
+ *	Undims the tile
+ */
 - (void)undimAnimated:(BOOL)animated
 {
 	if (![activityView superview]) {
@@ -180,26 +178,43 @@
 	}
 	
 	// hide activity indicator
-	else if (!keepDimmedAfterAction) {
+	else {
 		[activityView stopAnimating];
 		[activityView removeFromSuperview];
 		self.activityView = nil;
 		
-		[self undimAnimated:YES];
+		if (!keepDimmedAfterAction) {
+			[self undimAnimated:YES];
+		}
 	}
 }
 
+
+
+#pragma mark - Detail Tile
 /**
- *	Touching a tile should toggle the medication detail view
+ *	Touching a tile will toggle the medication detail view
  */
 - (void)showMedicationDetails:(id)sender
 {
-	
+	if (showsDetailTile) {
+		[self hideMedicationDetails:sender];
+	}
+	else {
+		showsDetailTile = YES;
+		
+		INMedDetailTile *aDetailTile = [INMedDetailTile new];
+		aDetailTile.med = self.med;
+		[container addDetailTile:aDetailTile forTile:self animated:YES];
+		[container dimAllBut:self];
+	}
 }
 
 - (void)hideMedicationDetails:(id)sender
 {
-	
+	[container removeDetailTileAnimated:YES];
+	[container undimAll];
+	showsDetailTile = NO;
 }
 
 
@@ -248,8 +263,12 @@
 		self.imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pillDefault.png"]];
 		imageView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
 		imageView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
-		imageView.layer.borderWidth = 1.f;
-		imageView.layer.cornerRadius = 5.f;
+		imageView.layer.cornerRadius = 6.f;
+		imageView.layer.shadowColor = [[UIColor colorWithWhite:1.f alpha:0.8f] CGColor];
+		imageView.layer.shadowRadius = 0.f;
+		imageView.layer.shadowOffset = CGSizeMake(0.f, 1.f);
+		imageView.layer.shadowOpacity = 1.f;
+	//	imageView.clipsToBounds = YES;
 		imageView.contentMode = UIViewContentModeScaleAspectFit;
 		imageView.backgroundColor = [UIColor blackColor];
 		[self addSubview:imageView];
@@ -303,10 +322,10 @@
 	return durationLabel;
 }
 
-- (UIView *)dimView
+- (UIControl *)dimView
 {
 	if (!dimView) {
-		self.dimView = [[UIView alloc] initWithFrame:self.bounds];
+		self.dimView = [[UIControl alloc] initWithFrame:self.bounds];
 		dimView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		dimView.opaque = NO;
 		dimView.backgroundColor = [UIColor colorWithWhite:0.f alpha:0.75f];

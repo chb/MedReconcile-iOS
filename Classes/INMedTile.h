@@ -17,19 +17,22 @@
  */
 @interface INMedTile : UIControl
 
-@property (nonatomic, strong) IndivoMedication *med;
-@property (nonatomic, assign) INMedContainer *container;
+@property (nonatomic, strong) IndivoMedication *med;					///< The medication we're representing
+@property (nonatomic, assign) INMedContainer *container;				///< Our container view
+@property (nonatomic, assign) BOOL showsDetailTile;						///< Somewhat fragile way to track whether a detail tile is shown for this tile; used by the container
 
 
 + (INMedTile *)tileWithMedication:(IndivoMedication *)aMed;
 
-- (void)dim:(BOOL)flag;
 - (void)dimAnimated:(BOOL)animated;
 - (void)undimAnimated:(BOOL)animated;
 - (void)indicateAction:(BOOL)flag;
 
 - (void)indicateImageAction:(BOOL)flag;
 - (void)showImage:(UIImage *)anImage;
+
+- (void)showMedicationDetails:(id)sender;
+- (void)hideMedicationDetails:(id)sender;
 
 
 @end

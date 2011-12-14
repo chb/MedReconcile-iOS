@@ -61,6 +61,7 @@
 	
 	self.container = [[INMedContainer alloc] initWithFrame:fullFrame];
 	container.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	container.viewController = self;
 	self.view = container;
 	
 	// connect to indivo button
@@ -138,7 +139,6 @@
 			NSMutableArray *tiles = [NSMutableArray arrayWithCapacity:[meds count]];
 			for (IndivoMedication *med in meds) {
 				INMedTile *tile = [INMedTile tileWithMedication:med];
-				[tile addTarget:self action:@selector(didTapTile:) forControlEvents:UIControlEventTouchUpInside];
 				[tiles addObjectIfNotNil:tile];
 				
 				// load pill image
@@ -149,7 +149,7 @@
 					[tile indicateImageAction:YES];
 					[med loadPillImageBypassingCache:NO callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 						if (errorMessage) {
-							DLog(@"%@", errorMessage);
+							DLog(@"Error loading pill image: %@", errorMessage);
 						}
 						[tile showImage:med.pillImage];
 						[tile indicateImageAction:NO];
@@ -160,32 +160,6 @@
 			[container showTiles:tiles];
 		}
 	}];
-}
-
-/**
- *	Shows the details for a medication
- */
-- (void)didTapTile:(INMedTile *)medTile
-{
-	if (medTile) {
-		
-		// newly activated tile
-		if (medTile != activeTile) {
-			[container dimAllBut:medTile];
-			self.activeTile = medTile;
-			
-			INMedDetailTile *detailTile = [INMedDetailTile new];
-			detailTile.med = medTile.med;
-			[container addDetailTile:detailTile forTile:medTile animated:YES];
-		}
-		
-		// deactivate tile
-		else {
-			[container removeDetailTile];
-			[container undimAll];
-			self.activeTile = nil;
-		}
-	}
 }
 
 /**

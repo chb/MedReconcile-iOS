@@ -18,12 +18,15 @@
  */
 @interface INMedContainer : UIScrollView
 
+@property (nonatomic, assign) UIViewController *viewController;
 @property (nonatomic, strong) INMedDetailTile *detailTile;				///< Only one detail tile at a time can be shown
 
 - (void)showTiles:(NSArray *)tileArray;
 - (void)addTile:(INMedTile *)aTile;
 - (void)addDetailTile:(INMedDetailTile *)aDetailTile forTile:(INMedTile *)aTile animated:(BOOL)animated;
-- (void)removeDetailTile;
+- (void)removeDetailTileAnimated:(BOOL)animated;
+- (void)removeDetailTile:(id)sender;
+- (void)scrollDetailTileVisibleAnimated:(BOOL)animated;
 
 - (void)dimAllBut:(INMedTile *)aTile;
 - (void)undimAll;

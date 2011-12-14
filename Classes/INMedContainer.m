@@ -16,14 +16,12 @@
 
 @property (nonatomic, strong) CAGradientLayer *bottomShadow;
 
-- (void)layoutSubviewsAnimated:(BOOL)animated;
-
 @end
 
 
 @implementation INMedContainer
 
-@synthesize detailTile, bottomShadow;
+@synthesize viewController, detailTile, bottomShadow;
 
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -36,11 +34,11 @@
 }
 
 
-- (void)layoutSubviewsAnimated:(BOOL)animated
-{
-	[self layoutSubviews];
-}
 
+#pragma mark - View Layout
+/**
+ *	The standard layouting method, does rearrange the tiles optimally
+ */
 - (void)layoutSubviews
 {
 	CGFloat myWidth = [self bounds].size.width;
@@ -52,6 +50,12 @@
 	CGFloat lastBottom = 0.f;
 	NSUInteger tileNum = 0;
 	INMedTile *lastTile = nil;
+	for (UIView *tile in [[self subviews] reverseObjectEnumerator]) {
+		if ([tile isKindOfClass:[INMedTile class]]) {
+			lastTile = (INMedTile *)tile;
+			break;
+		}
+	}
 	
 	for (UIView *tile in [self subviews]) {
 		CGRect tileFrame = tile.frame;
@@ -63,29 +67,25 @@
 			}
 			tileFrame.origin = CGPointMake((0 == tileNum % perRow) ? 0.f : tileWidth, y);
 			tileFrame.size = CGSizeMake(tileWidth, tileHeight);
+			
+			// if we have an uneven number, stretch the last tile to cover the full row
+			if (tile == lastTile) {
+				tileFrame.size.width = myWidth;
+			}
 			tile.frame = tileFrame;
 			
-			lastTile = (INMedTile *)tile;
-			tileNum++;
-			
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
+			tileNum++;
 		}
 		
 		// the detail tile
 		else if ([tile isKindOfClass:[INMedDetailTile class]]) {
-			tileFrame.origin.y = y + tileHeight;
+			tileFrame.origin.y = lastBottom;
 			tileFrame.size.width = myWidth;
 			tile.frame = tileFrame;
-			
+			DLog(@"==>  %@", NSStringFromCGRect(tileFrame));
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
 		}
-	}
-	
-	// if we have an uneven number, stretch the last one
-	if (0 != tileNum % perRow) {
-		CGRect lastTileFrame = lastTile.frame;
-		lastTileFrame.size.width = myWidth;
-		lastTile.frame = lastTileFrame;
 	}
 	
 	// bottom shadow
@@ -110,10 +110,11 @@
 	[[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
 	
 	for (INMedTile *tile in tileArray) {
+		tile.container = self;
 		[self addSubview:tile];
 	}
 	
-	[self layoutSubviews];
+	[self setNeedsLayout];
 }
 
 /**
@@ -121,8 +122,9 @@
  */
 - (void)addTile:(INMedTile *)aTile
 {
+	aTile.container = self;
 	[self addSubview:aTile];
-	[self layoutSubviews];
+	[self setNeedsLayout];
 }
 
 /**
@@ -136,33 +138,96 @@
 		}
 		return;
 	}
-	[self removeDetailTile];
 	
-	// add detail tile
+	// find reference tile
+	if (![[self subviews] containsObject:aTile]) {
+		aTile = [[self subviews] lastObject];
+	}
+	
+	// shrink frame if adding animated
+	__block CGRect detailFrame = aDetailTile.frame;
+	detailFrame.origin.y = [aTile frame].origin.y + [aTile frame].size.height;
+	CGFloat detailOrigHeight = detailFrame.size.height;
+	if (animated && !detailTile) {
+		detailFrame.size.height = 10.f;
+		aDetailTile.frame = detailFrame;
+	}
+	
+	[self removeDetailTile:nil];
 	self.detailTile = aDetailTile;
-	if ([[self subviews] count] > 0) {
-		if (![[self subviews] containsObject:aTile]) {
-			aTile = [[self subviews] lastObject];
-		}
+	
+	// add subview
+	if (aTile) {
 		detailTile.forTile = aTile;
+		aTile.showsDetailTile = YES;
 		[self insertSubview:aDetailTile aboveSubview:aTile];
 	}
 	else {
 		[self addSubview:aDetailTile];
 	}
-	[self layoutSubviewsAnimated:animated];
 	
-	// scroll visible
-	CGRect targetRect = detailTile.forTile.frame;
-	targetRect.size.height += [aDetailTile frame].size.height;
-	[self scrollRectToVisible:targetRect animated:animated];
+	// layout
+	[self layoutSubviews];
+	if (animated) {
+		DLog(@"Animated");
+		[UIView animateWithDuration:0.2
+						 animations:^{
+							 detailFrame.size.height = detailOrigHeight;
+							 detailTile.frame = detailFrame;
+							 [self layoutSubviews];
+						 }
+						 completion:^(BOOL finished) {
+							 [self scrollDetailTileVisibleAnimated:YES];
+						 }];
+	}
+	else {
+		[self scrollDetailTileVisibleAnimated:NO];
+	}
 }
 
-- (void)removeDetailTile
+
+/**
+ *	Removes the detail tile by shrinking it, if animated is YES
+ */
+- (void)removeDetailTileAnimated:(BOOL)animated
 {
 	if (self == [detailTile superview]) {
-		detailTile.forTile = nil;
-		[detailTile removeFromSuperview];
+		if (animated) {
+			[UIView animateWithDuration:0.2
+							 animations:^{
+								 CGRect detailFrame = detailTile.frame;
+								 detailFrame.size.height = 0.f;
+								 detailTile.frame = detailFrame;
+								 [self layoutSubviews];
+							 }
+							 completion:^(BOOL finished) {
+								 detailTile.forTile.showsDetailTile = NO;
+								 detailTile.forTile = nil;
+								 [detailTile removeFromSuperview];
+								 self.detailTile = nil;
+							 }];
+		}
+		else {
+			detailTile.forTile.showsDetailTile = NO;
+			detailTile.forTile = nil;
+			[detailTile removeFromSuperview];
+			self.detailTile = nil;
+		}
+	}
+}
+
+- (void)removeDetailTile:(id)sender
+{
+	[self removeDetailTileAnimated:(nil != sender)];
+}
+
+
+- (void)scrollDetailTileVisibleAnimated:(BOOL)animated
+{
+	if (detailTile) {
+		CGRect targetRect = detailTile.forTile.frame;
+		targetRect.size.height += [detailTile frame].size.height;
+		[self scrollRectToVisible:targetRect animated:animated];
 	}
 }
 
@@ -176,7 +241,7 @@
 {
 	for (INMedTile *tile in [self subviews]) {
 		if ([tile isKindOfClass:[INMedTile class]] && ![aTile isEqual:tile]) {
-			[tile dim:YES];
+			[tile dimAnimated:YES];
 		}
 	}
 }
@@ -188,7 +253,7 @@
 {
 	for (INMedTile *tile in [self subviews]) {
 		if ([tile isKindOfClass:[INMedTile class]]) {
-			[tile dim:NO];
+			[tile undimAnimated:YES];
 		}
 	}
 }
@@ -224,7 +289,7 @@
 		bottomShadow.colors = colors;
 		
 		// prevent frame animation
-		bottomShadow.actions = [NSDictionary dictionaryWithObject:[NSNull null] forKey:@"position"];
+		//bottomShadow.actions = [NSDictionary dictionaryWithObject:[NSNull null] forKey:@"position"];
 		
 		[self.layer addSublayer:bottomShadow];
 	}

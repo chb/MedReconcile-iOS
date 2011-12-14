@@ -10,6 +10,7 @@
 
 @class IndivoMedication;
 @class INMedTile;
+@class INButton;
 
 
 /**
@@ -22,20 +23,23 @@
 
 @property (nonatomic, strong) IBOutlet UIImageView *imageView;
 @property (nonatomic, strong) IBOutlet UILabel *agentName;
-@property (nonatomic, strong) IBOutlet UIButton *rxNormButton;
-@property (nonatomic, strong) IBOutlet UIButton *versionsButton;
+@property (nonatomic, strong) IBOutlet INButton *rxNormButton;
+@property (nonatomic, strong) IBOutlet INButton *versionsButton;
 
 @property (nonatomic, strong) IBOutlet UILabel *prescName;
 @property (nonatomic, strong) IBOutlet UILabel *prescDuration;
 @property (nonatomic, strong) IBOutlet UILabel *prescInstructions;
 @property (nonatomic, strong) IBOutlet UILabel *prescDoctor;
-@property (nonatomic, strong) IBOutlet UIButton *prescMainButton;
-@property (nonatomic, strong) IBOutlet UIButton *prescChangeButton;
+@property (nonatomic, strong) IBOutlet INButton *prescMainButton;
+@property (nonatomic, strong) IBOutlet INButton *prescChangeButton;
 
 - (IBAction)showRxNormBrowser:(id)sender;
 - (IBAction)showVersions:(id)sender;
 - (IBAction)triggerMainAction:(id)sender;
 - (IBAction)editMed:(id)sender;
+
+- (void)indicateImageAction:(BOOL)flag;
+- (void)showImage:(UIImage *)anImage;
 
 
 @end

@@ -8,12 +8,40 @@
 
 #import <UIKit/UIKit.h>
 
+@class IndivoMedication;
+@class INButton;
+
 
 /**
  *	This view controller allows to edit a medication and its prescription
  */
 @interface INMedEditViewController : UIViewController
 
+@property (nonatomic, strong) IndivoMedication *med;
+
+@property (nonatomic, assign) IBOutlet UITextField *agent;
+@property (nonatomic, assign) IBOutlet UILabel *agentDesc;
+@property (nonatomic, assign) IBOutlet UITextField *drug;
+@property (nonatomic, assign) IBOutlet UILabel *drugDesc;
+
+@property (nonatomic, assign) IBOutlet UITextField *dose;
+@property (nonatomic, assign) IBOutlet UITextField *start;
+@property (nonatomic, assign) IBOutlet UITextField *stop;
+@property (nonatomic, assign) IBOutlet UILabel *numDays;
+
+@property (nonatomic, assign) IBOutlet UITextField *prescriber;
+
+@property (nonatomic, assign) IBOutlet INButton *voidButton;
+@property (nonatomic, assign) IBOutlet INButton *replaceButton;
+@property (nonatomic, assign) IBOutlet INButton *stopButton;
+
+- (void)saveMed:(id)sender;
+
+- (IBAction)voidMed:(id)sender;
+- (IBAction)replaceMed:(id)sender;
+- (IBAction)stopMed:(id)sender;
+
+- (IBAction)changeDays:(id)sender;
 
 
 @end

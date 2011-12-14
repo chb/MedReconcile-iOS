@@ -21,8 +21,8 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	
 	// create Indivo Instance
-//	NSURL *baseURL = [NSURL URLWithString:@"http://10.17.16.94"];
-	NSURL *baseURL = [NSURL URLWithString:@"http://10.0.1.2"];
+	NSURL *baseURL = [NSURL URLWithString:@"http://10.17.16.94"];
+//	NSURL *baseURL = [NSURL URLWithString:@"http://10.0.1.2"];
 	self.indivo = [IndivoServer serverWithBaseURL:baseURL];
 	indivo.consumerKey = @"medreconcile@apps.indivo.org";
 	indivo.consumerSecret = @"medreconcile";
