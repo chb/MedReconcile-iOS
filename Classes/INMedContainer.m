@@ -83,7 +83,7 @@
 			tileFrame.origin.y = lastBottom;
 			tileFrame.size.width = myWidth;
 			tile.frame = tileFrame;
-			DLog(@"==>  %@", NSStringFromCGRect(tileFrame));
+			
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
 		}
 	}
@@ -153,7 +153,7 @@
 		aDetailTile.frame = detailFrame;
 	}
 	
-	[self removeDetailTile:nil];
+	[self removeDetailTileAnimated:NO];
 	self.detailTile = aDetailTile;
 	
 	// add subview
@@ -165,6 +165,7 @@
 	else {
 		[self addSubview:aDetailTile];
 	}
+	[aDetailTile pointAtX:roundf([aTile frame].origin.x + [aTile frame].size.width / 2)];
 	
 	// layout
 	[self layoutSubviews];

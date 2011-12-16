@@ -23,5 +23,7 @@ typedef enum {
 
 + (id)buttonWithStyle:(INButtonStyle)aStyle;
 
+- (void)indicateAction:(BOOL)action;
+
 
 @end

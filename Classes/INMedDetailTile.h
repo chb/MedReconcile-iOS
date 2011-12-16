@@ -38,6 +38,8 @@
 - (IBAction)triggerMainAction:(id)sender;
 - (IBAction)editMed:(id)sender;
 
+- (void)pointAtX:(CGFloat)x;
+
 - (void)indicateImageAction:(BOOL)flag;
 - (void)showImage:(UIImage *)anImage;
 

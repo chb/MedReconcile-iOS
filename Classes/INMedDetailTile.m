@@ -62,7 +62,7 @@
 
 - (void)setup
 {
-	self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_carbon.png"]];
+	self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"diagonal.png"]];
 	self.clipsToBounds = YES;
 	
 	// setup buttons
@@ -95,6 +95,62 @@
 	/// @todo update instructions size
 }
 
+- (void)pointAtX:(CGFloat)x
+{
+	CGSize mySize = [self bounds].size;
+	x = (x >= 10.f) ? x : 10.f;
+	
+	/* create the mask
+	CAShapeLayer *mask = (CAShapeLayer *)self.topShadow.mask;
+	if (![mask isKindOfClass:[CAShapeLayer class]]) {
+		mask = [CAShapeLayer new];
+	}
+	
+	BOOL add = (nil != [topShadow superlayer]);
+	[topShadow removeFromSuperlayer];
+	
+	// create the path
+	CGMutablePathRef path = CGPathCreateMutable();
+	
+	CGPathMoveToPoint(path, NULL, 0.f, 12.f);
+	CGPathAddLineToPoint(path, NULL, x - 10.f, 12.f);
+	CGPathAddLineToPoint(path, NULL, x, 2.f);
+	CGPathAddLineToPoint(path, NULL, x + 10.f, 12.f);
+	CGPathAddLineToPoint(path, NULL, mySize.width, 12.f);
+	CGPathAddLineToPoint(path, NULL, mySize.width, 40.f);
+	CGPathAddLineToPoint(path, NULL, 0.f, 40.f);
+	CGPathCloseSubpath(path);
+	mask.path = path;
+	CGPathRelease(path);
+	
+	topShadow.mask = mask;
+	if (add) {
+		[self.layer addSublayer:topShadow];
+	}	//	*/
+	
+	// create the color layer
+	[[topShadow sublayers] makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
+	CAShapeLayer *shape = [CAShapeLayer new];
+	shape.fillColor = [[UIColor colorWithWhite:1.f alpha:0.8f] CGColor];
+	shape.strokeColor = [[UIColor whiteColor] CGColor];
+	shape.lineWidth = 1.f;
+	
+	CGMutablePathRef path = CGPathCreateMutable();
+	
+	CGPathMoveToPoint(path, NULL, -0.5f, 0.5f);
+	CGPathAddLineToPoint(path, NULL, mySize.width + 1.f, 0.5f);
+	CGPathAddLineToPoint(path, NULL, mySize.width + 1.f, 12.5f);
+	CGPathAddLineToPoint(path, NULL, x + 10.f, 12.5f);
+	CGPathAddLineToPoint(path, NULL, x, 2.5f);
+	CGPathAddLineToPoint(path, NULL, x - 10.f, 12.5f);
+	CGPathAddLineToPoint(path, NULL, -0.5f, 12.5f);
+	CGPathCloseSubpath(path);
+	
+	shape.path = path;
+	CGPathRelease(path);
+	[topShadow addSublayer:shape];
+}
+
 
 
 #pragma mark - Actions
@@ -110,7 +166,19 @@
 
 - (void)triggerMainAction:(id)sender
 {
-	
+	INButton *theButton = [sender isKindOfClass:[INButton class]] ? (INButton *)sender : nil;
+	[theButton indicateAction:YES];
+	[med setLabel:@"TEST" callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		if (errorMessage) {
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Action failed"
+															message:errorMessage
+														   delegate:nil
+												  cancelButtonTitle:@"OK"
+												  otherButtonTitles:nil];
+			[alert show];
+		}
+		[theButton indicateAction:NO];
+	}];
 }
 
 /**
@@ -241,22 +309,6 @@
 		topShadow.bounds = CGRectMake(0.f, 0.f, mySize.width, 40.f);
 		topShadow.anchorPoint = CGPointMake(0.f, 0.f);
 		topShadow.position = CGPointZero;
-		
-		// mask the arrow
-		CAShapeLayer *mask = [CAShapeLayer new];
-		CGMutablePathRef path = CGPathCreateMutable();
-		
-		CGPathMoveToPoint(path, NULL, 0.f, 12.f);
-		CGPathAddLineToPoint(path, NULL, 70.f, 12.f);
-		CGPathAddLineToPoint(path, NULL, 80.f, 2.f);
-		CGPathAddLineToPoint(path, NULL, 90.f, 12.f);
-		CGPathAddLineToPoint(path, NULL, mySize.width, 12.f);
-		CGPathAddLineToPoint(path, NULL, mySize.width, 40.f);
-		CGPathAddLineToPoint(path, NULL, 0.f, 40.f);
-		CGPathCloseSubpath(path);
-		mask.path = path;
-		
-		topShadow.mask = mask;
 		
 		// create colors
 		NSMutableArray *colors = [NSMutableArray arrayWithCapacity:6];

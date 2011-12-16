@@ -30,6 +30,7 @@
 		EE6461E5145F1AAE0007C6B9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4C8145B91C30077E832 /* main.m */; };
 		EE72154414748CA4008835C5 /* tile.png in Resources */ = {isa = PBXBuildFile; fileRef = EE72154314748CA4008835C5 /* tile.png */; };
 		EE72154714749299008835C5 /* UIView+Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = EE72154614749299008835C5 /* UIView+Utilities.m */; };
+		EE8684D6149AAE9E0002C1E2 /* diagonal.png in Resources */ = {isa = PBXBuildFile; fileRef = EE8684D4149AAE9E0002C1E2 /* diagonal.png */; };
 		EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9F067714688252000412C4 /* NSArray+NilProtection.m */; };
 		EEA00A871499321000F65AD9 /* INMedEditViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEA00A861499321000F65AD9 /* INMedEditViewController.xib */; };
 		EEA00A8B149950F700F65AD9 /* INButton.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA00A8A149950F700F65AD9 /* INButton.m */; };
@@ -81,6 +82,7 @@
 		EE72154314748CA4008835C5 /* tile.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tile.png; sourceTree = "<group>"; };
 		EE72154514749298008835C5 /* UIView+Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIView+Utilities.h"; path = "Classes/UIView+Utilities.h"; sourceTree = SOURCE_ROOT; };
 		EE72154614749299008835C5 /* UIView+Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIView+Utilities.m"; path = "Classes/UIView+Utilities.m"; sourceTree = SOURCE_ROOT; };
+		EE8684D4149AAE9E0002C1E2 /* diagonal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = diagonal.png; sourceTree = "<group>"; };
 		EE9F067614688252000412C4 /* NSArray+NilProtection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+NilProtection.h"; path = "Classes/NSArray+NilProtection.h"; sourceTree = SOURCE_ROOT; };
 		EE9F067714688252000412C4 /* NSArray+NilProtection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSArray+NilProtection.m"; path = "Classes/NSArray+NilProtection.m"; sourceTree = SOURCE_ROOT; };
 		EEA00A861499321000F65AD9 /* INMedEditViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = INMedEditViewController.xib; path = Views/INMedEditViewController.xib; sourceTree = SOURCE_ROOT; };
@@ -163,6 +165,7 @@
 				EEA00A8C149950FB00F65AD9 /* UI Elements */,
 				EEA45081146D764900DC9EB1 /* Views */,
 				EE6461D9145F18020007C6B9 /* View Controller */,
+				EE8684CD149A915F0002C1E2 /* Helper */,
 				EE472612147308F100EAFDA3 /* Images */,
 				EE30A4C3145B91C30077E832 /* Supporting Files */,
 			);
@@ -185,8 +188,9 @@
 			children = (
 				EECEC44E1475A0D8009D85FC /* statusGreen@2x.png */,
 				EECEC44A1475854B009D85FC /* white_carbon.png */,
-				EECEC44714758415009D85FC /* statusGreen.png */,
+				EE8684D4149AAE9E0002C1E2 /* diagonal.png */,
 				EE72154314748CA4008835C5 /* tile.png */,
+				EECEC44714758415009D85FC /* statusGreen.png */,
 				EE472610147308EA00EAFDA3 /* pillDefault.png */,
 				EE4434C01491726C00CC6344 /* buttonGray.png */,
 				EE4434C214917CF500CC6344 /* buttonRed.png */,
@@ -211,6 +215,14 @@
 				EE47261314730FC400EAFDA3 /* INEditMedViewController.h */,
 				EE47261414730FC400EAFDA3 /* INEditMedViewController.m */,
 				EE4726161473102B00EAFDA3 /* INEditMedViewController.xib */,
+			);
+			name = "View Controller";
+			path = ViewController;
+			sourceTree = "<group>";
+		};
+		EE8684CD149A915F0002C1E2 /* Helper */ = {
+			isa = PBXGroup;
+			children = (
 				EE9F067614688252000412C4 /* NSArray+NilProtection.h */,
 				EE9F067714688252000412C4 /* NSArray+NilProtection.m */,
 				EE72154514749298008835C5 /* UIView+Utilities.h */,
@@ -218,7 +230,7 @@
 				EEA00A8D1499595300F65AD9 /* UIViewController+Utilities.h */,
 				EEA00A8E1499595300F65AD9 /* UIViewController+Utilities.m */,
 			);
-			name = "View Controller";
+			name = Helper;
 			path = ViewController;
 			sourceTree = "<group>";
 		};
@@ -322,6 +334,7 @@
 				EE4434C9149188AB00CC6344 /* buttonDisabled.png in Resources */,
 				EE4434CB1491892600CC6344 /* buttonGreen.png in Resources */,
 				EEA00A871499321000F65AD9 /* INMedEditViewController.xib in Resources */,
+				EE8684D6149AAE9E0002C1E2 /* diagonal.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

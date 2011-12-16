@@ -265,7 +265,7 @@
 {
 	IndivoRecord *aRecord = [[aNotification userInfo] objectForKey:INRecordUserInfoKey];
 	if ([aRecord isEqual:self.record]) {		// will always be true anyway...
-		[self refresh:nil];
+		
 	}
 }
 
