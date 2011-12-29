@@ -13,14 +13,14 @@
 
 @interface INRxNormLoader ()
 
-@property (nonatomic, readwrite, strong) NSMutableDictionary *related;
+@property (nonatomic, readwrite, strong) NSMutableDictionary *responseObjects;
 
 @end
 
 
 @implementation INRxNormLoader
 
-@synthesize related;
+@synthesize responseObjects;
 
 
 + (id)loader
@@ -48,7 +48,7 @@
 	
 	// load
 	[self getWithCallback:^(BOOL didCancel, NSString *errorString) {
-		self.related = nil;
+		self.responseObjects = nil;
 		NSString *myErrString = nil;
 		
 		// got some suggestions!
@@ -84,7 +84,7 @@
 						}
 					}
 					
-					self.related = found;
+					self.responseObjects = found;
 				}
 				else {
 					myErrString = [NSString stringWithFormat:@"No relatedGroup > conceptGroup nesting found in %@", body];
@@ -105,5 +105,33 @@
 	}];
 }
 
+
+/*
+ // strength
+ NSString *strength = [drugDict objectForKey:@"strength"];
+ med.strength = [INUnitValue newWithNodeName:@"strength"];
+ // RxNorm units:
+ //	CELLS - Cells
+ //	MEQ - Milliequivalent
+ //	MG - Milligram
+ //	ML - Milliliter
+ //	UNT - Unit
+ //	% - Percent
+ //	ACTUAT
+ //	 and combinations thereof as fractions (e.g. CELLS/ML)
+ if (strength) {
+ NSString *value = strength;
+ NSMutableArray *units = [NSMutableArray arrayWithCapacity:2];
+ for (NSString *unit in [NSArray arrayWithObjects:@"CELLS", @"MEQ", @"MG", @"ML", @"UNT", @"%", @"ACTUAT", @"/", nil]) {
+ if (NSNotFound != [value rangeOfString:unit].location) {
+ [units addObject:unit];
+ value = [value stringByReplacingOccurrencesOfString:unit withString:@""];
+ }
+ }
+ med.strength.value = [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+ med.strength.unit.type = @"http://rxnav.nlm.nih.gov/";			// no real URL for RxNorm units...
+ med.strength.unit.value = [units componentsJoinedByString:@"/"];
+ }
+*/
 
 @end

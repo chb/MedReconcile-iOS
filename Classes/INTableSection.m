@@ -155,6 +155,16 @@
 }
 
 /**
+ *	Adds an object to the beginning of the array
+ */
+- (void)unshiftObject:(id)anObject
+{
+	if (anObject) {
+		[objects insertObject:anObject atIndex:0];
+	}
+}
+
+/**
  *	Removes current objects and fills content with objects from the given array
  */
 - (void)setObjectsFrom:(NSArray *)anArray

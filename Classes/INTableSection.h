@@ -30,6 +30,7 @@
 - (void)removeAllObjects;
 - (void)addObject:(id)anObject;
 - (void)addObjects:(NSArray *)objects;
+- (void)unshiftObject:(id)anObject;
 - (void)setObjectsFrom:(NSArray *)anArray;
 
 - (id)objectForRow:(NSUInteger)row;

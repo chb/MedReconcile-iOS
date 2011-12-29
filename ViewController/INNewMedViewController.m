@@ -11,6 +11,7 @@
 #import "INMedListController.h"
 #import "INTableSection.h"
 #import "INRxNormLoader.h"
+#import "INButton.h"
 
 #import "IndivoServer.h"
 #import "INURLFetcher.h"
@@ -139,20 +140,11 @@
 		cell.textLabel.text = drug ? [drug objectForKey:@"name"] : @"Unknown";
 		// cell.detailTextLabel.text = [drug objectForKey:@"tty"];
 		
-		//--
-		UIImage *greenButtonImage = [[UIImage imageNamed:@"buttonGreen.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
-		UIImage *disabledButtonImage = [[UIImage imageNamed:@"buttonDisabled.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
-		UIImage *pressedButtonImage = [[UIImage imageNamed:@"buttonPressed.png"] stretchableImageWithLeftCapWidth:11 topCapHeight:0];
-		UIButton *use = [UIButton buttonWithType:UIButtonTypeCustom];
-		use.frame = CGRectMake(0.f, 0.f, 60.f, 39.f);
-		[use setBackgroundImage:greenButtonImage forState:UIControlStateNormal];
-		[use setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
-		[use setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
+		INButton *use = [INButton buttonWithStyle:INButtonStyleAccept];
+		use.frame = CGRectMake(0.f, 0.f, 60.f, 31.f);
 		[use addTarget:self action:@selector(useDrug:) forControlEvents:UIControlEventTouchUpInside];
 		[use setTitle:@"Use" forState:UIControlStateNormal];
-		
 		cell.accessoryView = use;
-		//--
 	}
 	
 	// med detail nodes
@@ -407,6 +399,7 @@
 			NSMutableArray *suggIN = [NSMutableArray array];
 			NSMutableArray *suggBN = [NSMutableArray array];
 			NSMutableArray *suggSBD = [NSMutableArray array];
+			NSMutableArray *userSuggestionMatches = [NSMutableArray array];
 			
 			// add suggestions and reload the table
 			for (INURLLoader *loader in aFetcher.successfulLoads) {
@@ -421,33 +414,30 @@
 					INXMLNode *drug = [node childNamed:@"properties"];
 					if (drug) {
 						NSString *name = [[drug childNamed:@"name"] text];
-						if (NSOrderedSame == [name compare:[userSuggestion objectForKey:@"name"] options:(NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch)]) {
-							userSuggestion = nil;
-						}
-						
-						// we are going to show suggestions with type: IN (ingredient) and BN (Brand Name)
 						NSString *tty = [[drug childNamed:@"tty"] text];
+						
 						NSMutableDictionary *drugDict = [NSMutableDictionary dictionaryWithObject:tty forKey:@"tty"];
 						[drugDict setObject:[[drug childNamed:@"rxcui"] text] forKey:@"rxcui"];
 						[drugDict setObject:name forKey:@"name"];
 						
-						DLog(@"-->  %@  [%@]  (%@, %@)", tty, [currentScores objectForKey:[[drug childNamed:@"rxcui"] text]], [[drug childNamed:@"name"] text], [[drug childNamed:@"rxcui"] text]);
-						if ([tty isEqualToString:@"IN"]) {
-							[suggIN addObject:drugDict];
+						// if the user-entered string is exactly the same as a result, we are not going to show the user input
+						if (NSOrderedSame == [name compare:[userSuggestion objectForKey:@"name"] options:(NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch)]) {
+							[userSuggestionMatches addObject:drugDict];
 						}
-						else if ([tty isEqualToString:@"BN"]) {
+						
+						// we are going to show suggestions with type: IN (ingredient) and BN (Brand Name)
+						DLog(@"-->  %@  [%@]  (%@, %@)", tty, [currentScores objectForKey:[[drug childNamed:@"rxcui"] text]], name, [[drug childNamed:@"rxcui"] text]);
+						if ([tty isEqualToString:@"BN"]) {
 							[suggBN addObject:drugDict];
+						}
+						else if ([tty isEqualToString:@"IN"]) {
+							[suggIN addObject:drugDict];
 						}
 						else if ([tty isEqualToString:@"SBD"]) {
 							[suggSBD addObject:drugDict];
 						}
 					}
 				}
-			}
-			
-			// re-add the user suggestion if we're still holding on to it
-			if (userSuggestion) {
-				[section addObject:userSuggestion];
 			}
 			
 			// decide which ones to use
@@ -459,6 +449,16 @@
 			}
 			else {
 				[section addObjects:suggSBD];
+			}
+			
+			// re-add the user suggestion if we're still holding on to it
+			if ([userSuggestionMatches count] > 0) {
+				for (NSDictionary *suggDict in userSuggestionMatches) {
+					[section unshiftObject:suggDict];
+				}
+			}
+			else if (userSuggestion) {
+				[section unshiftObject:userSuggestion];
 			}
 		}
 		else {
@@ -517,11 +517,10 @@
 				NSMutableArray *stripFromNames = [NSMutableArray array];
 				NSMutableDictionary *scdc = [NSMutableDictionary dictionary];
 				NSMutableArray *drugs = [NSMutableArray array];
-				NSMutableDictionary *routes = [NSMutableDictionary dictionary];
 				
 				// look at what we've got
-				for (NSString *tty in [loader.related allKeys]) {
-					NSArray *relatedArr = [loader.related objectForKey:tty];
+				for (NSString *tty in [loader.responseObjects allKeys]) {
+					NSArray *relatedArr = [loader.responseObjects objectForKey:tty];
 					for (NSDictionary *related in relatedArr) {
 						NSString *name = [related objectForKey:@"name"];
 						NSString *rx = [related objectForKey:@"rxcui"];
@@ -533,13 +532,6 @@
 								newSection.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
 								[newSections addObject:newSection];
 								[stripFromNames addObjectIfNotNil:name];
-								
-								INCodedValue *route = [INCodedValue newWithNodeName:@"route"];
-								route.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
-								route.value = rx;
-								route.text = name;
-								
-								[routes setObject:route forKey:name];
 							}
 							else {
 								DLog(@"Ohoh, no name for DF found!");
@@ -622,16 +614,6 @@
 						for (INTableSection *section in newSections) {
 							if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
 								[section addObject:drug];
-								
-								// add route node
-								INCodedValue *route = [routes objectForKey:section.title];
-								if (route) {
-									if ([drug objectForKey:@"route"]) {
-										DLog(@"WARNING: Drug %@ already has a route, this will be overridden!", name);
-									}
-									[drug setObject:route forKey:@"route"];
-								}
-								
 								put++;
 							}
 							i++;
@@ -644,7 +626,7 @@
 						for (NSString *string in stripFromNames) {
 							name = [name stringByReplacingOccurrencesOfString:string withString:@""];
 						}
-						name = [name stringByReplacingOccurrencesOfString:@"     " withString:@" "];		// gimme regex!!!! Use NSScanner one day...
+						name = [name stringByReplacingOccurrencesOfString:@"     " withString:@" "];		/// @todo Use NSScanner one day...
 						name = [name stringByReplacingOccurrencesOfString:@"    " withString:@" "];
 						name = [name stringByReplacingOccurrencesOfString:@"   " withString:@" "];
 						name = [name stringByReplacingOccurrencesOfString:@"  " withString:@" "];
@@ -725,51 +707,15 @@
 	}
 	med.brandName.text = [drugDict objectForKey:@"fullName"];
 	
-	// dose
-	med.dose = [INUnitValue newWithNodeName:@"dose"];
-	med.dose.value = @"1";
-	med.dose.unit.type = @"http://indivo.org/codes/units#";
-	med.dose.unit.abbrev = @"p";
-	med.dose.unit.value = @"pills";
+	/// @todo NEW SCHEMA TESTING -- dose is substitute for "formulation"
+//	med.dose = [INUnitValue newWithNodeName:@"dose"];
+//	med.dose.value = @"1";
+//	med.dose.unit.type = @"http://indivo.org/codes/units#";
+//	med.dose.unit.abbrev = @"p";
+//	med.dose.unit.value = @"pills";
 	
-	// route
-	med.route = [drugDict objectForKey:@"route"];
-	
-	// strength
-	NSString *strength = [drugDict objectForKey:@"strength"];
-	med.strength = [INUnitValue newWithNodeName:@"strength"];
-	// RxNorm units:
-	//	CELLS - Cells
-	//	MEQ - Milliequivalent
-	//	MG - Milligram
-	//	ML - Milliliter
-	//	UNT - Unit
-	//	% - Percent
-	//	ACTUAT
-	//	 and combinations thereof as fractions (e.g. CELLS/ML)
-	if (strength) {
-		NSString *value = strength;
-		NSMutableArray *units = [NSMutableArray arrayWithCapacity:2];
-		for (NSString *unit in [NSArray arrayWithObjects:@"CELLS", @"MEQ", @"MG", @"ML", @"UNT", @"%", @"ACTUAT", @"/", nil]) {
-			if (NSNotFound != [value rangeOfString:unit].location) {
-				[units addObject:unit];
-				value = [value stringByReplacingOccurrencesOfString:unit withString:@""];
-			}
-		}
-		med.strength.value = [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-		med.strength.unit.type = @"http://rxnav.nlm.nih.gov/";			// no real URL for RxNorm units...
-		med.strength.unit.value = [units componentsJoinedByString:@"/"];
-	}
-	
-	// frequency
-	med.frequency = [INCodedValue newWithNodeName:@"frequency"];
-	med.frequency.text = @"Daily";
-	
-	INTableSection *pharm = [INTableSection sectionWithType:@"editable"];
-	[pharm addObject:med.dose];
-	[pharm addObject:med.route];
-	[pharm addObject:med.strength];
-	[pharm addObject:med.frequency];
+//	INTableSection *pharm = [INTableSection sectionWithType:@"editable"];
+//	[pharm addObject:med.dose];
 	
 	// date started and stopped
 	med.dateStarted = [INDate dateWithDate:[NSDate date]];
@@ -794,7 +740,7 @@
 	for (INTableSection *section in sections) {
 		[section collapseAnimated:YES];
 	}
-	[self addSection:pharm animated:YES];
+//	[self addSection:pharm animated:YES];
 	[self addSection:dates animated:YES];
 	[self addSection:instructions animated:YES];
 	[self addSection:accept animated:YES];
