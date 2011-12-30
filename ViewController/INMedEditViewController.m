@@ -15,6 +15,7 @@
 @interface INMedEditViewController ()
 
 - (void)loadMed;
+- (void)updateNumDaysLabel;
 
 - (void)keyboardWillShow:(NSNotification *)aNotification;
 - (void)keyboardWillHide:(NSNotification *)aNotification;
@@ -71,10 +72,14 @@
 		drug.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
 		drugDesc.text = med.brandName.text;
 		
-		start.text = med.dateStarted ? [med.dateStarted isoString] : @"";
-		stop.text = med.dateStopped ? [med.dateStopped isoString] : @"";
+		start.text = med.dateStarted && ![med.dateStarted isNull] ? [med.dateStarted isoString] : @"";
+		stop.text = med.dateStopped && ![med.dateStarted isNull] ? [med.dateStopped isoString] : @"";
+		
+		// fill days selector
+		[self updateNumDaysLabel];
 	}
 }
+
 
 /**
  *	Saves current med values and dismisses the view controller
@@ -87,10 +92,9 @@
 	med.dateStarted = [INDate dateFromISOString:start.text];
 	med.dateStopped = [INDate dateFromISOString:stop.text];
 	
-	NSLog(@"%@", [med xml]);
-	
 	[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 		if (errorMessage) {
+			DLog(@"Med XML: %@", [med xml]);
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to update"
 															message:errorMessage
 														   delegate:nil
@@ -134,7 +138,53 @@
  */
 - (IBAction)changeDays:(id)sender
 {
+	UISegmentedControl *control = (UISegmentedControl *)sender;			///< @todo This is... dirty...
 	
+	NSDate *from = [INDate parseDateFromISOString:start.text];
+	NSDate *until = [INDate parseDateFromISOString:stop.text];
+	NSInteger currentDays = 0;
+	
+	if (from && until) {
+		NSCalendar *myCalendar = [NSCalendar currentCalendar];
+		currentDays = [[myCalendar components:NSDayCalendarUnit fromDate:from toDate:until options:0] day];
+	}
+	
+	// decrease by one day
+	if (0 == control.selectedSegmentIndex) {
+		if (currentDays > 0) {
+			currentDays--;
+		}
+	}
+	
+	// add a day
+	else {
+		currentDays++;
+	}
+	
+	until = [from dateByAddingTimeInterval:currentDays * 24 * 3600];
+	stop.text = [INDate isoStringFrom:until];
+	
+	// update
+	[self updateNumDaysLabel];
+}
+
+/**
+ *	Updates the num days label by comparing the text in the two input fields
+ */
+- (void)updateNumDaysLabel
+{
+	NSDate *from = [INDate parseDateFromISOString:start.text];
+	NSDate *until = [INDate parseDateFromISOString:stop.text];
+	
+	NSString *numDaysText = @"";
+	if (from && until) {
+		NSCalendar *myCalendar = [NSCalendar currentCalendar];
+		NSInteger day = [[myCalendar components:NSDayCalendarUnit fromDate:from toDate:until options:0] day];
+		if (day >= 0) {
+			numDaysText = (1 == day) ? @"1 day" : [NSString stringWithFormat:@"%d days", day];
+		}
+	}
+	numDays.text = numDaysText;
 }
 
 
@@ -158,6 +208,17 @@
 - (void)keyboardWillHide:(NSNotification *)aNotification
 {
 	
+}
+
+
+
+#pragma mark - Textfield Delegate
+- (BOOL)textField:(UITextField *)aTextField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+	if (aTextField == start || aTextField == stop) {
+		[self performSelector:@selector(updateNumDaysLabel) withObject:nil afterDelay:0.0];
+	}
+	return YES;
 }
 
 

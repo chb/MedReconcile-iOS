@@ -15,7 +15,7 @@
 /**
  *	This view controller allows to edit a medication and its prescription
  */
-@interface INMedEditViewController : UIViewController
+@interface INMedEditViewController : UIViewController <UITextFieldDelegate>
 
 @property (nonatomic, strong) IndivoMedication *med;
 
