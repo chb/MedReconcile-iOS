@@ -62,16 +62,16 @@
 		
 		// a tile
 		if ([tile isKindOfClass:[INMedTile class]]) {
-			if (tileNum > 0 && 0 == tileNum % perRow) {
-				y = lastBottom;
-			}
-			tileFrame.origin = CGPointMake((0 == tileNum % perRow) ? 0.f : tileWidth, y);
 			tileFrame.size = CGSizeMake(tileWidth, tileHeight);
 			
 			// if we have an uneven number, stretch the last tile to cover the full row
-			if (tile == lastTile) {
-				tileFrame.size.width = myWidth;
+			if (tileNum > 0 && 0 == tileNum % perRow) {
+				y = lastBottom;
+				if (tile == lastTile) {
+					tileFrame.size.width = myWidth;
+				}
 			}
+			tileFrame.origin = CGPointMake((0 == tileNum % perRow) ? 0.f : tileWidth, y);
 			tile.frame = tileFrame;
 			
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);

@@ -259,8 +259,8 @@
 		med = aMed;
 		
 		// name and info
-		agentName.text = med.name.text;
-		prescName.text = med.brandName.text;
+		agentName.text = med.name.abbrev ? med.name.abbrev : med.name.text;
+		prescName.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
 		
 		// date
 		self.drFormatter.from = med.dateStarted.date;

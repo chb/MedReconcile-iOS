@@ -25,7 +25,6 @@
 @property (nonatomic, strong) INMedTile *activeTile;
 
 - (void)showNewMedView:(id)sender;
-- (void)setRecordButtonTitle:(NSString *)aTitle;
 - (void)documentsDidChange:(NSNotification *)aNotification;
 
 @end
@@ -115,7 +114,8 @@
 - (void)refresh:(id)sender
 {
 	if (!record) {
-		DLog(@"No record set, cannot refresh!");
+		[medGroups removeAllObjects];
+		[container showTiles:nil];
 		return;
 	}
 	
@@ -224,7 +224,6 @@
 		
 		// there was an error selecting the record
 		if (errorMessage) {
-			[self setRecordButtonTitle:[record label]];
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to connect"
 															message:errorMessage
 														   delegate:nil
@@ -236,15 +235,14 @@
 		// successfully selected record, fetch medications
 		else if (!userDidCancel) {
 			self.record = [APP_DELEGATE.indivo activeRecord];
-			[self setRecordButtonTitle:[record label]];
 			[self refresh:sender];
 		}
 		
 		// cancelled
 		else {
-			[self setRecordButtonTitle:[record label]];
 		}
 		
+		[self setRecordButtonTitle:[record label]];
 		self.navigationItem.rightBarButtonItem.enabled = (nil != self.record);
 	}];
 }
@@ -265,7 +263,7 @@
 {
 	IndivoRecord *aRecord = [[aNotification userInfo] objectForKey:INRecordUserInfoKey];
 	if ([aRecord isEqual:self.record]) {		// will always be true anyway...
-		
+		[self refresh:nil];
 	}
 }
 

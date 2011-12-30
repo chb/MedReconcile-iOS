@@ -35,6 +35,7 @@
 - (void)clearSuggestions;
 - (void)proceedWith:(NSDictionary *)drugDict fromLevel:(NSUInteger)fromLevel;
 - (void)useDrug:(NSDictionary *)drugDict;
+- (void)useThisDrug:(id)sender;
 
 - (INTableSection *)addSection:(INTableSection *)newSection animated:(BOOL)animated;
 - (void)goToSection:(NSUInteger)sectionIdx removeLower:(BOOL)remove;
@@ -142,7 +143,8 @@
 		
 		INButton *use = [INButton buttonWithStyle:INButtonStyleAccept];
 		use.frame = CGRectMake(0.f, 0.f, 60.f, 31.f);
-		[use addTarget:self action:@selector(useDrug:) forControlEvents:UIControlEventTouchUpInside];
+		use.object = drug;
+		[use addTarget:self action:@selector(useThisDrug:) forControlEvents:UIControlEventTouchUpInside];
 		[use setTitle:@"Use" forState:UIControlStateNormal];
 		cell.accessoryView = use;
 	}
@@ -399,7 +401,7 @@
 			NSMutableArray *suggIN = [NSMutableArray array];
 			NSMutableArray *suggBN = [NSMutableArray array];
 			NSMutableArray *suggSBD = [NSMutableArray array];
-			NSMutableArray *userSuggestionMatches = [NSMutableArray array];
+			NSMutableDictionary *userSuggestionMatches = [NSMutableDictionary dictionary];
 			
 			// add suggestions and reload the table
 			for (INURLLoader *loader in aFetcher.successfulLoads) {
@@ -422,7 +424,7 @@
 						
 						// if the user-entered string is exactly the same as a result, we are not going to show the user input
 						if (NSOrderedSame == [name compare:[userSuggestion objectForKey:@"name"] options:(NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch)]) {
-							[userSuggestionMatches addObject:drugDict];
+							[userSuggestionMatches setObject:drugDict forKey:tty];
 						}
 						
 						// we are going to show suggestions with type: IN (ingredient) and BN (Brand Name)
@@ -441,11 +443,14 @@
 			}
 			
 			// decide which ones to use
+			NSString *didUse = @"SBD";
 			if ([suggBN count] > 0) {
 				[section addObjects:suggBN];
+				didUse = @"BN";
 			}
 			else if ([suggIN count] > 0) {
 				[section addObjects:suggIN];
+				didUse = @"iN";
 			}
 			else {
 				[section addObjects:suggSBD];
@@ -453,8 +458,10 @@
 			
 			// re-add the user suggestion if we're still holding on to it
 			if ([userSuggestionMatches count] > 0) {
-				for (NSDictionary *suggDict in userSuggestionMatches) {
-					[section unshiftObject:suggDict];
+				for (NSString *suggKey in [userSuggestionMatches allKeys]) {
+					if (![suggKey isEqualToString:didUse]) {
+						[section unshiftObject:[userSuggestionMatches objectForKey:suggKey]];
+					}
 				}
 			}
 			else if (userSuggestion) {
@@ -626,7 +633,7 @@
 						for (NSString *string in stripFromNames) {
 							name = [name stringByReplacingOccurrencesOfString:string withString:@""];
 						}
-						name = [name stringByReplacingOccurrencesOfString:@"     " withString:@" "];		/// @todo Use NSScanner one day...
+						name = [name stringByReplacingOccurrencesOfString:@"     " withString:@" "];		/// @todo gimme Use NSScanner one day...
 						name = [name stringByReplacingOccurrencesOfString:@"    " withString:@" "];
 						name = [name stringByReplacingOccurrencesOfString:@"   " withString:@" "];
 						name = [name stringByReplacingOccurrencesOfString:@"  " withString:@" "];
@@ -673,6 +680,13 @@
 
 
 #pragma mark - Drug Details
+- (void)useThisDrug:(id)sender
+{
+	if ([sender isKindOfClass:[INButton class]]) {
+		[self useDrug:((INButton *)sender).object];
+	}
+}
+
 /**
  *	If a drug has been chosen, continue to the next fields
  */

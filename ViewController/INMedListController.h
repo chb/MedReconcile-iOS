@@ -23,6 +23,7 @@
 - (void)refresh:(id)sender;
 - (void)dismissModal:(id)sender;
 
+- (void)setRecordButtonTitle:(NSString *)aTitle;
 - (void)editMedicationFrom:(INMedTile *)medTile;
 
 

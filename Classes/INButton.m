@@ -22,7 +22,7 @@
 
 @implementation INButton
 
-@synthesize buttonStyle;
+@synthesize buttonStyle, object;
 @synthesize activity, originalTitle, originalInsets;
 
 

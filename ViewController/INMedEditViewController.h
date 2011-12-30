@@ -19,6 +19,8 @@
 
 @property (nonatomic, strong) IndivoMedication *med;
 
+@property (nonatomic, assign) IBOutlet UIScrollView *scrollView;
+
 @property (nonatomic, assign) IBOutlet UITextField *agent;
 @property (nonatomic, assign) IBOutlet UILabel *agentDesc;
 @property (nonatomic, assign) IBOutlet UITextField *drug;

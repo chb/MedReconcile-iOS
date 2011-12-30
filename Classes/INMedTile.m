@@ -253,7 +253,7 @@
 	if (newMed != med) {
 		med = newMed;
 		
-		self.nameLabel.text = med.brandName ? med.brandName.text : med.name.text;
+		self.nameLabel.text = med.brandName ? (med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text) : (med.name.abbrev ? med.name.abbrev : med.name.text);
 	}
 }
 

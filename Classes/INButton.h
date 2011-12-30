@@ -19,7 +19,8 @@ typedef enum {
 
 @interface INButton : UIButton
 
-@property (nonatomic, assign) INButtonStyle buttonStyle;
+@property (nonatomic, assign) INButtonStyle buttonStyle;		///< The button's style
+@property (nonatomic, assign) id object;						///< Dirty way to associate an object with the button
 
 + (id)buttonWithStyle:(INButtonStyle)aStyle;
 
