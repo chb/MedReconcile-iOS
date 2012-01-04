@@ -263,8 +263,8 @@
 		prescName.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
 		
 		// date
-		self.drFormatter.from = med.dateStarted.date;
-		self.drFormatter.to = med.dateStopped.date;
+		self.drFormatter.from = med.prescription.on.date;
+		self.drFormatter.to = med.prescription.stopOn.date;
 		
 		// image
 		if (med.pillImage) {

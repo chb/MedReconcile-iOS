@@ -10,6 +10,7 @@
 #import "IndivoMedication.h"
 #import "INButton.h"
 #import "UIViewController+Utilities.h"
+#import <QuartzCore/QuartzCore.h>
 
 
 @interface INMedEditViewController ()
@@ -27,7 +28,8 @@
 
 @synthesize med;
 @synthesize scrollView, agent, agentDesc, drug, drugDesc;
-@synthesize dose, start, stop, numDays, prescriber;
+@synthesize dose, start, stop, numDays;
+@synthesize instructions, prescriber;
 @synthesize voidButton, replaceButton, stopButton;
 
 
@@ -48,8 +50,15 @@
 
 - (void)viewDidLoad
 {
-	self.voidButton.buttonStyle = INButtonStyleDestructive;
-	self.stopButton.buttonStyle = INButtonStyleDestructive;
+	scrollView.frame = self.view.bounds;
+	[self.view addSubview:scrollView];
+	
+	instructions.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+	instructions.layer.cornerRadius = 6.f;
+	instructions.layer.borderWidth = 1.f;
+	
+	voidButton.buttonStyle = INButtonStyleDestructive;
+	stopButton.buttonStyle = INButtonStyleDestructive;
 	
 	CGRect stopFrame = stopButton.frame;
 	scrollView.contentSize = CGSizeMake([self.view bounds].size.width, stopFrame.origin.y + stopFrame.size.height + 20.f);
@@ -72,8 +81,10 @@
 		drug.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
 		drugDesc.text = med.brandName.text;
 		
-		start.text = med.dateStarted && ![med.dateStarted isNull] ? [med.dateStarted isoString] : @"";
-		stop.text = med.dateStopped && ![med.dateStarted isNull] ? [med.dateStopped isoString] : @"";
+		INDate *startDate = med.prescription.on;
+		INDate *stopDate = med.prescription.stopOn;
+		start.text = startDate && ![startDate isNull] ? [startDate isoString] : @"";
+		stop.text = stopDate && ![stopDate isNull] ? [stopDate isoString] : @"";
 		
 		// fill days selector
 		[self updateNumDaysLabel];
@@ -89,12 +100,17 @@
 	med.name.abbrev = agent.text;
 	med.brandName.abbrev = drug.text;
 	
-	med.dateStarted = [INDate dateFromISOString:start.text];
-	med.dateStopped = [INDate dateFromISOString:stop.text];
+	IndivoPrescription *prescription = [IndivoPrescription new];
+	prescription.nodeName = @"prescription";
+	prescription.on = [INDate dateFromISOString:start.text];
+	prescription.stopOn = [INDate dateFromISOString:stop.text];
+	prescription.instructions = [INString newWithString:instructions.text];
+	prescription.dispenseAsWritten = [INBool newNo];
+	med.prescription = prescription;
 	
+	DLog(@"Med XML: %@", [med xml]);
 	[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 		if (errorMessage) {
-			DLog(@"Med XML: %@", [med xml]);
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to update"
 															message:errorMessage
 														   delegate:nil
@@ -141,6 +157,10 @@
 	UISegmentedControl *control = (UISegmentedControl *)sender;			///< @todo This is... dirty...
 	
 	NSDate *from = [INDate parseDateFromISOString:start.text];
+	if (!from) {
+		from = [NSDate date];
+		start.text = [INDate isoStringFrom:from];
+	}
 	NSDate *until = [INDate parseDateFromISOString:stop.text];
 	NSInteger currentDays = 0;
 	
@@ -149,20 +169,16 @@
 		currentDays = [[myCalendar components:NSDayCalendarUnit fromDate:from toDate:until options:0] day];
 	}
 	
-	// decrease by one day
+	// decrease or increase by one day
 	if (0 == control.selectedSegmentIndex) {
-		if (currentDays > 0) {
-			currentDays--;
-		}
+		currentDays--;
 	}
-	
-	// add a day
 	else {
 		currentDays++;
 	}
 	
-	until = [from dateByAddingTimeInterval:currentDays * 24 * 3600];
-	stop.text = [INDate isoStringFrom:until];
+	until = (currentDays >= 0) ? [from dateByAddingTimeInterval:currentDays * 24 * 3600] : nil;
+	stop.text = until ? [INDate isoStringFrom:until] : @"";
 	
 	// update
 	[self updateNumDaysLabel];
@@ -195,19 +211,30 @@
 	CGRect target = self.view.bounds;
 	
 	NSDictionary *userInfo = [aNotification userInfo];
-	//NSTimeInterval animDuration = [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+	NSTimeInterval animDuration = [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
 	
 	NSValue *frameValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
 	CGRect keyboardFrame = [self.view convertRect:[frameValue CGRectValue] fromView:self.view.window];
 	CGRect intersect = CGRectIntersection(target, keyboardFrame);
 	target.size.height = intersect.origin.y;
 	
-	scrollView.frame = target;
+	[UIView animateWithDuration:animDuration
+					 animations:^{
+						 scrollView.frame = target;
+	}];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
 {
+	CGRect target = self.view.bounds;
 	
+	NSDictionary *userInfo = [aNotification userInfo];
+	NSTimeInterval animDuration = [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+	
+	[UIView animateWithDuration:animDuration
+					 animations:^{
+		scrollView.frame = target;
+	}];
 }
 
 
@@ -215,11 +242,23 @@
 #pragma mark - Textfield Delegate
 - (BOOL)textField:(UITextField *)aTextField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-	if (aTextField == start || aTextField == stop) {
+	if (start == aTextField || stop == aTextField) {
 		[self performSelector:@selector(updateNumDaysLabel) withObject:nil afterDelay:0.0];
 	}
 	return YES;
 }
+
+- (BOOL)textView:(UITextView *)aTextView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+	if (instructions == aTextView) {
+		if ([text isEqualToString:@"\n"]) {
+			[instructions resignFirstResponder];
+			return NO;
+		}
+	}
+	return YES;
+}
+
 
 
 

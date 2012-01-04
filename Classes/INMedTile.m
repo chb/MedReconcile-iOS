@@ -113,8 +113,8 @@
 
 - (void)updateDurationLabel
 {
-	drFormatter.from = med.dateStarted.date;
-	drFormatter.to = med.dateStopped.date;
+	drFormatter.from = med.prescription.on.date;
+	drFormatter.to = med.prescription.stopOn.date;
 	durationLabel.text = [drFormatter formattedRangeForMaxWidth:[durationLabel frame].size.width withFont:durationLabel.font];
 	
 	durationLabel.textColor = (drFormatter.to == [[NSDate date] earlierDate:drFormatter.to]) ? [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f] : [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
