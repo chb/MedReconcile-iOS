@@ -306,7 +306,6 @@
 												  cancelButtonTitle:@"Too Bad"
 												  otherButtonTitles:nil];
 			[alert show];
-			[section removeAnimated:NO];
 		}
 		
 		// got some suggestions!
@@ -450,7 +449,7 @@
 			}
 			else if ([suggIN count] > 0) {
 				[section addObjects:suggIN];
-				didUse = @"iN";
+				didUse = @"IN";
 			}
 			else {
 				[section addObjects:suggSBD];

@@ -120,7 +120,7 @@
 	}
 	
 	// fetch this record's medications
-	[record fetchReportsOfClass:[IndivoMedication class] callback:^(BOOL success, NSDictionary *userInfo) {
+	[record fetchAllReportsOfClass:[IndivoMedication class] callback:^(BOOL success, NSDictionary *userInfo) {
 		
 		// error fetching medications
 		if (!success) {

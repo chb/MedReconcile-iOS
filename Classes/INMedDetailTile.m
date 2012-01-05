@@ -168,9 +168,9 @@
 {
 	INButton *theButton = [sender isKindOfClass:[INButton class]] ? (INButton *)sender : nil;
 	[theButton indicateAction:YES];
-	[med setLabel:@"TEST" callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+	[med archive:YES forReason:@"discontinuing" callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 		if (errorMessage) {
-			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Action failed"
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Archiving failed"
 															message:errorMessage
 														   delegate:nil
 												  cancelButtonTitle:@"OK"

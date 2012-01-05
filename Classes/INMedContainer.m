@@ -64,9 +64,11 @@
 		if ([tile isKindOfClass:[INMedTile class]]) {
 			tileFrame.size = CGSizeMake(tileWidth, tileHeight);
 			
-			// if we have an uneven number, stretch the last tile to cover the full row
-			if (tileNum > 0 && 0 == tileNum % perRow) {
+			// advance a row
+			if (0 == tileNum % perRow) {
 				y = lastBottom;
+				
+				// if we have an uneven number, stretch the last tile to cover the full row
 				if (tile == lastTile) {
 					tileFrame.size.width = myWidth;
 				}
