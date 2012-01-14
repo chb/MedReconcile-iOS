@@ -11,7 +11,7 @@
 #import "IndivoServer.h"
 #import "IndivoRecord.h"
 #import "IndivoMedication.h"
-#import "INMedEditViewController.h"
+#import "INEditMedViewController.h"
 #import "INMedContainer.h"
 #import "INMedTile.h"
 #import "INMedDetailTile.h"
@@ -25,6 +25,7 @@
 
 - (void)showNewMedView:(id)sender;
 - (void)documentsDidChange:(NSNotification *)aNotification;
+- (void)setRecordButtonTitle:(NSString *)aTitle;
 
 @end
 
@@ -110,7 +111,7 @@
 /**
  *	Refreshes medication list
  */
-- (void)refresh:(id)sender
+- (void)refreshList:(id)sender
 {
 	if (!record) {
 		[medGroups removeAllObjects];
@@ -219,15 +220,13 @@
 		// successfully selected record, fetch medications
 		else if (!userDidCancel) {
 			self.record = [APP_DELEGATE.indivo activeRecord];
-			[self refresh:sender];
+			[self refreshList:sender];
 		}
 		
 		// cancelled
 		else {
+			self.record = nil;
 		}
-		
-		[self setRecordButtonTitle:[record label]];
-		self.navigationItem.rightBarButtonItem.enabled = (nil != self.record);
 	}];
 }
 
@@ -247,13 +246,13 @@
 {
 	IndivoRecord *aRecord = [[aNotification userInfo] objectForKey:INRecordUserInfoKey];
 	if ([aRecord isEqual:self.record]) {		// will always be true anyway...
-		[self refresh:nil];
+		[self refreshList:nil];
 	}
 }
 
 
 
-#pragma mark - INNewMedViewControllerDelegate
+#pragma mark - IN(NewMed/EditMed)ViewControllerDelegate
 - (void)newMedController:(INNewMedViewController *)theController didSelectMed:(IndivoMedication *)aMed;
 {
 	UINavigationController *naviController = (UINavigationController *)[self presentedViewController];
@@ -263,8 +262,9 @@
 	}
 	
 	// put med into edit view
-	INMedEditViewController *edit = [INMedEditViewController new];
+	INEditMedViewController *edit = [INEditMedViewController new];
 	edit.med = aMed;
+	edit.delegate = self;
 	
 	[naviController pushViewController:edit animated:YES];
 	return;
@@ -287,6 +287,22 @@
 			[self dismissModalViewControllerAnimated:YES];
 		}
 	}];
+}
+
+
+- (void)editMedController:(INEditMedViewController *)theController didActOnMed:(IndivoMedication *)aMed
+{
+	[self dismissModalViewControllerAnimated:YES];
+}
+
+- (void)editMedController:(INEditMedViewController *)theController didReplaceMed:(IndivoMedication *)aMed withMed:(IndivoMedication *)newMed
+{
+	
+}
+
+- (void)editMedController:(INEditMedViewController *)theController didVoidMed:(IndivoMedication *)aMed
+{
+	
 }
 
 
@@ -313,6 +329,19 @@
 	else {
 		[self dismissModalViewControllerAnimated:YES];
 	}
+}
+
+
+
+#pragma mark - KVC
+- (void)setRecord:(IndivoRecord *)aRecord
+{
+	if (aRecord != record) {
+		record = aRecord;
+	}
+	
+	[self setRecordButtonTitle:[record label]];
+	self.navigationItem.rightBarButtonItem.enabled = (nil != record);
 }
 
 

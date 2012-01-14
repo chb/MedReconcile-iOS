@@ -8,7 +8,7 @@
 
 #import "INMedDetailTile.h"
 #import "IndivoMedication.h"
-#import "INMedEditViewController.h"
+#import "INEditMedViewController.h"
 #import "INMedTile.h"
 #import "INMedContainer.h"
 #import "INDateRangeFormatter.h"
@@ -182,11 +182,11 @@
 }
 
 /**
- *	Instantiates and presents an INMedEditViewController modally
+ *	Instantiates and presents an INEditMedViewController modally
  */
 - (void)editMed:(id)sender
 {
-	INMedEditViewController *editController = [INMedEditViewController new];
+	INEditMedViewController *editController = [INEditMedViewController new];
 	if (editController) {
 		editController.med = self.med;
 		UINavigationController *tempNavi = [[UINavigationController alloc] initWithRootViewController:editController];
@@ -218,7 +218,7 @@
 		}
 	}
 	else {
-		DLog(@"Failed to instantiate an INMedEditViewController!");
+		DLog(@"Failed to instantiate an INEditMedViewController!");
 	}
 }
 

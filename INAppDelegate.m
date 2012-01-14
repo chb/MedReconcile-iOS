@@ -89,8 +89,7 @@
 - (void)userDidLogout:(IndivoServer *)fromServer
 {
 	medListController.record = nil;
-	[medListController refresh:nil];
-	[medListController setRecordButtonTitle:nil];
+	[medListController refreshList:nil];
 }
 
 

@@ -547,7 +547,7 @@
 								name = [name stringByReplacingOccurrencesOfString:string withString:@""];
 							}
 							NSRegularExpression *whitespace = [NSRegularExpression regularExpressionWithPattern:@"\\s+" options:0 error:nil];
-							name = [whitespace stringByReplacingMatchesInString:name options:0 range:NSMakeRange(0, [name length] - 1) withTemplate:@" "];
+							name = [whitespace stringByReplacingMatchesInString:name options:0 range:NSMakeRange(0, [name length]) withTemplate:@" "];
 							name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 							[drug setObject:name forKey:@"name"];
 						}

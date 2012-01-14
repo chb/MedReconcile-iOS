@@ -28,6 +28,8 @@
 
 - (void)setup
 {
+	self.contentEdgeInsets = UIEdgeInsetsMake(2.f, 8.f, 2.f, 8.f);
+	
 	UIImage *grayButtonImage = [[UIImage imageNamed:@"buttonGray.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
 	UIImage *disabledButtonImage = [[UIImage imageNamed:@"buttonDisabled.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
 	UIImage *pressedButtonImage = [[UIImage imageNamed:@"buttonPressed.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
@@ -125,7 +127,7 @@
 
 
 
-#pragma mark - KVC
+#pragma mark - KVC and Overrides
 - (void)setButtonStyle:(INButtonStyle)newStyle
 {
 	if (newStyle != buttonStyle) {

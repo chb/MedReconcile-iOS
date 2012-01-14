@@ -11,7 +11,7 @@
 		EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BE145B91C30077E832 /* Foundation.framework */; };
 		EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4C0145B91C30077E832 /* CoreGraphics.framework */; };
 		EE30A4C7145B91C30077E832 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = EE30A4C5145B91C30077E832 /* InfoPlist.strings */; };
-		EE4434B914915FAC00CC6344 /* INMedEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE4434B814915FAC00CC6344 /* INMedEditViewController.m */; };
+		EE4434B914915FAC00CC6344 /* INEditMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE4434B814915FAC00CC6344 /* INEditMedViewController.m */; };
 		EE4434BD1491608000CC6344 /* INMedDetailTile.m in Sources */ = {isa = PBXBuildFile; fileRef = EE4434BC1491608000CC6344 /* INMedDetailTile.m */; };
 		EE4434BF149168BA00CC6344 /* INMedDetailTile.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE4434BE149168BA00CC6344 /* INMedDetailTile.xib */; };
 		EE4434C11491726C00CC6344 /* buttonGray.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4434C01491726C00CC6344 /* buttonGray.png */; };
@@ -30,7 +30,7 @@
 		EE72154714749299008835C5 /* UIView+Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = EE72154614749299008835C5 /* UIView+Utilities.m */; };
 		EE8684D6149AAE9E0002C1E2 /* diagonal.png in Resources */ = {isa = PBXBuildFile; fileRef = EE8684D4149AAE9E0002C1E2 /* diagonal.png */; };
 		EE9F067814688252000412C4 /* NSArray+NilProtection.m in Sources */ = {isa = PBXBuildFile; fileRef = EE9F067714688252000412C4 /* NSArray+NilProtection.m */; };
-		EEA00A871499321000F65AD9 /* INMedEditViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEA00A861499321000F65AD9 /* INMedEditViewController.xib */; };
+		EEA00A871499321000F65AD9 /* INEditMedViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEA00A861499321000F65AD9 /* INEditMedViewController.xib */; };
 		EEA00A8B149950F700F65AD9 /* INButton.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA00A8A149950F700F65AD9 /* INButton.m */; };
 		EEA00A8F1499595400F65AD9 /* UIViewController+Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA00A8E1499595300F65AD9 /* UIViewController+Utilities.m */; };
 		EEA4507F146D764500DC9EB1 /* INMedContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA4507E146D764500DC9EB1 /* INMedContainer.m */; };
@@ -58,8 +58,8 @@
 		EE30A4CC145B91C30077E832 /* INAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INAppDelegate.m; sourceTree = "<group>"; };
 		EE30A4CE145B91C30077E832 /* INMedListController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = INMedListController.h; sourceTree = "<group>"; };
 		EE30A4CF145B91C30077E832 /* INMedListController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INMedListController.m; sourceTree = "<group>"; };
-		EE4434B714915FAB00CC6344 /* INMedEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INMedEditViewController.h; sourceTree = "<group>"; };
-		EE4434B814915FAC00CC6344 /* INMedEditViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INMedEditViewController.m; sourceTree = "<group>"; };
+		EE4434B714915FAB00CC6344 /* INEditMedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INEditMedViewController.h; sourceTree = "<group>"; };
+		EE4434B814915FAC00CC6344 /* INEditMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INEditMedViewController.m; sourceTree = "<group>"; };
 		EE4434BB1491608000CC6344 /* INMedDetailTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INMedDetailTile.h; path = Classes/INMedDetailTile.h; sourceTree = "<group>"; };
 		EE4434BC1491608000CC6344 /* INMedDetailTile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INMedDetailTile.m; path = Classes/INMedDetailTile.m; sourceTree = "<group>"; };
 		EE4434BE149168BA00CC6344 /* INMedDetailTile.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = INMedDetailTile.xib; path = Views/INMedDetailTile.xib; sourceTree = "<group>"; };
@@ -80,7 +80,7 @@
 		EE8684D4149AAE9E0002C1E2 /* diagonal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = diagonal.png; sourceTree = "<group>"; };
 		EE9F067614688252000412C4 /* NSArray+NilProtection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSArray+NilProtection.h"; path = "Classes/NSArray+NilProtection.h"; sourceTree = SOURCE_ROOT; };
 		EE9F067714688252000412C4 /* NSArray+NilProtection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSArray+NilProtection.m"; path = "Classes/NSArray+NilProtection.m"; sourceTree = SOURCE_ROOT; };
-		EEA00A861499321000F65AD9 /* INMedEditViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = INMedEditViewController.xib; path = Views/INMedEditViewController.xib; sourceTree = SOURCE_ROOT; };
+		EEA00A861499321000F65AD9 /* INEditMedViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = INEditMedViewController.xib; path = Views/INEditMedViewController.xib; sourceTree = SOURCE_ROOT; };
 		EEA00A89149950F700F65AD9 /* INButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INButton.h; path = Classes/INButton.h; sourceTree = "<group>"; };
 		EEA00A8A149950F700F65AD9 /* INButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INButton.m; path = Classes/INButton.m; sourceTree = "<group>"; };
 		EEA00A8D1499595300F65AD9 /* UIViewController+Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UIViewController+Utilities.h"; path = "Classes/UIViewController+Utilities.h"; sourceTree = SOURCE_ROOT; };
@@ -204,9 +204,9 @@
 				EE30A4CF145B91C30077E832 /* INMedListController.m */,
 				EE6461D3145F17FC0007C6B9 /* INNewMedViewController.h */,
 				EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */,
-				EE4434B714915FAB00CC6344 /* INMedEditViewController.h */,
-				EE4434B814915FAC00CC6344 /* INMedEditViewController.m */,
-				EEA00A861499321000F65AD9 /* INMedEditViewController.xib */,
+				EE4434B714915FAB00CC6344 /* INEditMedViewController.h */,
+				EE4434B814915FAC00CC6344 /* INEditMedViewController.m */,
+				EEA00A861499321000F65AD9 /* INEditMedViewController.xib */,
 			);
 			name = "View Controller";
 			path = ViewController;
@@ -324,7 +324,7 @@
 				EE4434C7149188A500CC6344 /* buttonPressed.png in Resources */,
 				EE4434C9149188AB00CC6344 /* buttonDisabled.png in Resources */,
 				EE4434CB1491892600CC6344 /* buttonGreen.png in Resources */,
-				EEA00A871499321000F65AD9 /* INMedEditViewController.xib in Resources */,
+				EEA00A871499321000F65AD9 /* INEditMedViewController.xib in Resources */,
 				EE8684D6149AAE9E0002C1E2 /* diagonal.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -346,7 +346,7 @@
 				EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */,
 				EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */,
 				EE72154714749299008835C5 /* UIView+Utilities.m in Sources */,
-				EE4434B914915FAC00CC6344 /* INMedEditViewController.m in Sources */,
+				EE4434B914915FAC00CC6344 /* INEditMedViewController.m in Sources */,
 				EE4434BD1491608000CC6344 /* INMedDetailTile.m in Sources */,
 				EEA00A8B149950F700F65AD9 /* INButton.m in Sources */,
 				EEA00A8F1499595400F65AD9 /* UIViewController+Utilities.m in Sources */,

@@ -1,12 +1,12 @@
 //
-//  INMedEditViewController.m
+//  INEditMedViewController.m
 //  MedReconcile
 //
 //  Created by Pascal Pfiffner on 12/8/11.
 //  Copyright (c) 2011 Children's Hospital Boston. All rights reserved.
 //
 
-#import "INMedEditViewController.h"
+#import "INEditMedViewController.h"
 #import "IndivoMedication.h"
 #import "INButton.h"
 #import "UIViewController+Utilities.h"
@@ -15,7 +15,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 
-@interface INMedEditViewController ()
+@interface INEditMedViewController ()
 
 - (void)loadMed;
 - (void)updateNumDaysLabel;
@@ -26,18 +26,20 @@
 @end
 
 
-@implementation INMedEditViewController
+@implementation INEditMedViewController
 
-@synthesize med;
-@synthesize scrollView, agent, agentDesc, drug, drugDesc;
+@synthesize delegate, med;
+@synthesize scrollView, agentContainer, drugContainer, buttonContainer;
+@synthesize agent, agentDesc, agentNameHint, drug, drugDesc, drugNameHint;
 @synthesize dose, start, stop, numDays;
 @synthesize instructions, prescriber;
-@synthesize voidButton, replaceButton, stopButton;
+@synthesize voidButton, replaceButton, mainButton;
 
 
+#pragma mark -
 - (id)init
 {
-	return [self initWithNibName:@"INMedEditViewController" bundle:nil];
+	return [self initWithNibName:@"INEditMedViewController" bundle:nil];
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -52,28 +54,82 @@
 
 - (void)viewDidLoad
 {
-	scrollView.frame = self.view.bounds;
+	CGRect myBounds = [self.view bounds];
+	scrollView.frame = myBounds;
 	[self.view addSubview:scrollView];
+	[scrollView addSubview:agentContainer];
+	[scrollView addSubview:drugContainer];
+	
+	CGRect buttonFrame = buttonContainer.frame;
+	buttonFrame.origin.x = 0.f;
+	buttonFrame.origin.y = myBounds.size.height - buttonFrame.size.height;
+	buttonFrame.size.width = myBounds.size.width;
+	buttonContainer.frame = buttonFrame;
+	[self.view addSubview:buttonContainer];
 	
 	instructions.layer.borderColor = [[UIColor lightGrayColor] CGColor];
 	instructions.layer.cornerRadius = 6.f;
 	instructions.layer.borderWidth = 1.f;
 	
 	voidButton.buttonStyle = INButtonStyleDestructive;
-	stopButton.buttonStyle = INButtonStyleDestructive;
-	
-	CGRect stopFrame = stopButton.frame;
-	scrollView.contentSize = CGSizeMake([self.view bounds].size.width, stopFrame.origin.y + stopFrame.size.height + 20.f);
+	mainButton.buttonStyle = INButtonStyleDestructive;
 	
 	// load med values
 	[self loadMed];
 }
 
 
+- (void)layoutAnimated:(BOOL)animated
+{
+	// drug area
+	CGRect frame1 = agentContainer.frame;
+	CGRect refFrame = agentNameHint.hidden ? agent.frame : agentNameHint.frame;
+	frame1.origin.y = 0.f;
+	frame1.size.height = refFrame.origin.y + refFrame.size.height;
+	
+	// prescription area
+	CGRect frame2 = drugContainer.frame;
+	frame2.origin.y = frame1.size.height;
+	
+	// button area
+	CGSize buttons = [buttonContainer bounds].size;
+	
+	[mainButton sizeToFit];
+	CGRect aFrame = mainButton.frame;
+	aFrame.origin.x = buttons.width - 20.f - aFrame.size.width;
+	mainButton.frame = aFrame;
+	
+	if (!replaceButton.hidden) {
+		[replaceButton sizeToFit];
+		aFrame.size.width = [replaceButton frame].size.width;
+		aFrame.origin.x -= aFrame.size.width + 8.f;
+		replaceButton.frame = aFrame;
+	}
+	
+	if (!voidButton.hidden) {
+		[voidButton sizeToFit];
+		CGRect voidFrame = voidButton.frame;
+		if (aFrame.origin.x - 8.f < 20.f + voidFrame.size.width) {
+			DLog(@"PROBLEM, the buttons are crammed!");
+		}
+		voidFrame.origin.x = 20.f;
+		voidButton.frame = voidFrame;
+	}
+	
+	[UIView animateWithDuration:(animated ? 0.2 : 0.0)
+					 animations:^{
+						 agentContainer.frame = frame1;
+						 drugContainer.frame = frame2;
+					 }];
+	
+	scrollView.contentSize = CGSizeMake([self.view bounds].size.width, frame2.origin.y + frame2.size.height + buttons.height);
+}
+
+
 
 #pragma mark - Medication Actions
 /**
- *	Loads medication values into the fields
+ *	Loads medication values into the fields if we have a med and the view is loaded. Will in any case call layoutAnimated:NO.
  */
 - (void)loadMed
 {
@@ -90,41 +146,60 @@
 		
 		// fill days selector
 		[self updateNumDaysLabel];
+		
+		// update hints and buttons according to status
+		[mainButton removeTarget:self action:NULL forControlEvents:UIControlEventTouchUpInside];
+		switch (med.status) {
+			case INDocumentStatusActive:
+				agentNameHint.hidden = NO;
+				drugNameHint.hidden = NO;
+				drugNameHint.text = @"Use \"Replace\" to change the medication";
+				
+				[mainButton setTitle:@"Stop" forState:UIControlStateNormal];
+				[mainButton addTarget:self action:@selector(archiveMed:) forControlEvents:UIControlEventTouchUpInside];
+				mainButton.buttonStyle = INButtonStyleDestructive;
+				replaceButton.hidden = NO;
+				voidButton.hidden = NO;
+				break;
+			case INDocumentStatusArchived:
+				agentNameHint.hidden = NO;
+				drugNameHint.hidden = YES;
+				
+				[mainButton setTitle:@"Unarchive" forState:UIControlStateNormal];
+				[mainButton addTarget:self action:@selector(unarchiveMed:) forControlEvents:UIControlEventTouchUpInside];
+				mainButton.buttonStyle = INButtonStyleMain;
+				replaceButton.hidden = YES;
+				voidButton.hidden = YES;
+				break;
+			case INDocumentStatusVoid:
+				agentNameHint.hidden = NO;
+				drugNameHint.hidden = YES;
+				
+				[mainButton setTitle:@"Unvoid" forState:UIControlStateNormal];
+				[mainButton addTarget:self action:@selector(unvoidMed:) forControlEvents:UIControlEventTouchUpInside];
+				mainButton.buttonStyle = INButtonStyleMain;
+				replaceButton.hidden = YES;
+				voidButton.hidden = YES;
+				break;
+			case INDocumentStatusUnknown:
+			default:
+				agentNameHint.hidden = YES;
+				drugNameHint.hidden = NO;
+				drugNameHint.text = @"How you want to name the prescription";
+				
+				[mainButton setTitle:@"Add" forState:UIControlStateNormal];
+				[mainButton addTarget:self action:@selector(saveMed:) forControlEvents:UIControlEventTouchUpInside];
+				mainButton.buttonStyle = INButtonStyleAccept;
+				replaceButton.hidden = YES;
+				voidButton.hidden = YES;
+				break;
+		}
 	}
+	
+	[self layoutAnimated:NO];
 }
 
 
-/**
- *	Saves current med values and dismisses the view controller
- */
-- (void)saveMed:(id)sender
-{
-	med.name.abbrev = agent.text;
-	med.brandName.abbrev = drug.text;
-	
-	IndivoPrescription *prescription = [IndivoPrescription new];
-	prescription.nodeName = @"prescription";
-	prescription.on = [INDate dateFromISOString:start.text];
-	prescription.stopOn = [INDate dateFromISOString:stop.text];
-	prescription.instructions = [INString newWithString:instructions.text];
-	prescription.dispenseAsWritten = [INBool newNo];
-	med.prescription = prescription;
-	
-	DLog(@"Med XML: %@", [med xml]);
-	[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-		if (errorMessage) {
-			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to update"
-															message:errorMessage
-														   delegate:nil
-												  cancelButtonTitle:@"OK"
-												  otherButtonTitles:nil];
-			[alert show];
-		}
-		else if (!userDidCancel) {
-			[self dismiss:sender];
-		}
-	}];
-}
 
 /**
  *	Marks a medication voided
@@ -157,12 +232,54 @@
 }
 
 /**
- *	Archives a medication
+ *	Actions for the main button
  */
-- (IBAction)stopMed:(id)sender
+
+- (void)saveMed:(id)sender
+{
+	med.name.abbrev = agent.text;
+	med.brandName.abbrev = drug.text;
+	
+	IndivoPrescription *prescription = [IndivoPrescription new];
+	prescription.nodeName = @"prescription";
+	prescription.on = [INDate dateFromISOString:start.text];
+	prescription.stopOn = [INDate dateFromISOString:stop.text];
+	prescription.instructions = [INString newWithString:instructions.text];
+	prescription.dispenseAsWritten = [INBool newNo];
+	med.prescription = prescription;
+	
+	DLog(@"Save med: %@", [med xml]);
+	[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {		// "replace" will call "push" if the med is new
+		if (errorMessage) {
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to update"
+															message:errorMessage
+														   delegate:nil
+												  cancelButtonTitle:@"OK"
+												  otherButtonTitles:nil];
+			[alert show];
+		}
+		else if (!userDidCancel) {
+			[delegate editMedController:self didActOnMed:med];
+		}
+	}];
+}
+
+- (void)archiveMed:(id)sender
 {
 	
 }
+
+- (void)unarchiveMed:(id)sender
+{
+	
+}
+
+- (void)unvoidMed:(id)sender
+{
+	
+}
+
+
 
 /**
  *	Adjusts the stop date when the days toggle is operated
@@ -260,9 +377,13 @@
 	CGRect intersect = CGRectIntersection(target, keyboardFrame);
 	target.size.height = intersect.origin.y;
 	
+	CGRect buttonFrame = buttonContainer.frame;
+	buttonFrame.origin.y = target.size.height - buttonFrame.size.height + 10.f;
+	
 	[UIView animateWithDuration:animDuration
 					 animations:^{
 						 scrollView.frame = target;
+						 buttonContainer.frame = buttonFrame;
 					 }
 					 completion:^(BOOL finished) {
 						 
@@ -270,6 +391,8 @@
 						 UIView *first = [scrollView findFirstResponder];
 						 if (first) {
 							 CGRect firstFrame = [scrollView convertRect:first.frame fromView:[first superview]];
+							 firstFrame.origin.y += (buttonFrame.size.height - 10.f);		// to avoid hitting the button container
+							 firstFrame.origin.y += 8.f;									// some padding
 							 [scrollView scrollRectToVisible:firstFrame animated:YES];
 						 }
 					 }];
@@ -279,12 +402,16 @@
 {
 	CGRect target = self.view.bounds;
 	
+	CGRect buttonFrame = buttonContainer.frame;
+	buttonFrame.origin.y = target.size.height - buttonFrame.size.height;
+	
 	NSDictionary *userInfo = [aNotification userInfo];
 	NSTimeInterval animDuration = [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
 	
 	[UIView animateWithDuration:animDuration
 					 animations:^{
 						 scrollView.frame = target;
+						 buttonContainer.frame = buttonFrame;
 					 }];
 }
 
