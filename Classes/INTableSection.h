@@ -17,9 +17,8 @@
 @property (nonatomic, readonly, strong) NSMutableArray *objects;
 @property (nonatomic, strong) id selectedObject;
 
-
-+ (INTableSection *)sectionWithTitle:(NSString *)aTitle;
-+ (INTableSection *)sectionWithType:(NSString *)aType;
++ (INTableSection *)newWithTitle:(NSString *)aTitle;
++ (INTableSection *)newWithType:(NSString *)aType;
 
 - (NSUInteger)numRows;
 
@@ -27,19 +26,22 @@
 - (void)hideIndicator;
 - (UIView *)accessoryViewForRow:(NSUInteger)row;
 
+- (id)objectForRow:(NSUInteger)row;
+- (void)selectObjectInRow:(NSUInteger)row;
+
 - (void)removeAllObjects;
 - (void)addObject:(id)anObject;
 - (void)addObjects:(NSArray *)objects;
 - (void)unshiftObject:(id)anObject;
 - (void)setObjectsFrom:(NSArray *)anArray;
 
-- (id)objectForRow:(NSUInteger)row;
-
 - (void)addToTable:(UITableView *)aTable asSection:(NSUInteger)section animated:(BOOL)animated;
 - (BOOL)hasTable;
 
-- (void)expandAnimated:(BOOL)animated;
 - (void)collapseAnimated:(BOOL)animated;
+- (void)selectRow:(NSUInteger)row collapseAnimated:(BOOL)animated;
+- (void)expandAnimated:(BOOL)animated;
+
 - (void)removeAnimated:(BOOL)animated;
 - (void)updateAnimated:(BOOL)animated;
 

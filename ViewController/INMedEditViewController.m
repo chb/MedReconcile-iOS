@@ -10,6 +10,8 @@
 #import "IndivoMedication.h"
 #import "INButton.h"
 #import "UIViewController+Utilities.h"
+#import "INAppDelegate.h"
+#import "UIView+Utilities.h"
 #import <QuartzCore/QuartzCore.h>
 
 
@@ -138,7 +140,20 @@
  */
 - (IBAction)replaceMed:(id)sender
 {
+	UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissModalViewController:)];
 	
+	INNewMedViewController *newMed = [INNewMedViewController new];
+	newMed.navigationItem.rightBarButtonItem = doneButton;
+	newMed.delegate = self;
+	
+	UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:newMed];
+	navi.navigationBar.tintColor = [APP_DELEGATE naviTintColor];
+	if ([self respondsToSelector:@selector(presentViewController:animated:completion:)]) {		// iOS 5+ only
+		[self presentViewController:navi animated:YES completion:NULL];
+	}
+	else {
+		[self presentModalViewController:navi animated:YES];
+	}
 }
 
 /**
@@ -205,6 +220,33 @@
 
 
 
+#pragma mark - INNewMedViewControllerDelegate
+- (NSString *)initialMedStringForNewMedController:(INNewMedViewController *)theController
+{
+	return self.med.brandName.text;
+}
+
+- (void)newMedController:(INNewMedViewController *)theController didSelectMed:(IndivoMedication *)aMed;
+{
+	DLog(@"Got %@", aMed);
+}
+
+
+/**
+ *	Dismiss current overlay view controller
+ */
+- (void)dismissModalViewController:(id)sender
+{
+	if ([self respondsToSelector:@selector(dismissViewControllerAnimated:completion:)]) {			// iOS 5+ only
+		[self dismissViewControllerAnimated:YES completion:NULL];
+	}
+	else {
+		[self dismissModalViewControllerAnimated:YES];
+	}
+}
+
+
+
 #pragma mark - Keyboard Actions
 - (void)keyboardWillShow:(NSNotification *)aNotification
 {
@@ -221,7 +263,16 @@
 	[UIView animateWithDuration:animDuration
 					 animations:^{
 						 scrollView.frame = target;
-	}];
+					 }
+					 completion:^(BOOL finished) {
+						 
+						 // make sure first responder is visible
+						 UIView *first = [scrollView findFirstResponder];
+						 if (first) {
+							 CGRect firstFrame = [scrollView convertRect:first.frame fromView:[first superview]];
+							 [scrollView scrollRectToVisible:firstFrame animated:YES];
+						 }
+					 }];
 }
 
 - (void)keyboardWillHide:(NSNotification *)aNotification
@@ -233,8 +284,8 @@
 	
 	[UIView animateWithDuration:animDuration
 					 animations:^{
-		scrollView.frame = target;
-	}];
+						 scrollView.frame = target;
+					 }];
 }
 
 

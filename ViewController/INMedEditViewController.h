@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "INNewMedViewController.h"
 
 @class IndivoMedication;
 @class INButton;
@@ -15,7 +16,7 @@
 /**
  *	This view controller allows to edit a medication and its prescription
  */
-@interface INMedEditViewController : UIViewController <UITextFieldDelegate, UITextViewDelegate>
+@interface INMedEditViewController : UIViewController <INNewMedViewControllerDelegate, UITextFieldDelegate, UITextViewDelegate>
 
 @property (nonatomic, strong) IndivoMedication *med;
 

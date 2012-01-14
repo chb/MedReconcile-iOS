@@ -8,7 +8,6 @@
 
 #import "INNewMedViewController.h"
 #import "INAppDelegate.h"
-#import "INMedListController.h"
 #import "INTableSection.h"
 #import "INRxNormLoader.h"
 #import "INButton.h"
@@ -25,20 +24,22 @@
 @interface INNewMedViewController ()
 
 @property (nonatomic, strong) NSMutableArray *sections;								///< An array full of INTableSection objects
+@property (nonatomic, copy) NSString *initialMedString;								///< The string with which to start off
 @property (nonatomic, copy) NSString *currentMedString;								///< The string for which suggestions are being loaded
 @property (nonatomic, strong) NSMutableDictionary *currentScores;					///< A dictionary containing approxMatch scores
 
+@property (nonatomic, strong) UITextField *nameInputField;
 @property (nonatomic, strong) UILabel *loadingTextLabel;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingActivity;
 
 - (void)fetcher:(INURLFetcher *)aFetcher didLoadSuggestionsFor:(NSString *)medString;
 - (void)clearSuggestions;
-- (void)proceedWith:(NSDictionary *)drugDict fromLevel:(NSUInteger)fromLevel;
-- (void)useDrug:(NSDictionary *)drugDict;
-- (void)useThisDrug:(id)sender;
+- (void)proceedWith:(NSIndexPath *)indexPath;
+- (void)useDrug:(NSIndexPath *)indexPath;
+- (void)useThisDrug:(INButton *)sender;
 
-- (INTableSection *)addSection:(INTableSection *)newSection animated:(BOOL)animated;
-- (void)goToSection:(NSUInteger)sectionIdx removeLower:(BOOL)remove;
+- (void)addSection:(INTableSection *)newSection animated:(BOOL)animated;
+- (void)goToSection:(NSUInteger)sectionIdx animated:(BOOL)animated;
 
 - (NSString *)displayNameFor:(INXMLNode *)drugNode;
 
@@ -47,10 +48,10 @@
 
 @implementation INNewMedViewController
 
-@synthesize listController;
+@synthesize delegate;
 @synthesize sections;
-@synthesize currentMedString, currentScores;
-@synthesize loadingTextLabel, loadingActivity;
+@synthesize initialMedString, currentMedString, currentScores;
+@synthesize nameInputField, loadingTextLabel, loadingActivity;
 
 
 - (id)init
@@ -113,65 +114,34 @@
 		
 		// create the text input if it's not here
 		if (![textField isKindOfClass:[UITextField class]]) {
-			textField = [[UITextField alloc] initWithFrame:CGRectInset([cell bounds], 10.f, 2.f)];
-			textField.tag = 99;
-			textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-			textField.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-			textField.enablesReturnKeyAutomatically = NO;
-			textField.returnKeyType = UIReturnKeyDone;
-			textField.clearButtonMode = UITextFieldViewModeAlways;
-			textField.autocorrectionType = UITextAutocorrectionTypeNo;
-			textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-			textField.placeholder = @"Medication Name";
-			textField.font = [UIFont systemFontOfSize:17.f];
-			textField.leftViewMode = UITextFieldViewModeAlways;
-			textField.delegate = self;
-			[cell.contentView addSubview:textField];
-			
-			[textField performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.0];
+			[cell.contentView addSubview:self.nameInputField];
+			if (initialMedString) {
+				nameInputField.text = initialMedString;
+				[self performSelector:@selector(loadSuggestionsFor:) withObject:initialMedString afterDelay:0.4];
+			}
+			else {
+				[nameInputField performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.0];
+			}
 		}
 		return cell;
 	}
 	
 	// suggestions
 	INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
-	if ([@"suggestion" isEqualToString:section.type] || [@"drug" isEqualToString:section.type]) {
-		NSDictionary *drug = [section objectForRow:indexPath.row];
-		
+	NSDictionary *drug = [section objectForRow:indexPath.row];
+	if ([drug isKindOfClass:[NSDictionary class]]) {
 		cell.textLabel.text = drug ? [drug objectForKey:@"name"] : @"Unknown";
 		// cell.detailTextLabel.text = [drug objectForKey:@"tty"];
 		
-		INButton *use = [INButton buttonWithStyle:INButtonStyleAccept];
+		BOOL canUseDrug = ([@"SBD" isEqualToString:[drug objectForKey:@"tty"]] || drug == [section selectedObject]);
+		DLog(@"%@: %d", cell.textLabel.text, canUseDrug);
+		INButtonStyle style = canUseDrug ? INButtonStyleAccept : INButtonStyleMain;
+		INButton *use = [INButton buttonWithStyle:style];
 		use.frame = CGRectMake(0.f, 0.f, 60.f, 31.f);
-		use.object = drug;
+		use.object = indexPath;
 		[use addTarget:self action:@selector(useThisDrug:) forControlEvents:UIControlEventTouchUpInside];
-		[use setTitle:@"Use" forState:UIControlStateNormal];
+		[use setTitle:(canUseDrug ? @"Use" : @"More") forState:UIControlStateNormal];
 		cell.accessoryView = use;
-	}
-	
-	// med detail nodes
-	else if ([@"editable" isEqualToString:section.type]) {
-		INObject *obj = [section objectForRow:indexPath.row];
-		cell.textLabel.text = obj.nodeName;
-		if ([obj isKindOfClass:[INDate class]]) {
-			cell.detailTextLabel.text = [(INDate *)obj isoString];
-		}
-		else if ([obj isKindOfClass:[INCodedValue class]]) {
-			cell.detailTextLabel.text = [(INCodedValue *)obj text];
-		}
-		else if ([obj isKindOfClass:[INUnitValue class]]) {
-			cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ %@", [(INUnitValue *)obj value] ? [(INUnitValue *)obj value] : @"?", [(INUnitValue *)obj unit].value ? [(INUnitValue *)obj unit].value : @""];
-		}
-		else if ([obj isKindOfClass:[IndivoMedication class]]) {
-			cell.detailTextLabel.text = @"...";
-		}
-	}
-	
-	// a button
-	else if ([@"button" isEqualToString:section.type]) {
-		cell.textLabel.text = @"Add Medication";
-		cell.textLabel.textAlignment = UITextAlignmentCenter;
-		cell.detailTextLabel.text = @"";
 	}
 	
 	//cell.accessoryView = [section accessoryViewForRow:indexPath.row];		// returns the indicator view for the active row
@@ -185,78 +155,19 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
 	if (indexPath.section > 0) {
-		UITableViewCell *textCell = [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
-		UITextField *textField = (UITextField *)[textCell.contentView viewWithTag:99];
-		[textField resignFirstResponder];
+		[nameInputField resignFirstResponder];
 		
 		[tableView deselectRowAtIndexPath:indexPath animated:YES];
 		INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
-		id tappedObject = [section objectForRow:indexPath.row];
 		
 		// collapsed level tapped
 		if ([section isCollapsed]) {
-			[self goToSection:indexPath.section removeLower:(![@"drug" isEqualToString:section.type])];
+			[self goToSection:indexPath.section animated:YES];
 		}
 		
 		// tapped an expanded level
 		else {
-			section.selectedObject = tappedObject;
-			
-			// tapped a suggestion row
-			if ([@"suggestion" isEqualToString:section.type]) {
-				if (tappedObject) {
-					[self proceedWith:tappedObject fromLevel:indexPath.section];
-				}
-				else {
-					DLog(@"Ohoh, the suggestion that was tapped was not found at %@", indexPath);
-					UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Dead End"
-																	message:@"You have hit a dead end, see debug log"
-																   delegate:nil
-														  cancelButtonTitle:@"Too Bad"
-														  otherButtonTitles:nil];
-					[alert show];
-				}
-			}
-			
-			// tapped a drug row
-			else if ([@"drug" isEqualToString:section.type]) {
-				[self useDrug:tappedObject];
-			}
-			
-			// tapped an editable row
-			else if ([@"editable" isEqualToString:section.type]) {
-				INObject *obj = [section objectForRow:indexPath.row];
-				
-				if ([obj isKindOfClass:[INDate class]]) {
-				}
-				else if ([obj isKindOfClass:[INCodedValue class]]) {
-				}
-				else if ([obj isKindOfClass:[INUnitValue class]]) {
-				}
-			}
-			
-			// tapped the accept button, ADD MEDICATION *********************
-			else if ([@"button" isEqualToString:section.type]) {
-				IndivoMedication *med = [section objectForRow:indexPath.row];
-				[med push:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-					if (userDidCancel) {
-						
-					}
-					else if (errorMessage) {
-						UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to add medication"
-																		message:errorMessage
-																	   delegate:nil
-															  cancelButtonTitle:@"Too Bad"
-															  otherButtonTitles:nil];
-						[alert show];
-					}
-					else {
-						
-						// successfully added medication
-						[listController dismissModal:nil];
-					}
-				}];
-			}
+			[self proceedWith:indexPath];
 		}
 	}
 }
@@ -269,10 +180,10 @@
  */
 - (void)loadSuggestionsFor:(NSString *)medString
 {
-	[self goToSection:0 removeLower:YES];
+	[self goToSection:0 animated:YES];
 	
-	INTableSection *section = [INTableSection sectionWithType:@"suggestion"];
-	INTableSection *current = [self addSection:section animated:YES];
+	INTableSection *section = [INTableSection new];
+	[self addSection:section animated:YES];
 	
 	// show action
 	UITextField *textField = nil;
@@ -311,7 +222,7 @@
 		// got some suggestions!
 		else {
 			
-			// create a node with the user's entries
+			// create a node with the user's entry
 			NSDictionary *myDrug = [NSDictionary dictionaryWithObject:medString forKey:@"name"];
 			[section addObject:myDrug];
 			
@@ -372,7 +283,6 @@
 						// start fetching the suggestion's names
 						INURLFetcher *fetcher = [INURLFetcher new];
 						[fetcher getURLs:urls callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-							[current hideIndicator];
 							[self fetcher:fetcher didLoadSuggestionsFor:medString];
 						}];
 						return;					// to skip the table updating just yet
@@ -488,12 +398,19 @@
 }
 
 
+
+#pragma mark - User Flow
 /**
  *	An RX object was selected, go to the next step
  *	The sequence is: IN -> BN -> SBD
  */
-- (void)proceedWith:(NSDictionary *)drugDict fromLevel:(NSUInteger)fromLevel
+- (void)proceedWith:(NSIndexPath *)indexPath
 {
+	[nameInputField resignFirstResponder];
+	
+	INTableSection *current = [sections objectAtIndex:indexPath.section];
+	NSDictionary *drugDict = [current objectForRow:indexPath.row];
+	
 	NSString *tty = [drugDict objectForKey:@"tty"];
 	NSString *rxcui = [drugDict objectForKey:@"rxcui"];
 	
@@ -509,13 +426,11 @@
 	
 	// continue
 	if (desired) {
-		INTableSection *current = [self addSection:nil animated:YES];
-		[current collapseAnimated:YES];
+		[current selectRow:indexPath.row collapseAnimated:YES];
 		[current showIndicator];
 		
 		INRxNormLoader *loader = [INRxNormLoader loader];
 		[loader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
-			BOOL somethingFound = NO;
 			
 			// got some data
 			if (!errorString) {
@@ -534,8 +449,7 @@
 						// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
 						if ([@"DF" isEqualToString:tty]) {
 							if (name) {
-								INTableSection *newSection = [INTableSection sectionWithTitle:name];
-								newSection.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
+								INTableSection *newSection = [INTableSection newWithTitle:name];
 								[newSections addObject:newSection];
 								[stripFromNames addObjectIfNotNil:name];
 							}
@@ -568,10 +482,9 @@
 					}
 				}
 				
-				// no DF-sections found, just add them to one
+				// no DF-sections found, just add them to one general section
 				if ([newSections count] < 1) {
 					INTableSection *lone = [INTableSection new];
-					lone.type = nowAtDrugEndpoint ? @"drug" : @"suggestion";
 					[newSections addObject:lone];
 				}
 				
@@ -581,71 +494,70 @@
 					// ** loop all drugs
 					for (NSMutableDictionary *drug in drugs) {
 						NSString *name = [drug objectForKey:@"name"];
-						[drug setObject:name forKey:@"fullName"];
-						
-						// use SCDC as non-branded name and for strength
-						for (NSString *strength in [scdc allKeys]) {
-							if (NSNotFound != [name rangeOfString:strength].location) {
-								if ([drug objectForKey:@"nonbranded"]) {
-									DLog(@"xx>  Found another scdc \"%@\", but already have one for drug \"%@\", skipping", strength, name);
-								}
-								else {
-									NSDictionary *nonbranded = [NSDictionary dictionaryWithObjectsAndKeys:strength, @"name", [scdc objectForKey:strength], @"rxcui", nil];
-									[drug setObject:nonbranded forKey:@"nonbranded"];
-								}
-								
-								NSMutableString *myStrength = [drug objectForKey:@"strength"];
-								if (!myStrength) {
-									myStrength = [NSMutableString string];
-									[drug setObject:myStrength forKey:@"strength"];
-								}
-								
-								NSString *trimmed = strength;
-								for (NSString *strip in stripFromNames) {
-									trimmed = [trimmed stringByReplacingOccurrencesOfString:strip withString:@""];
-								}
-								trimmed = [trimmed stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-								if ([myStrength length] > 0) {
-									[myStrength appendFormat:@"/%@", trimmed];
-								}
-								else {
-									[myStrength setString:trimmed];
+						if ([name length] > 0) {
+							[drug setObject:name forKey:@"fullName"];
+							
+							// use SCDC as non-branded name and for strength
+							for (NSString *strength in [scdc allKeys]) {
+								if (NSNotFound != [name rangeOfString:strength].location) {
+									if ([drug objectForKey:@"nonbranded"]) {
+										DLog(@"xx>  Found another scdc \"%@\", but already have one for drug \"%@\", skipping", strength, name);
+									}
+									else {
+										NSDictionary *nonbranded = [NSDictionary dictionaryWithObjectsAndKeys:strength, @"name", [scdc objectForKey:strength], @"rxcui", nil];
+										[drug setObject:nonbranded forKey:@"nonbranded"];
+									}
+									
+									NSMutableString *myStrength = [drug objectForKey:@"strength"];
+									if (!myStrength) {
+										myStrength = [NSMutableString string];
+										[drug setObject:myStrength forKey:@"strength"];
+									}
+									
+									NSString *trimmed = strength;
+									for (NSString *strip in stripFromNames) {
+										trimmed = [trimmed stringByReplacingOccurrencesOfString:strip withString:@""];
+									}
+									trimmed = [trimmed stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+									if ([myStrength length] > 0) {
+										[myStrength appendFormat:@"/%@", trimmed];
+									}
+									else {
+										[myStrength setString:trimmed];
+									}
 								}
 							}
-						}
-						
-						// add drug to the matching section (section = DF)
-						NSUInteger i = 0;
-						NSUInteger put = 0;
-						for (INTableSection *section in newSections) {
-							if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
-								[section addObject:drug];
-								put++;
+							
+							// add drug to the matching section (section = DF)
+							NSUInteger i = 0;
+							NSUInteger put = 0;
+							for (INTableSection *section in newSections) {
+								if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
+									[section addObject:drug];
+									put++;
+								}
+								i++;
 							}
-							i++;
+							if (put < 1) {
+								DLog(@"WARNING: Drug %@ not put in any section!!!", drug);
+							}
+							
+							// strip from names
+							for (NSString *string in stripFromNames) {
+								name = [name stringByReplacingOccurrencesOfString:string withString:@""];
+							}
+							NSRegularExpression *whitespace = [NSRegularExpression regularExpressionWithPattern:@"\\s+" options:0 error:nil];
+							name = [whitespace stringByReplacingMatchesInString:name options:0 range:NSMakeRange(0, [name length] - 1) withTemplate:@" "];
+							name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+							[drug setObject:name forKey:@"name"];
 						}
-						if (put < 1) {
-							DLog(@"WARNING: Drug %@ not put in any section!!!", drug);
-						}
-						
-						// strip from names
-						for (NSString *string in stripFromNames) {
-							name = [name stringByReplacingOccurrencesOfString:string withString:@""];
-						}
-						name = [name stringByReplacingOccurrencesOfString:@"     " withString:@" "];		/// @todo gimme Use NSScanner one day...
-						name = [name stringByReplacingOccurrencesOfString:@"    " withString:@" "];
-						name = [name stringByReplacingOccurrencesOfString:@"   " withString:@" "];
-						name = [name stringByReplacingOccurrencesOfString:@"  " withString:@" "];
-						name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-						[drug setObject:name forKey:@"name"];
 					}
 					
 					// update table
-					[current hideIndicator];
-					INTableSection *last = [newSections lastObject];
 					for (INTableSection *section in newSections) {
-						[self addSection:section animated:(section == last)];
+						[self addSection:section animated:YES];
 					}
+					[current hideIndicator];
 					return;
 				}
 				else {
@@ -657,58 +569,71 @@
 			}
 			
 			// nothing to show?
-			if (!somethingFound) {
-				errorString = errorString ? errorString : @"No relations found!";
-				NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:errorString forKey:@"name"];
-				
-				INTableSection *newSection = [INTableSection new];
-				newSection.type = @"suggestion";
-				[newSection addObject:fakeDrug];
-				[self addSection:newSection animated:YES];
-			}
+			errorString = errorString ? errorString : @"No relations found!";
+			NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:errorString forKey:@"name"];
+			
+			INTableSection *newSection = [INTableSection new];
+			[newSection addObject:fakeDrug];
+			[self addSection:newSection animated:YES];
+			
 			[current hideIndicator];
 		}];
 	}
 	
 	// ok, we're happy with the selected drug, move on!
 	else {
-		[self useDrug:drugDict];
+		[self useDrug:indexPath];
 	}
 }
 
 
 
-#pragma mark - Drug Details
-- (void)useThisDrug:(id)sender
+- (void)useThisDrug:(INButton *)sender
 {
 	if ([sender isKindOfClass:[INButton class]]) {
-		[self useDrug:((INButton *)sender).object];
+		NSIndexPath *ip = sender.object;
+		
+		if (INButtonStyleAccept == sender.buttonStyle) {
+			[self useDrug:ip];
+		}
+		else {
+			[self proceedWith:ip];
+		}
 	}
 }
 
 /**
  *	If a drug has been chosen, continue to the next fields
  */
-- (void)useDrug:(NSDictionary *)drugDict
+- (void)useDrug:(NSIndexPath *)indexPath
 {
+	INTableSection *section = [sections objectAtIndex:indexPath.section];
+	NSDictionary *drugDict = [section objectForRow:indexPath.row];
+	
 	// create medication document
 	IndivoMedication *med = [IndivoMedication newWithRecord:APP_DELEGATE.indivo.activeRecord];
 	if (!med) {
 		DLog(@"Did not get a medication document!");
 	}
 	
-	// name and branded name
+	// name
 	NSDictionary *nonbranded = [drugDict objectForKey:@"nonbranded"];
 	med.name = [INCodedValue newWithNodeName:@"name"];
-	if ([nonbranded objectForKey:@"rxcui"]) {
-		med.name.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
-		med.name.value = [nonbranded objectForKey:@"rxcui"];
+	if (nonbranded) {
+		if ([nonbranded objectForKey:@"rxcui"]) {
+			med.name.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
+			med.name.value = [nonbranded objectForKey:@"rxcui"];
+		}
+		else {
+			DLog(@"NO RX IDENTIFIER FOR NONBRANDED");
+		}
+		med.name.text = [nonbranded objectForKey:@"name"];
 	}
 	else {
-		DLog(@"NO RX IDENTIFIER FOR NONBRANDED");
+		med.name.text = @"<Fetch generic>";
 	}
-	med.name.text = [nonbranded objectForKey:@"name"];
 	
+	// branded name
 	NSString *rxcui = [drugDict objectForKey:@"rxcui"];
 	med.brandName = [INCodedValue newWithNodeName:@"brandName"];
 	if (rxcui) {
@@ -727,39 +652,16 @@
 //	med.dose.unit.abbrev = @"p";
 //	med.dose.unit.value = @"pills";
 	
-//	INTableSection *pharm = [INTableSection sectionWithType:@"editable"];
-//	[pharm addObject:med.dose];
-	
 	// date started and stopped
-	med.dateStarted = [INDate dateWithDate:[NSDate date]];
-	med.dateStarted.nodeName = @"dateStarted";
-	med.dateStopped = [INDate newWithNodeName:@"dateStopped"];
+	med.prescription = [IndivoPrescription new];
+	med.dateStarted = [INDate dateWithDate:[NSDate date]];		// to make the current scheme validate
+	med.prescription.on = [INDate dateWithDate:[NSDate date]];
+	med.prescription.stopOn = [INDate dateWithDate:[[NSDate date] dateByAddingTimeInterval:14*24*3600]];
+	med.prescription.dispenseAsWritten = [INBool newNo];
 	
-	INTableSection *dates = [INTableSection sectionWithTitle:@"Timeframe"];
-	dates.type = @"editable";
-	[dates addObject:med.dateStarted];
-	[dates addObject:med.dateStopped];
-	
-	// instructions
-	INTableSection *instructions = [INTableSection sectionWithTitle:@"Instructions"];
-	instructions.type = @"editable";
-	[instructions addObject:med];
-	
-	// accept button
-	INTableSection *accept = [INTableSection sectionWithType:@"button"];
-	[accept addObject:med];
-	
-	// update table
-	for (INTableSection *section in sections) {
-		[section collapseAnimated:YES];
-	}
-//	[self addSection:pharm animated:YES];
-	[self addSection:dates animated:YES];
-	[self addSection:instructions animated:YES];
-	[self addSection:accept animated:YES];
-	
-	//--
+	// inform delegate
 	NSLog(@"\n%@\n", [med xml]);
+	[delegate newMedController:self didSelectMed:med];
 }
 
 
@@ -784,28 +686,22 @@
 /**
  *	Pushes the given table section while returning the current section
  */
-- (INTableSection *)addSection:(INTableSection *)newSection animated:(BOOL)animated
+- (void)addSection:(INTableSection *)newSection animated:(BOOL)animated
 {
-	INTableSection *current = [sections lastObject];
-	
-	// add new
-	[self.tableView beginUpdates];
 	if (newSection) {
+		[self.tableView beginUpdates];
 		NSUInteger section = [sections count];
 		[sections addObject:newSection];
 		[newSection addToTable:self.tableView asSection:section animated:animated];
+		[self.tableView endUpdates];
 	}
-	[self.tableView endUpdates];
-	
-	return current;
 }
 
 /**
  *	Make the given level the active level
  */
-- (void)goToSection:(NSUInteger)sectionIdx removeLower:(BOOL)remove
+- (void)goToSection:(NSUInteger)sectionIdx animated:(BOOL)animated
 {
-	DLog(@"going to section %d", sectionIdx);
 	[self.tableView beginUpdates];
 	
 	NSInteger i = [sections count] - 1;
@@ -814,33 +710,18 @@
 		
 		// remove or expand higher sections
 		if (i > sectionIdx) {
-			if (remove || [@"suggestion" isEqualToString:existing.type] || [@"editable" isEqualToString:existing.type]) {
-				DLog(@"Removing %@", existing);
-				[existing removeAnimated:NO];
-				[sections removeLastObject];
-			}
-			else {
-				DLog(@"Expanding %@", existing);
-				[existing expandAnimated:YES];
-			}
+			[existing removeAnimated:animated];
+			[sections removeLastObject];
 		}
 		
-		// target section, expand after adding to table (if necessary)
+		// target section, expand
 		else if (i == sectionIdx) {
-			DLog(@"Expanding current %@", existing);
-			[existing expandAnimated:YES];
+			[existing expandAnimated:animated];
 		}
 		
-		// expand or collapse lower levels
+		// lower levels
 		else {
-			if ([@"drug" isEqualToString:existing.type]) {
-				DLog(@"Expanding %@", existing);
-				[existing expandAnimated:YES];
-			}
-			else {
-				DLog(@"Collapsing %@", existing);
-				[existing collapseAnimated:YES];
-			}
+			
 		}
 		i--;
 	}
@@ -910,6 +791,11 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+	
+	// start with a given string?
+	if ([delegate respondsToSelector:@selector(initialMedStringForNewMedController:)]) {
+		self.initialMedString = [delegate initialMedStringForNewMedController:self];
+	}
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -930,6 +816,29 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
 	return SUPPORTED_ORIENTATION(interfaceOrientation);
+}
+
+
+
+#pragma mark - KVC
+- (UITextField *)nameInputField
+{
+	if (!nameInputField) {
+		self.nameInputField = [[UITextField alloc] initWithFrame:CGRectMake(10.f, 10.f, 300.f, 27.f)];
+		nameInputField.tag = 99;
+		nameInputField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+		nameInputField.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		nameInputField.enablesReturnKeyAutomatically = NO;
+		nameInputField.returnKeyType = UIReturnKeyDone;
+		nameInputField.clearButtonMode = UITextFieldViewModeAlways;
+		nameInputField.autocorrectionType = UITextAutocorrectionTypeNo;
+		nameInputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+		nameInputField.placeholder = @"Medication Name";
+		nameInputField.font = [UIFont systemFontOfSize:17.f];
+		nameInputField.leftViewMode = UITextFieldViewModeAlways;
+		nameInputField.delegate = self;
+	}
+	return nameInputField;
 }
 
 

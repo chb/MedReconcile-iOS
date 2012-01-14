@@ -199,7 +199,7 @@
 			[UIView animateWithDuration:0.2
 							 animations:^{
 								 CGRect detailFrame = detailTile.frame;
-								 detailFrame.size.height = 0.f;
+								 detailFrame.size.height = 2.f;				/// @todo Do not use 0.f (makes the bg disappear immediately) until we make the background its own view
 								 detailTile.frame = detailFrame;
 								 [self layoutSubviews];
 							 }

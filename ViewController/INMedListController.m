@@ -11,8 +11,7 @@
 #import "IndivoServer.h"
 #import "IndivoRecord.h"
 #import "IndivoMedication.h"
-#import "INNewMedViewController.h"
-#import "INEditMedViewController.h"
+#import "INMedEditViewController.h"
 #import "INMedContainer.h"
 #import "INMedTile.h"
 #import "INMedDetailTile.h"
@@ -162,20 +161,6 @@
 	}];
 }
 
-/**
- *	Show the medication edit screen
- */
-- (void)editMedicationFrom:(INMedTile *)medTile
-{
-	if (medTile.med) {
-		INEditMedViewController *editView = [INEditMedViewController new];
-		editView.med = medTile.med;
-		[self.navigationController pushViewController:editView animated:YES];
-	}
-	else {
-		DLog(@"The tile %@ has no associated medication", medTile);
-	}
-}
 
 /**
  *	Show the add-medication screen
@@ -183,11 +168,11 @@
 - (void)showNewMedView:(id)sender
 {
 	if (self.record) {
-		UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissModal:)];
+		UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissModalViewController:)];
 		
 		INNewMedViewController *newMed = [INNewMedViewController new];
 		newMed.navigationItem.rightBarButtonItem = doneButton;
-		newMed.listController = self;
+		newMed.delegate = self;
 		
 		UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:newMed];
 		navi.navigationBar.tintColor = [APP_DELEGATE naviTintColor];
@@ -202,7 +187,6 @@
 		DLog(@"Tried to add a medication without active record");
 	}
 }
-
 
 
 #pragma mark - Indivo
@@ -269,40 +253,40 @@
 
 
 
-#pragma mark - UIActionSheetDelegate
-/**
- *	A medication action was chosen
- */
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+#pragma mark - INNewMedViewControllerDelegate
+- (void)newMedController:(INNewMedViewController *)theController didSelectMed:(IndivoMedication *)aMed;
 {
-	if (actionSheet.destructiveButtonIndex == buttonIndex) {
-		[activeTile indicateAction:YES];
-		__block INMedTile *theTile = activeTile;
-		[activeTile.med archive:YES forReason:@"no reason" callback:^(BOOL userDidCancel, NSString *errorMessage) {
-			if (errorMessage) {
-				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Archiving failed"
-																message:errorMessage
-															   delegate:nil
-													  cancelButtonTitle:@"Ok"
-													  otherButtonTitles:nil];
-				[alert show];
-			}
-			[theTile indicateAction:NO];
-		}];
-	}
-	else if (buttonIndex == actionSheet.cancelButtonIndex) {
-	}
-	else {
-		if (1 == buttonIndex) {
-			[self editMedicationFrom:activeTile];
-		}
-		else {
-			DLog(@"What should index %d do?", buttonIndex);
-		}
+	UINavigationController *naviController = (UINavigationController *)[self presentedViewController];
+	if (![naviController isKindOfClass:[UINavigationController class]]) {
+		DLog(@"PROBLEM! I'm not presenting a navigation controller while I should! Presenting: %@", naviController);
+		return;
 	}
 	
-	[container undimAll];
-	self.activeTile = nil;
+	// put med into edit view
+	INMedEditViewController *edit = [INMedEditViewController new];
+	edit.med = aMed;
+	
+	[naviController pushViewController:edit animated:YES];
+	return;
+	
+	[aMed push:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		if (userDidCancel) {
+			
+		}
+		else if (errorMessage) {
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to add medication"
+															message:errorMessage
+														   delegate:nil
+												  cancelButtonTitle:@"Too Bad"
+												  otherButtonTitles:nil];
+			[alert show];
+		}
+		else {
+			
+			// successfully added medication
+			[self dismissModalViewControllerAnimated:YES];
+		}
+	}];
 }
 
 
@@ -321,16 +305,13 @@
 /**
  *	Dismiss current overlay view controller
  */
-- (void)dismissModal:(id)sender
+- (void)dismissModalViewController:(id)sender
 {
 	if ([self respondsToSelector:@selector(dismissViewControllerAnimated:completion:)]) {			// iOS 5+ only
-		[self dismissViewControllerAnimated:YES completion:^{
-			/// @todo Refresh med list
-		}];
+		[self dismissViewControllerAnimated:YES completion:NULL];
 	}
 	else {
 		[self dismissModalViewControllerAnimated:YES];
-		/// @todo Refresh med list
 	}
 }
 
