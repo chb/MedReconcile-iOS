@@ -14,10 +14,11 @@
  */
 @interface INRxNormLoader : INURLLoader
 
-@property (nonatomic, readonly, strong) NSMutableDictionary *responseObjects;
+@property (nonatomic, readonly, strong) id responseObjects;
 
 + (id)loader;
 
+- (void)getSuggestionsFor:(NSString *)searchString callback:(INCancelErrorBlock)callback;
 - (void)getRelated:(NSString *)relType forId:(NSString *)rxcui callback:(INCancelErrorBlock)callback;
 
 

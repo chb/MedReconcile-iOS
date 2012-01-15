@@ -13,8 +13,6 @@
 #import "INButton.h"
 
 #import "IndivoServer.h"
-#import "INURLFetcher.h"
-#import "INURLLoader.h"
 #import "INXMLParser.h"
 #import "INXMLNode.h"
 #import "IndivoMedication.h"
@@ -26,13 +24,12 @@
 @property (nonatomic, strong) NSMutableArray *sections;								///< An array full of INTableSection objects
 @property (nonatomic, copy) NSString *initialMedString;								///< The string with which to start off
 @property (nonatomic, copy) NSString *currentMedString;								///< The string for which suggestions are being loaded
-@property (nonatomic, strong) NSMutableDictionary *currentScores;					///< A dictionary containing approxMatch scores
+@property (nonatomic, strong) INRxNormLoader *currentLoader;						///< A handle to the currently active loader so we can abort loading
 
 @property (nonatomic, strong) UITextField *nameInputField;
 @property (nonatomic, strong) UILabel *loadingTextLabel;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingActivity;
 
-- (void)fetcher:(INURLFetcher *)aFetcher didLoadSuggestionsFor:(NSString *)medString;
 - (void)clearSuggestions;
 - (void)proceedWith:(NSIndexPath *)indexPath;
 - (void)useDrug:(NSIndexPath *)indexPath;
@@ -50,7 +47,7 @@
 
 @synthesize delegate;
 @synthesize sections;
-@synthesize initialMedString, currentMedString, currentScores;
+@synthesize initialMedString, currentMedString, currentLoader;
 @synthesize nameInputField, loadingTextLabel, loadingActivity;
 
 
@@ -65,7 +62,6 @@
 		self.title = @"New Medication";
 		self.sections = [NSMutableArray arrayWithCapacity:8];
 		[sections addObject:[INTableSection new]];
-		self.currentScores = [NSMutableDictionary dictionaryWithCapacity:20];
     }
     return self;
 }
@@ -154,10 +150,10 @@
 #pragma mark - Table View Delegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+	
 	if (indexPath.section > 0) {
 		[nameInputField resignFirstResponder];
-		
-		[tableView deselectRowAtIndexPath:indexPath animated:YES];
 		INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
 		
 		// collapsed level tapped
@@ -176,7 +172,7 @@
 
 #pragma mark - Loading Suggestions
 /**
- *	Begin to start medication suggestions for the user entered string
+ *	Load medication suggestions for the user entered string
  */
 - (void)loadSuggestionsFor:(NSString *)medString
 {
@@ -186,215 +182,46 @@
 	[self addSection:section animated:YES];
 	
 	// show action
-	UITextField *textField = nil;
-	UITableViewCell *iCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
-	if (iCell) {
-		textField = (UITextField *)[[iCell contentView] viewWithTag:99];
-		if ([textField isKindOfClass:[UITextField class]]) {
-			UIActivityIndicatorView *act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-			textField.leftView = act;
-			[act startAnimating];
-		}
+	if (nameInputField) {
+		UIActivityIndicatorView *act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+		nameInputField.leftView = act;
+		[act startAnimating];
 	}
 	
 	self.currentMedString = medString;
-	[currentScores removeAllObjects];
 	
-	// start loading suggestions
-	NSString *urlBase = @"http://rxnav.nlm.nih.gov/REST";
-	NSString *urlString = [NSString stringWithFormat:@"%@/approxMatch/%@", urlBase, [medString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-	NSURL *url = [NSURL URLWithString:urlString];
-	DLog(@"->  %@", url);
-	
-	INURLLoader *loader = [[INURLLoader alloc] initWithURL:url];
-	[loader getWithCallback:^(BOOL didCancel, NSString *errorString) {
-		
-		// failed
-		if (errorString) {
+	self.currentLoader = [INRxNormLoader new];
+	[currentLoader getSuggestionsFor:medString callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		if (errorMessage) {
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to load suggestions"
-															message:errorString
+															message:errorMessage
 														   delegate:nil
 												  cancelButtonTitle:@"Too Bad"
 												  otherButtonTitles:nil];
 			[alert show];
 		}
 		
-		// got some suggestions!
-		else {
-			
-			// create a node with the user's entry
-			NSDictionary *myDrug = [NSDictionary dictionaryWithObject:medString forKey:@"name"];
-			[section addObject:myDrug];
-			
-			// parse XML
-			NSError *error = nil;
-			INXMLNode *body = [INXMLParser parseXML:loader.responseString error:&error];
-			if (!body) {
-				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to parse suggestions"
-																message:[error localizedDescription]
-															   delegate:nil
-													  cancelButtonTitle:@"Too Bad"
-													  otherButtonTitles:nil];
-				[alert show];
-			}
-			
-			// parsed successfully, drill down
-			else {
-				INXMLNode *list = [body childNamed:@"approxGroup"];
-				if (list) {
-					NSArray *suggNodes = [list childrenNamed:@"candidate"];
-					
-					// ok, we're down to the suggestion nodes, but we need to fetch their names
-					if ([suggNodes count] > 0) {
-						NSMutableArray *urls = [NSMutableArray arrayWithCapacity:[suggNodes count]];
-						
-						BOOL hasMore = NO;
-						NSUInteger i = 0;
-						for (INXMLNode *suggestion in suggNodes) {
-							if (i > 20) {
-								hasMore = YES;
-								break;
-							}
-							
-							NSString *rxcui = [[suggestion childNamed:@"rxcui"] text];
-							if (rxcui) {
-								NSNumber *score = [NSNumber numberWithInteger:[[[suggestion childNamed:@"score"] text] integerValue]];
-								if (score) {
-									[currentScores setObject:score forKey:rxcui];
-								}
-								
-								NSString *urlString = [NSString stringWithFormat:@"%@/rxcui/%@/properties", urlBase, rxcui];
-								NSURL *url = [NSURL URLWithString:urlString];
-								if (url && ![urls containsObject:url]) {
-									[urls addObject:url];
-									i++;
-								}
-							}
-							else {
-								DLog(@"Did not find the rxcui in %@", suggestion);
-							}
-						}
-						
-						// indicate that there is more
-						if (hasMore) {
-							DLog(@"We have even more candidates: %d in total", [suggNodes count]);
-						}
-						
-						// start fetching the suggestion's names
-						INURLFetcher *fetcher = [INURLFetcher new];
-						[fetcher getURLs:urls callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-							[self fetcher:fetcher didLoadSuggestionsFor:medString];
-						}];
-						return;					// to skip the table updating just yet
-					}
+		// got suggestions
+		else if (!userDidCancel) {
+			NSArray *resArray = currentLoader.responseObjects;
+			if (!resArray || [resArray isKindOfClass:[NSArray class]]) {
+				if ([resArray count] < 1) {
+					NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:@"No suggestions found" forKey:@"name"];
+					[section addObject:fakeDrug];
 				}
+				else {
+					[section addObjects:currentLoader.responseObjects];
+				}
+			}
+			else {
+				DLog(@"ERROR, expected an array, got: %@", currentLoader.responseObjects);
 			}
 			[section updateAnimated:YES];
 		}
 		
-		textField.leftView = nil;
+		// stop action indication animation
+		nameInputField.leftView = nil;
 	}];
-}
-
-- (void)fetcher:(INURLFetcher *)aFetcher didLoadSuggestionsFor:(NSString *)medString
-{
-	if ([currentMedString isEqualToString:medString]) {
-		INTableSection *section = [sections lastObject];
-		
-		// the section currently holds a representation of the user's string. If we get an exact match, remove the user's string
-		NSDictionary *userSuggestion = [section.objects firstObject];
-		[section removeAllObjects];
-		
-		// apply the names
-		if ([aFetcher.successfulLoads count] > 0) {
-			NSMutableArray *suggIN = [NSMutableArray array];
-			NSMutableArray *suggBN = [NSMutableArray array];
-			NSMutableArray *suggSBD = [NSMutableArray array];
-			NSMutableDictionary *userSuggestionMatches = [NSMutableDictionary dictionary];
-			
-			// add suggestions and reload the table
-			for (INURLLoader *loader in aFetcher.successfulLoads) {
-				
-				// parse XML
-				NSError *error = nil;
-				INXMLNode *node = [INXMLParser parseXML:loader.responseString error:&error];
-				if (!node) {
-					DLog(@"Error Parsing: %@", [error localizedDescription]);
-				}
-				else {
-					INXMLNode *drug = [node childNamed:@"properties"];
-					if (drug) {
-						NSString *name = [[drug childNamed:@"name"] text];
-						NSString *tty = [[drug childNamed:@"tty"] text];
-						
-						NSMutableDictionary *drugDict = [NSMutableDictionary dictionaryWithObject:tty forKey:@"tty"];
-						[drugDict setObject:[[drug childNamed:@"rxcui"] text] forKey:@"rxcui"];
-						[drugDict setObject:name forKey:@"name"];
-						
-						// if the user-entered string is exactly the same as a result, we are not going to show the user input
-						if (NSOrderedSame == [name compare:[userSuggestion objectForKey:@"name"] options:(NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch)]) {
-							[userSuggestionMatches setObject:drugDict forKey:tty];
-						}
-						
-						// we are going to show suggestions with type: IN (ingredient) and BN (Brand Name)
-						DLog(@"-->  %@  [%@]  (%@, %@)", tty, [currentScores objectForKey:[[drug childNamed:@"rxcui"] text]], name, [[drug childNamed:@"rxcui"] text]);
-						if ([tty isEqualToString:@"BN"]) {
-							[suggBN addObject:drugDict];
-						}
-						else if ([tty isEqualToString:@"IN"]) {
-							[suggIN addObject:drugDict];
-						}
-						else if ([tty isEqualToString:@"SBD"]) {
-							[suggSBD addObject:drugDict];
-						}
-					}
-				}
-			}
-			
-			// decide which ones to use
-			NSString *didUse = @"SBD";
-			if ([suggBN count] > 0) {
-				[section addObjects:suggBN];
-				didUse = @"BN";
-			}
-			else if ([suggIN count] > 0) {
-				[section addObjects:suggIN];
-				didUse = @"IN";
-			}
-			else {
-				[section addObjects:suggSBD];
-			}
-			
-			// re-add the user suggestion if we're still holding on to it
-			if ([userSuggestionMatches count] > 0) {
-				for (NSString *suggKey in [userSuggestionMatches allKeys]) {
-					if (![suggKey isEqualToString:didUse]) {
-						[section unshiftObject:[userSuggestionMatches objectForKey:suggKey]];
-					}
-				}
-			}
-			else if (userSuggestion) {
-				[section unshiftObject:userSuggestion];
-			}
-		}
-		else {
-			DLog(@"ALL loaders failed to load!");
-		}
-		
-		[section updateAnimated:YES];
-	}
-	else {
-		DLog(@"Received suggestions for \"%@\", but we have moved on to \"%@\", discarding", medString, currentMedString);
-	}
-	
-	// stop action
-	UITableViewCell *iCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
-	if (iCell) {
-		UITextField *textField = (UITextField *)[[iCell contentView] viewWithTag:99];
-		if ([textField isKindOfClass:[UITextField class]]) {
-			textField.leftView = nil;
-		}
-	}
 }
 
 
@@ -429,19 +256,19 @@
 		[current selectRow:indexPath.row collapseAnimated:YES];
 		[current showIndicator];
 		
-		INRxNormLoader *loader = [INRxNormLoader loader];
-		[loader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
+		self.currentLoader = [INRxNormLoader loader];
+		[currentLoader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
+			NSMutableArray *newSections = [NSMutableArray array];
 			
 			// got some data
 			if (!errorString) {
-				NSMutableArray *newSections = [NSMutableArray array];
 				NSMutableArray *stripFromNames = [NSMutableArray array];
 				NSMutableDictionary *scdc = [NSMutableDictionary dictionary];
 				NSMutableArray *drugs = [NSMutableArray array];
 				
 				// look at what we've got
-				for (NSString *tty in [loader.responseObjects allKeys]) {
-					NSArray *relatedArr = [loader.responseObjects objectForKey:tty];
+				for (NSString *tty in [currentLoader.responseObjects allKeys]) {
+					NSArray *relatedArr = [currentLoader.responseObjects objectForKey:tty];
 					for (NSDictionary *related in relatedArr) {
 						NSString *name = [related objectForKey:@"name"];
 						NSString *rx = [related objectForKey:@"rxcui"];
@@ -552,30 +379,26 @@
 							[drug setObject:name forKey:@"name"];
 						}
 					}
-					
-					// update table
-					for (INTableSection *section in newSections) {
-						[self addSection:section animated:YES];
-					}
-					[current hideIndicator];
-					return;
 				}
 				else {
 					DLog(@"Not a single drug found in concepts!");
+					NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:@"No relations found" forKey:@"name"];
+					INTableSection *newSection = [INTableSection new];
+					[newSection addObject:fakeDrug];
+					[newSections addObject:newSection];
 				}
 			}
-			else {
-				DLog(@"Error Loading: %@", errorString);
+			else if (!didCancel) {
+				NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:errorString forKey:@"name"];
+				INTableSection *newSection = [INTableSection new];
+				[newSection addObject:fakeDrug];
+				[newSections addObject:newSection];
 			}
 			
-			// nothing to show?
-			errorString = errorString ? errorString : @"No relations found!";
-			NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:errorString forKey:@"name"];
-			
-			INTableSection *newSection = [INTableSection new];
-			[newSection addObject:fakeDrug];
-			[self addSection:newSection animated:YES];
-			
+			// update table
+			for (INTableSection *section in newSections) {
+				[self addSection:section animated:YES];
+			}
 			[current hideIndicator];
 		}];
 	}
@@ -672,6 +495,12 @@
  */
 - (void)clearSuggestions
 {
+	// abort loader
+	if (currentLoader) {
+		[currentLoader cancel];
+	}
+	
+	// clear sections
 	NSRange mostRange = NSMakeRange(1, [sections count]-1);
 	NSIndexSet *mostSections = [NSIndexSet indexSetWithIndexesInRange:mostRange];
 	
@@ -844,6 +673,7 @@
 
 
 #pragma mark - Utilities
+/// @todo Currently not used, maybe it's still useful?
 - (NSString *)displayNameFor:(INXMLNode *)drugNode
 {
 	if (drugNode) {
