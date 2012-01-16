@@ -7,21 +7,28 @@
 //
 
 #import "INMedContainer.h"
+#import <QuartzCore/QuartzCore.h>
+#import "IndivoMedication.h"
 #import "INMedTile.h"
 #import "INMedDetailTile.h"
-#import <QuartzCore/QuartzCore.h>
+#import "NSArray+NilProtection.h"
+
+#define kINMedContainerAnimDuration 0.2
 
 
 @interface INMedContainer ()
 
 @property (nonatomic, strong) CAGradientLayer *bottomShadow;
 
+- (void)layoutSubviewsAnimated:(BOOL)animated;
+
 @end
 
 
 @implementation INMedContainer
 
-@synthesize viewController, detailTile, bottomShadow;
+@synthesize viewController, detailTile;
+@synthesize bottomShadow;
 
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -37,9 +44,17 @@
 
 #pragma mark - View Layout
 /**
- *	The standard layouting method, does rearrange the tiles optimally
+ *	The standard layouting method, calls layoutSubviewsAnimated:NO
  */
 - (void)layoutSubviews
+{
+	[self layoutSubviewsAnimated:NO];
+}
+
+/**
+ *	Layout subviews, optionally animated.
+ */
+- (void)layoutSubviewsAnimated:(BOOL)animated
 {
 	CGFloat myWidth = [self bounds].size.width;
 	NSUInteger perRow = 2;								/// @todo determine based on view width
@@ -57,6 +72,7 @@
 		}
 	}
 	
+	// loop all tiles
 	for (UIView *tile in [self subviews]) {
 		CGRect tileFrame = tile.frame;
 		
@@ -74,7 +90,6 @@
 				}
 			}
 			tileFrame.origin = CGPointMake((0 == tileNum % perRow) ? 0.f : tileWidth, y);
-			tile.frame = tileFrame;
 			
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
 			tileNum++;
@@ -84,9 +99,19 @@
 		else if ([tile isKindOfClass:[INMedDetailTile class]]) {
 			tileFrame.origin.y = lastBottom;
 			tileFrame.size.width = myWidth;
-			tile.frame = tileFrame;
 			
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
+		}
+		
+		// set frame
+		if (animated) {
+			[UIView animateWithDuration:kINMedContainerAnimDuration
+							 animations:^{
+								 tile.frame = tileFrame;
+							 }];
+		}
+		else {
+			tile.frame = tileFrame;
 		}
 	}
 	
@@ -104,20 +129,87 @@
 
 #pragma mark - Adding & Removing Tiles
 /**
- *	Given an array of INMedTile objects, shows these tiles
+ *	Given an array of IndivoMedication objects, creates and shows tiles for these
  */
-- (void)showTiles:(NSArray *)tileArray
+- (void)showMeds:(NSArray *)medArray animated:(BOOL)animated
 {
-	// remove old, add new and layout
-	[[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-	
-	for (INMedTile *tile in tileArray) {
-		tile.container = self;
-		[self addSubview:tile];
+	// no new medications, just remove old and be done with it
+	if ([medArray count] < 1) {
+		/// @todo Ignores animated property. Maybe fade out?
+		[[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+		return;
 	}
 	
-	[self setNeedsLayout];
+	// collect existing tiles and remove old ones
+	NSMutableArray *existing = [NSMutableArray arrayWithCapacity:[[self subviews] count]];
+	for (INMedTile *tile in [self subviews]) {
+		BOOL rm = YES;
+		if ([tile isKindOfClass:[INMedTile class]] && [medArray containsObject:tile.med]) {
+			rm = NO;
+			[existing addObject:tile];
+		}
+		if (rm) {
+			if (animated) {
+				[UIView animateWithDuration:kINMedContainerAnimDuration
+								 animations:^{
+									 tile.layer.opacity = 0.f;
+								 }
+								 completion:^(BOOL finished) {
+									 [tile removeFromSuperview];
+								 }];
+			}
+			else {
+				[tile removeFromSuperview];
+			}
+		}
+	}
+	
+	// remove all and re-insert in the correct order, so layoutSubviews can do its job
+	[existing makeObjectsPerformSelector:@selector(removeFromSuperview)];
+	
+	for (IndivoMedication *med in medArray) {
+		INMedTile *tile = nil;
+		for (INMedTile *existingTile in existing) {
+			if ([existingTile.med isEqual:med]) {
+				tile = existingTile;
+				break;
+			}
+		}
+		if (!tile) {
+			tile = [INMedTile tileWithMedication:med];
+		}
+		tile.container = self;
+		[self addSubview:tile];
+		
+		// load pill image
+		if (med.pillImage) {
+			[tile showImage:med.pillImage];
+		}
+		else {
+			[tile indicateImageAction:YES];
+			[med loadPillImageBypassingCache:NO callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+				if (errorMessage) {
+					DLog(@"Error loading pill image: %@", errorMessage);
+				}
+				[tile showImage:med.pillImage];
+				[tile indicateImageAction:NO];
+			}];
+		}
+	}
+	
+	// nicely lay it out
+	[self layoutSubviewsAnimated:animated];
 }
+
+
+/**
+ *	Rearranges the existing tiles by comparing each tile's medication to the array provided
+ */
+- (void)rearrangeByMedList:(NSArray *)medList animated:(BOOL)animated
+{
+	
+}
+
 
 /**
  *	Adds a medication tile
@@ -172,7 +264,6 @@
 	// layout
 	[self layoutSubviews];
 	if (animated) {
-		DLog(@"Animated");
 		[UIView animateWithDuration:0.2
 						 animations:^{
 							 detailFrame.size.height = detailOrigHeight;
@@ -259,14 +350,6 @@
 			[tile undimAnimated:YES];
 		}
 	}
-}
-
-/**
- *	Rearranges the existing tiles by comparing each tile's property and sorting accordingly
- */
-- (void)rearrangeByPropertyName:(NSString *)aProperty
-{
-	
 }
 
 

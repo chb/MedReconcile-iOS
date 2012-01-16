@@ -206,7 +206,19 @@
  */
 - (IBAction)voidMed:(id)sender
 {
-	
+	[med void:YES forReason:@"no reason specified" callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		if (errorMessage) {
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Voiding Failed"
+															message:errorMessage
+														   delegate:nil
+												  cancelButtonTitle:@"OK"
+												  otherButtonTitles:nil];
+			[alert show];
+		}
+		else if (!userDidCancel) {
+			[delegate editMedController:self didVoidMed:med];
+		}
+	}];
 }
 
 /**
@@ -271,12 +283,36 @@
 
 - (void)unarchiveMed:(id)sender
 {
-	
+	[med archive:NO forReason:@"ractivating" callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		if (errorMessage) {
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Unarchiving Failed"
+															message:errorMessage
+														   delegate:nil
+												  cancelButtonTitle:@"OK"
+												  otherButtonTitles:nil];
+			[alert show];
+		}
+		else if (!userDidCancel) {
+			[delegate editMedController:self didActOnMed:med];
+		}
+	}];
 }
 
 - (void)unvoidMed:(id)sender
 {
-	
+	[med void:NO forReason:@"unvoiding" callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		if (errorMessage) {
+			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Unvoiding Failed"
+															message:errorMessage
+														   delegate:nil
+												  cancelButtonTitle:@"OK"
+												  otherButtonTitles:nil];
+			[alert show];
+		}
+		else if (!userDidCancel) {
+			[delegate editMedController:self didActOnMed:med];
+		}
+	}];
 }
 
 
@@ -378,7 +414,7 @@
 	target.size.height = intersect.origin.y;
 	
 	CGRect buttonFrame = buttonContainer.frame;
-	buttonFrame.origin.y = target.size.height - buttonFrame.size.height + 10.f;
+	buttonFrame.origin.y = target.size.height - buttonFrame.size.height;
 	
 	[UIView animateWithDuration:animDuration
 					 animations:^{
@@ -391,8 +427,8 @@
 						 UIView *first = [scrollView findFirstResponder];
 						 if (first) {
 							 CGRect firstFrame = [scrollView convertRect:first.frame fromView:[first superview]];
-							 firstFrame.origin.y += (buttonFrame.size.height - 10.f);		// to avoid hitting the button container
-							 firstFrame.origin.y += 8.f;									// some padding
+							 firstFrame.origin.y += buttonFrame.size.height;		// to avoid hitting the button container
+							 firstFrame.origin.y += 8.f;							// some padding
 							 [scrollView scrollRectToVisible:firstFrame animated:YES];
 						 }
 					 }];
@@ -424,6 +460,12 @@
 		[self performSelector:@selector(updateNumDaysLabel) withObject:nil afterDelay:0.0];
 	}
 	return YES;
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+	[textField resignFirstResponder];
+	return NO;
 }
 
 - (BOOL)textView:(UITextView *)aTextView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text

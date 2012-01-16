@@ -26,6 +26,7 @@
 @property (nonatomic, strong) CAGradientLayer *bottomShadow;
 
 - (void)setup;
+- (void)loadMed;
 
 @end
 
@@ -90,8 +91,6 @@
 - (void)layoutSubviews
 {
 	[super layoutSubviews];
-	
-	prescDuration.text = [drFormatter formattedRangeForLabel:prescDuration];
 	/// @todo update instructions size
 }
 
@@ -154,20 +153,66 @@
 
 
 #pragma mark - Actions
-- (void)showRxNormBrowser:(id)sender
+- (void)loadMed
 {
-	
+	if (med) {
+		
+		// name and info
+		agentName.text = med.name.abbrev ? med.name.abbrev : med.name.text;
+		prescName.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
+		
+		// date
+		self.drFormatter.from = med.prescription.on.date;
+		self.drFormatter.to = med.prescription.stopOn.date;
+		prescDuration.text = [drFormatter formattedRangeForLabel:prescDuration];
+		
+		// med status -- WE AUTOMATICALLY ARCHIVE THE MEDICATION IF "to" DATE IS A PAST DATE
+		NSDate *now = [NSDate date];
+		UIColor *dateCol = [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
+		if (INDocumentStatusActive == med.status) {
+			if (med.prescription.on.date == [med.prescription.on.date laterDate:now]) {
+				dateCol = [UIColor colorWithRed:0.5f green:0.25f blue:0.f alpha:1.f];
+			}
+			else if (med.prescription.stopOn.date && med.prescription.stopOn.date == [med.prescription.stopOn.date earlierDate:now]) {
+				dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
+				
+				/// @attention AUTO-ARCHIVING MED!
+				[med archive:YES forReason:@"auto-discontinuing" callback:NULL];
+			}
+		}
+		else if (INDocumentStatusArchived == med.status) {
+			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
+		}
+		else if (INDocumentStatusVoid == med.status) {
+			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
+			prescDuration.text = @"Voided";
+		}
+		prescDuration.textColor = dateCol;
+		
+		
+		// image
+		if (med.pillImage) {
+			imageView.image = med.pillImage;
+		}
+		else {
+			[self indicateImageAction:YES];
+			[med loadPillImageBypassingCache:NO callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+				[self showImage:med.pillImage];
+				[self indicateImageAction:NO];
+			}];
+		}
+	}
 }
 
-- (void)showVersions:(id)sender
-{
-	
-}
 
+/**
+ *	The main action can have different titles, act accordingly
+ */
 - (void)triggerMainAction:(id)sender
 {
 	INButton *theButton = [sender isKindOfClass:[INButton class]] ? (INButton *)sender : nil;
 	[theButton indicateAction:YES];
+	__block INMedDetailTile *this = self;
 	[med archive:YES forReason:@"discontinuing" callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 		if (errorMessage) {
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Archiving failed"
@@ -178,6 +223,7 @@
 			[alert show];
 		}
 		[theButton indicateAction:NO];
+		[this loadMed];
 	}];
 }
 
@@ -189,6 +235,7 @@
 	INEditMedViewController *editController = [INEditMedViewController new];
 	if (editController) {
 		editController.med = self.med;
+		editController.delegate = self.forTile.container.viewController;
 		UINavigationController *tempNavi = [[UINavigationController alloc] initWithRootViewController:editController];
 		
 		// add cancel and save buttons
@@ -257,26 +304,7 @@
 {
 	if (aMed != med) {
 		med = aMed;
-		
-		// name and info
-		agentName.text = med.name.abbrev ? med.name.abbrev : med.name.text;
-		prescName.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
-		
-		// date
-		self.drFormatter.from = med.prescription.on.date;
-		self.drFormatter.to = med.prescription.stopOn.date;
-		
-		// image
-		if (med.pillImage) {
-			imageView.image = med.pillImage;
-		}
-		else {
-			[self indicateImageAction:YES];
-			[med loadPillImageBypassingCache:NO callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-				[self showImage:med.pillImage];
-				[self indicateImageAction:NO];
-			}];
-		}
+		[self loadMed];
 	}
 }
 

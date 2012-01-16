@@ -89,7 +89,7 @@
 - (void)userDidLogout:(IndivoServer *)fromServer
 {
 	medListController.record = nil;
-	[medListController refreshList:nil];
+	[medListController reloadList:nil];
 }
 
 

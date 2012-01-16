@@ -33,8 +33,6 @@
 @property (nonatomic, strong) IBOutlet INButton *prescMainButton;
 @property (nonatomic, strong) IBOutlet INButton *prescChangeButton;
 
-- (IBAction)showRxNormBrowser:(id)sender;
-- (IBAction)showVersions:(id)sender;
 - (IBAction)triggerMainAction:(id)sender;
 - (IBAction)editMed:(id)sender;
 

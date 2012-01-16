@@ -115,9 +115,27 @@
 {
 	drFormatter.from = med.prescription.on.date;
 	drFormatter.to = med.prescription.stopOn.date;
-	durationLabel.text = [drFormatter formattedRangeForMaxWidth:[durationLabel frame].size.width withFont:durationLabel.font];
+	durationLabel.text = [drFormatter formattedRangeForLabel:durationLabel];
 	
-	durationLabel.textColor = (drFormatter.to == [[NSDate date] earlierDate:drFormatter.to]) ? [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f] : [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
+	/// @todo this should go to IndivoMedication
+	NSDate *now = [NSDate date];
+	UIColor *dateCol = [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
+	if (INDocumentStatusActive == med.status) {
+		if (med.prescription.on.date == [med.prescription.on.date laterDate:now]) {
+			dateCol = [UIColor colorWithRed:0.5f green:0.25f blue:0.f alpha:1.f];
+		}
+		else if (med.prescription.stopOn.date && med.prescription.stopOn.date == [med.prescription.stopOn.date earlierDate:now]) {
+			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
+		}
+	}
+	else if (INDocumentStatusArchived == med.status) {
+		dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
+	}
+	else if (INDocumentStatusVoid == med.status) {
+		dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
+		durationLabel.text = @"Voided";
+	}
+	durationLabel.textColor = dateCol;
 }
 
 
@@ -253,7 +271,7 @@
 	if (newMed != med) {
 		med = newMed;
 		
-		self.nameLabel.text = med.brandName ? (med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text) : (med.name.abbrev ? med.name.abbrev : med.name.text);
+		self.nameLabel.text = [med displayName];
 	}
 }
 

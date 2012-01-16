@@ -17,12 +17,12 @@
 @interface INMedListController : UIViewController <INNewMedViewControllerDelegate, INEditMedViewControllerDelegate>
 
 @property (nonatomic, strong) IndivoRecord *record;
-@property (nonatomic, strong) NSMutableArray *medGroups;
+@property (nonatomic, strong) NSMutableArray *medications;
 
 @property (nonatomic, strong) UIBarButtonItem *recordSelectButton;
-@property (nonatomic, strong) UIBarButtonItem *addMedButton;
+@property (nonatomic, strong) UISegmentedControl *sortSelector;
 
-- (void)refreshList:(id)sender;
+- (void)reloadList:(id)sender;
 - (void)dismissModalViewController:(id)sender;
 
 

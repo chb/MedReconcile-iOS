@@ -21,7 +21,7 @@
 @property (nonatomic, assign) UIViewController *viewController;
 @property (nonatomic, strong) INMedDetailTile *detailTile;				///< Only one detail tile at a time can be shown
 
-- (void)showTiles:(NSArray *)tileArray;
+- (void)showMeds:(NSArray *)medArray animated:(BOOL)animated;
 - (void)addTile:(INMedTile *)aTile;
 - (void)addDetailTile:(INMedDetailTile *)aDetailTile forTile:(INMedTile *)aTile animated:(BOOL)animated;
 - (void)removeDetailTileAnimated:(BOOL)animated;
@@ -30,7 +30,7 @@
 
 - (void)dimAllBut:(INMedTile *)aTile;
 - (void)undimAll;
-- (void)rearrangeByPropertyName:(NSString *)aProperty;
+- (void)rearrangeByMedList:(NSArray *)medList animated:(BOOL)animated;
 
 
 @end
