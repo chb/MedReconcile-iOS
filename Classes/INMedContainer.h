@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
+#define kINMedContainerAnimDuration 0.3
+
+
 @class INMedTile;
 @class INMedDetailTile;
 

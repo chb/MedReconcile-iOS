@@ -37,6 +37,7 @@
 - (IBAction)editMed:(id)sender;
 
 - (void)pointAtX:(CGFloat)x;
+- (void)collapseAnimated:(BOOL)animated;
 
 - (void)indicateImageAction:(BOOL)flag;
 - (void)showImage:(UIImage *)anImage;

@@ -13,8 +13,6 @@
 #import "INMedDetailTile.h"
 #import "NSArray+NilProtection.h"
 
-#define kINMedContainerAnimDuration 0.2
-
 
 @interface INMedContainer ()
 
@@ -34,7 +32,8 @@
 - (id)initWithFrame:(CGRect)aFrame
 {
 	if ((self = [super initWithFrame:aFrame])) {
-		self.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
+		self.opaque = NO;
+		self.backgroundColor = [UIColor clearColor];
 		self.showsHorizontalScrollIndicator = NO;
 	}
 	return self;
@@ -59,7 +58,7 @@
 	CGFloat myWidth = [self bounds].size.width;
 	NSUInteger perRow = 2;								/// @todo determine based on view width
 	CGFloat tileWidth = roundf(myWidth / perRow);		/// @todo compensate for rounded pixels
-	CGFloat tileHeight = 90.f;
+	CGFloat tileHeight = 70.f;
 	
 	CGFloat y = 0.f;
 	CGFloat lastBottom = 0.f;
@@ -75,6 +74,11 @@
 	// loop all tiles
 	for (UIView *tile in [self subviews]) {
 		CGRect tileFrame = tile.frame;
+		
+		// subviews tagged "66" are being removed and to be ignored, tagged 70 are effects views also to be ignored
+		if (66 == tile.tag || 70 == tile.tag) {
+			continue;
+		}
 		
 		// a tile
 		if ([tile isKindOfClass:[INMedTile class]]) {
@@ -103,15 +107,27 @@
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
 		}
 		
+		// subviews tagged "67" have just been added and should not have an animated frame
+		if (67 == tile.tag) {
+			tile.frame = tileFrame;
+			tile.tag = 0;
+			tile.layer.opacity = 0.5f;
+			tile.transform = CGAffineTransformMakeScale(3.f, 3.f);
+		}
+		
 		// set frame
 		if (animated) {
 			[UIView animateWithDuration:kINMedContainerAnimDuration
 							 animations:^{
 								 tile.frame = tileFrame;
+								 tile.layer.opacity = 1.f;
+								 tile.transform = CGAffineTransformIdentity;
 							 }];
 		}
 		else {
 			tile.frame = tileFrame;
+			tile.layer.opacity = 1.f;
+			tile.transform = CGAffineTransformIdentity;
 		}
 	}
 	
@@ -143,24 +159,16 @@
 	// collect existing tiles and remove old ones
 	NSMutableArray *existing = [NSMutableArray arrayWithCapacity:[[self subviews] count]];
 	for (INMedTile *tile in [self subviews]) {
-		BOOL rm = YES;
-		if ([tile isKindOfClass:[INMedTile class]] && [medArray containsObject:tile.med]) {
-			rm = NO;
-			[existing addObject:tile];
-		}
-		if (rm) {
-			if (animated) {
-				[UIView animateWithDuration:kINMedContainerAnimDuration
-								 animations:^{
-									 tile.layer.opacity = 0.f;
-								 }
-								 completion:^(BOOL finished) {
-									 [tile removeFromSuperview];
-								 }];
+		if ([tile isKindOfClass:[INMedTile class]]) {
+			if ([medArray containsObject:tile.med]) {
+				[existing addObject:tile];
 			}
 			else {
-				[tile removeFromSuperview];
+				[tile removeAnimated:animated];
 			}
+		}
+		else if ([tile isKindOfClass:[INMedDetailTile class]]) {
+			[(INMedDetailTile *)tile collapseAnimated:animated];
 		}
 	}
 	
@@ -177,12 +185,14 @@
 		}
 		if (!tile) {
 			tile = [INMedTile tileWithMedication:med];
+			tile.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
+			tile.tag = 67;
 		}
 		tile.container = self;
 		[self addSubview:tile];
 		
 		// load pill image
-		if (med.pillImage) {
+		if (YES || med.pillImage) {
 			[tile showImage:med.pillImage];
 		}
 		else {
@@ -243,12 +253,13 @@
 	detailFrame.origin.y = [aTile frame].origin.y + [aTile frame].size.height;
 	CGFloat detailOrigHeight = detailFrame.size.height;
 	if (animated && !detailTile) {
-		detailFrame.size.height = 10.f;
+		detailFrame.size.height = 2.f;
 		aDetailTile.frame = detailFrame;
 	}
 	
-	[self removeDetailTileAnimated:NO];
+	// update state
 	self.detailTile = aDetailTile;
+	[self dimAllBut:aTile];
 	
 	// add subview
 	if (aTile) {
@@ -286,27 +297,9 @@
 - (void)removeDetailTileAnimated:(BOOL)animated
 {
 	if (self == [detailTile superview]) {
-		if (animated) {
-			[UIView animateWithDuration:0.2
-							 animations:^{
-								 CGRect detailFrame = detailTile.frame;
-								 detailFrame.size.height = 2.f;				/// @todo Do not use 0.f (makes the bg disappear immediately) until we make the background its own view
-								 detailTile.frame = detailFrame;
-								 [self layoutSubviews];
-							 }
-							 completion:^(BOOL finished) {
-								 detailTile.forTile.showsDetailTile = NO;
-								 detailTile.forTile = nil;
-								 [detailTile removeFromSuperview];
-								 self.detailTile = nil;
-							 }];
-		}
-		else {
-			detailTile.forTile.showsDetailTile = NO;
-			detailTile.forTile = nil;
-			[detailTile removeFromSuperview];
-			self.detailTile = nil;
-		}
+		[detailTile collapseAnimated:animated];
+		[self undimAll];
+		self.detailTile = nil;
 	}
 }
 

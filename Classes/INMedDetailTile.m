@@ -65,9 +65,8 @@
 {
 	self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"diagonal.png"]];
 	self.clipsToBounds = YES;
-	
-	// setup buttons
-	prescMainButton.buttonStyle = INButtonStyleDestructive;
+	self.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
+
 	prescChangeButton.buttonStyle = INButtonStyleMain;
 	
 	// tune imageView
@@ -150,6 +149,29 @@
 	[topShadow addSublayer:shape];
 }
 
+- (void)collapseAnimated:(BOOL)animated
+{
+	if (animated) {
+		[UIView animateWithDuration:0.2
+						 animations:^{
+							 CGRect detailFrame = self.frame;
+							 detailFrame.size.height = 2.f;				/// @todo Do not use 0.f (makes the bg disappear immediately) until we make the background its own view
+							 self.frame = detailFrame;
+							 [self.forTile.container layoutSubviews];
+						 }
+						 completion:^(BOOL finished) {
+							 self.forTile.showsDetailTile = NO;
+							 self.forTile = nil;
+							 [self removeFromSuperview];
+						 }];
+	}
+	else {
+		self.forTile.showsDetailTile = NO;
+		self.forTile = nil;
+		[self removeFromSuperview];
+	}
+}
+
 
 
 #pragma mark - Actions
@@ -170,6 +192,8 @@
 		NSDate *now = [NSDate date];
 		UIColor *dateCol = [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
 		if (INDocumentStatusActive == med.status) {
+			[prescMainButton setTitle:@"Stop" forState:UIControlStateNormal];
+			prescMainButton.buttonStyle = INButtonStyleDestructive;
 			if (med.prescription.on.date == [med.prescription.on.date laterDate:now]) {
 				dateCol = [UIColor colorWithRed:0.5f green:0.25f blue:0.f alpha:1.f];
 			}
@@ -181,9 +205,13 @@
 			}
 		}
 		else if (INDocumentStatusArchived == med.status) {
+			[prescMainButton setTitle:@"Take" forState:UIControlStateNormal];
+			prescMainButton.buttonStyle = INButtonStyleAccept;
 			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 		}
 		else if (INDocumentStatusVoid == med.status) {
+			[prescMainButton setTitle:@"Unvoid" forState:UIControlStateNormal];
+			prescMainButton.buttonStyle = INButtonStyleAccept;
 			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 			prescDuration.text = @"Voided";
 		}
@@ -210,6 +238,8 @@
  */
 - (void)triggerMainAction:(id)sender
 {
+	return;
+	
 	INButton *theButton = [sender isKindOfClass:[INButton class]] ? (INButton *)sender : nil;
 	[theButton indicateAction:YES];
 	__block INMedDetailTile *this = self;

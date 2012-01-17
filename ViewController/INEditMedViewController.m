@@ -109,7 +109,7 @@
 	if (!voidButton.hidden) {
 		[voidButton sizeToFit];
 		CGRect voidFrame = voidButton.frame;
-		if (aFrame.origin.x - 8.f < 20.f + voidFrame.size.width) {
+		if (voidFrame.size.width > 0.f && aFrame.origin.x - 8.f < 20.f + voidFrame.size.width) {
 			DLog(@"PROBLEM, the buttons are crammed!");
 		}
 		voidFrame.origin.x = 20.f;
@@ -429,6 +429,7 @@
 							 CGRect firstFrame = [scrollView convertRect:first.frame fromView:[first superview]];
 							 firstFrame.origin.y += buttonFrame.size.height;		// to avoid hitting the button container
 							 firstFrame.origin.y += 8.f;							// some padding
+							 firstFrame.size.height = fminf(firstFrame.size.height, 70.f);		// to hack around the too high textView. Problem if there's already text...
 							 [scrollView scrollRectToVisible:firstFrame animated:YES];
 						 }
 					 }];

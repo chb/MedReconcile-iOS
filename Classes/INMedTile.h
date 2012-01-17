@@ -34,5 +34,7 @@
 - (void)showMedicationDetails:(id)sender;
 - (void)hideMedicationDetails:(id)sender;
 
+- (void)removeAnimated:(BOOL)animated;
+
 
 @end

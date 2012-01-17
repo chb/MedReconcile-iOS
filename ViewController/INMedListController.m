@@ -18,6 +18,7 @@
 #import "INMedDetailTile.h"
 #import "INButton.h"
 #import "NSArray+NilProtection.h"
+#import "UIView+Utilities.h"
 
 
 @interface INMedListController ()
@@ -25,9 +26,13 @@
 @property (nonatomic, strong) INMedContainer *container;
 @property (nonatomic, strong) INMedTile *activeTile;
 
+@property (nonatomic, assign) BOOL showVoid;
+
 @property (nonatomic, strong) UIView *controlView;
-@property (nonatomic, strong) INButton *showVoidButton;
+@property (nonatomic, strong) INButton *detailToggle;
 @property (nonatomic, strong) UISlider *timeSlider;
+@property (nonatomic, strong) UILabel *timeSliderInfo;
+@property (nonatomic, strong) NSDate *minStopDate;
 @property (nonatomic, strong) CAGradientLayer *controlTopShadow;
 
 - (void)refreshListAnimated:(BOOL)animated;
@@ -35,6 +40,9 @@
 
 - (void)sortSelectorDidChange:(id)sender;
 - (void)timeSliderDidChange:(id)sender;
+- (void)toggleControlPane:(id)sender;
+- (void)showControlPaneAnimated:(BOOL)animated;
+- (void)hideControlPaneAnimated:(BOOL)animated;
 - (void)voidButtonTapped:(id)sender;
 
 - (void)documentsDidChange:(NSNotification *)aNotification;
@@ -48,7 +56,8 @@
 @synthesize record, medications;
 @synthesize recordSelectButton, sortSelector;
 @synthesize container, activeTile;
-@synthesize controlView, showVoidButton, timeSlider, controlTopShadow;
+@synthesize showVoid;
+@synthesize controlView, detailToggle, timeSlider, timeSliderInfo, minStopDate, controlTopShadow;
 
 
 - (void)dealloc
@@ -60,6 +69,7 @@
 {
 	if ((self = [super initWithNibName:nil bundle:nil])) {
 		self.medications = [NSMutableArray array];
+		self.minStopDate = [NSDate date];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(documentsDidChange:) name:INRecordDocumentsDidChangeNotification object:nil];
 	}
 	return self;
@@ -74,6 +84,17 @@
 	fullFrame.origin = CGPointZero;
 	self.view = [[UIView alloc] initWithFrame:fullFrame];
 	self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	self.view.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
+	
+	// the background logo
+	UIImage *bgImage = [UIImage imageNamed:@"IndivoHealth.png"];
+	UIImageView *bgView = [[UIImageView alloc] initWithImage:bgImage];
+	bgView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+	[self.view addSubview:bgView];
+	[bgView centerInSuperview];
+	CGRect bgFrame = bgView.frame;
+	bgFrame.origin.y -= bgFrame.size.height;
+	bgView.frame = bgFrame;
 	
 	// add the container
 	fullFrame.size.height -= [self.controlView frame].size.height;
@@ -143,12 +164,114 @@
 
 - (void)timeSliderDidChange:(id)sender
 {
+	[container removeDetailTileAnimated:YES];
 	
+	if (1.f == timeSlider.value) {
+		self.minStopDate = [NSDate date];
+		timeSliderInfo.text = @"Current";
+	}
+	
+	// we calculate the timepoint of "frac" between now and -10 years (age of patient would be desireable)
+	else if (0.f != timeSlider.value) {
+		CGFloat frac = powf(1.f - timeSlider.value, 3);
+		NSDate *now = [NSDate date];
+		self.minStopDate = [now dateByAddingTimeInterval:-frac * (10*365.25*24*3600)];
+		
+		NSDateFormatter *df = [[NSDateFormatter alloc] init];
+		df.dateStyle = NSDateFormatterMediumStyle;
+		df.timeStyle = NSDateFormatterNoStyle;
+		timeSliderInfo.text = [df stringFromDate:minStopDate];
+	}
+	else {
+		self.minStopDate = nil;
+		timeSliderInfo.text = @"All";
+	}
+	[self refreshListAnimated:YES];
+}
+
+- (void)toggleControlPane:(id)sender
+{
+	if ([controlView frame].size.height > 50.f) {
+		[self hideControlPaneAnimated:(nil != sender)];
+	}
+	else {
+		[self showControlPaneAnimated:(nil != sender)];
+	}
+}
+
+- (void)showControlPaneAnimated:(BOOL)animated
+{
+	CGSize mySize = [self.view bounds].size;
+	CGRect containerFrame = container.frame;
+	CGRect controlFrame = controlView.frame;
+	
+	controlFrame.size.height = 100.f;
+	containerFrame.size.height = mySize.height - controlFrame.size.height;
+	controlFrame.origin.y = containerFrame.size.height;
+	
+	// put the time label back
+	CGRect infoFrame = [controlView viewWithTag:2].frame;
+	infoFrame.origin.x += 8.f + infoFrame.size.width;
+	infoFrame.size.width = mySize.width - 15.f - infoFrame.origin.x;
+	
+	if (animated) {
+		[UIView animateWithDuration:0.2
+						 animations:^{
+							 container.frame = containerFrame;
+							 controlView.frame = controlFrame;
+							 timeSliderInfo.font = [UIFont systemFontOfSize:15.f];
+							 timeSliderInfo.frame = infoFrame;
+						 }];
+	}
+	else {
+		container.frame = containerFrame;
+		controlView.frame = controlFrame;
+	}
+	
+	[detailToggle setImage:[UIImage imageNamed:@"hide.png"] forState:UIControlStateNormal];
+}
+
+- (void)hideControlPaneAnimated:(BOOL)animated
+{
+	CGSize mySize = [self.view bounds].size;
+	CGRect containerFrame = container.frame;
+	CGRect controlFrame = controlView.frame;
+	
+	controlFrame.size.height = 50.f;
+	containerFrame.size.height = mySize.height - controlFrame.size.height;
+	controlFrame.origin.y = containerFrame.size.height;
+	
+	// make the time label visible
+	CGRect infoFrame = timeSliderInfo.frame;
+	infoFrame.size.height = 14.f;
+	infoFrame.origin.y = controlFrame.size.height - infoFrame.size.height;
+	
+	if (animated) {
+		[UIView animateWithDuration:0.2
+						 animations:^{
+							 container.frame = containerFrame;
+							 controlView.frame = controlFrame;
+							 timeSliderInfo.font = [UIFont systemFontOfSize:12.f];
+							 timeSliderInfo.frame = infoFrame;
+						 }];
+	}
+	else {
+		container.frame = containerFrame;
+		controlView.frame = controlFrame;
+	}
+	
+	[detailToggle setImage:[UIImage imageNamed:@"reveal.png"] forState:UIControlStateNormal];
 }
 
 - (void)voidButtonTapped:(id)sender
 {
-	
+	INButton *button = (INButton *)sender;
+	if ([button isKindOfClass:[INButton class]]) {
+		showVoid = !showVoid;
+		button.selected = showVoid;
+		
+		[self refreshListAnimated:YES];
+	}
 }
 
 
@@ -192,7 +315,13 @@
 - (void)refreshListAnimated:(BOOL)animated
 {
 	// filter meds
-	NSPredicate *filter = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+	NSPredicate *filter = [NSPredicate predicateWithBlock:^BOOL(IndivoMedication *aMed, NSDictionary *bindings) {
+		if (!showVoid && (INDocumentStatusVoid == aMed.status)) {
+			return NO;
+		}
+		if (minStopDate && aMed.prescription.stopOn) {
+			return (minStopDate == [minStopDate earlierDate:[aMed.prescription.stopOn date]]);
+		}
 		return YES;
 	}];
 	NSArray *meds = [medications filteredArrayUsingPredicate:filter];
@@ -406,6 +535,13 @@
 	sortSelector.enabled = (nil != record);
 	self.navigationItem.titleView = (nil != record) ? sortSelector : nil;
 	self.navigationItem.rightBarButtonItem.enabled = (nil != record);
+	
+	detailToggle.enabled = (nil != record);
+	timeSlider.enabled = (nil != record);
+	if (!record) {
+		timeSliderInfo.text = nil;
+		[self hideControlPaneAnimated:NO];
+	}
 }
 
 /**
@@ -415,19 +551,55 @@
 {
 	if (!controlView) {
 		CGSize mySize = [self.view bounds].size;
-		CGRect aFrame = CGRectMake(0.f, mySize.height - 50.f, mySize.width, 50.f);
+		CGFloat height = 50.f;
+		CGRect aFrame = CGRectMake(0.f, mySize.height - height, mySize.width, height);
 		self.controlView = [[UIView alloc] initWithFrame:aFrame];
 		controlView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-		controlView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_carbon.png"]];
+		controlView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"diagonal.png"]];
+		
+		// add the detail toggle
+		CGRect toggleFrame = CGRectMake(15.f, 10.f, 40.f, 31.f);
+		self.detailToggle = [[INButton alloc] initWithFrame:toggleFrame];
+		[detailToggle addTarget:self action:@selector(toggleControlPane:) forControlEvents:UIControlEventTouchUpInside];
+		[detailToggle setImage:[UIImage imageNamed:@"reveal.png"] forState:UIControlStateNormal];
+		detailToggle.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
+		detailToggle.enabled = (nil != record);
+		[controlView addSubview:detailToggle];
 		
 		// add the time slider
-		aFrame.origin = CGPointMake(20.f, 0.f);
-		aFrame.size.width -= 40.f;
+		aFrame.origin = CGPointMake(toggleFrame.origin.x + toggleFrame.size.width + 15.f, 0.f);
+		aFrame.size.width = mySize.width - aFrame.origin.x - 10.f;
 		self.timeSlider = [[UISlider alloc] initWithFrame:aFrame];
+		timeSlider.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
 		timeSlider.value = 1.f;
 		timeSlider.continuous = YES;
+		timeSlider.enabled = (nil != record);
 		[timeSlider addTarget:self action:@selector(timeSliderDidChange:) forControlEvents:UIControlEventValueChanged];
 		[controlView addSubview:timeSlider];
+		
+		// add the void button
+		CGRect voidFrame = CGRectMake(15.f, height + 5.f, 120.f, 31.f);
+		INButton *showVoidButton =[[INButton alloc] initWithFrame:voidFrame];
+		showVoidButton.tag = 2;
+		showVoidButton.togglesState = YES;
+		[showVoidButton setTitle:@"Show Void" forState:UIControlStateNormal];
+		[showVoidButton addTarget:self action:@selector(voidButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+		showVoidButton.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
+		[controlView addSubview:showVoidButton];
+		
+		// the time info label
+		CGFloat x = voidFrame.origin.x + voidFrame.size.width + 8.f;
+		CGRect infoFrame = CGRectMake(x, height - 19.f, mySize.width - x - 15.f, 19.f);
+		self.timeSliderInfo = [[UILabel alloc] initWithFrame:infoFrame];
+		timeSliderInfo.opaque = NO;
+		timeSliderInfo.backgroundColor = [UIColor clearColor];
+		timeSliderInfo.font = [UIFont systemFontOfSize:12.f];
+		timeSliderInfo.textColor = [UIColor darkGrayColor];
+		timeSliderInfo.textAlignment = UITextAlignmentRight;
+		timeSliderInfo.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
+		timeSliderInfo.shadowOffset = CGSizeMake(0.f, 1.f);
+		timeSliderInfo.text = @"Current";
+		[controlView addSubview:timeSliderInfo];
 		
 		// add the top shadow
 		[controlView.layer addSublayer:self.controlTopShadow];

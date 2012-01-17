@@ -48,7 +48,7 @@
 {
 	if ((self = [super initWithFrame:aFrame])) {
 		self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_carbon.png"]];
+		self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"diagonal.png"]];
 		self.clipsToBounds = YES;
 		
 		//UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(1.f, 1.f, 1.f, 1.f)];		// iOS 5+ only
@@ -85,6 +85,26 @@
 	CGFloat horiPad = 15.f;
 	CGFloat vertPad = roundf(size.height / 10);
 	
+	// name
+	CGRect lblFrame = self.nameLabel.frame;
+	lblFrame.origin = CGPointMake(horiPad, vertPad);
+	lblFrame.size.width = size.width - 2*horiPad;
+	nameLabel.frame = lblFrame;
+	
+	// time and status
+	CGRect durFrame = self.durationLabel.frame;
+	CGRect statFrame = self.statusView.frame;
+	durFrame.origin = CGPointMake(horiPad, lblFrame.origin.y + lblFrame.size.height + 4.f);
+	durFrame.size.width = size.width - horiPad - horiPad - statFrame.size.width - 8.f;
+	durationLabel.frame = durFrame;
+	[self updateDurationLabel];
+	
+	statFrame.origin.x = durFrame.origin.x + durFrame.size.width + 8.f;
+	statFrame.origin.y = durFrame.origin.y + roundf((durFrame.size.height - statFrame.size.height) / 2);
+	statusView.frame = statFrame;
+	
+	
+	/*			OLD LAYOUT
 	// image
 	CGFloat imgWidth = roundf(size.height / 2);
 	CGRect imgFrame = CGRectMake(horiPad, vertPad, imgWidth, imgWidth);
@@ -99,16 +119,10 @@
 	
 	[self updateDurationLabel];
 	
-	/*
-	CGRect statFrame = self.statusView.frame;
-	statFrame.origin.x = size.width - horiPad - statFrame.size.width;
-	statFrame.origin.y = imgFrame.origin.y + roundf((imgFrame.size.height - statFrame.size.height) / 2);
-	self.statusView.frame = statFrame;	*/
-	
 	// name label
 	CGRect lblFrame = CGRectMake(horiPad, 0.f, size.width - 2* horiPad, 21.f);
 	lblFrame.origin.y = size.height - lblFrame.size.height - vertPad;
-	self.nameLabel.frame = lblFrame;
+	self.nameLabel.frame = lblFrame;		//	*/
 }
 
 - (void)updateDurationLabel
@@ -136,6 +150,31 @@
 		durationLabel.text = @"Voided";
 	}
 	durationLabel.textColor = dateCol;
+}
+
+
+
+#pragma mark - View Hierarchy
+- (void)removeAnimated:(BOOL)animated
+{
+	if (66 == self.tag) {
+		return;
+	}
+	
+	if (animated) {
+		self.tag = 66;
+		[UIView animateWithDuration:kINMedContainerAnimDuration
+						 animations:^{
+							 self.layer.opacity = 0.5f;
+							 self.transform = CGAffineTransformMakeScale(0.2f, 0.2f);
+						 }
+						 completion:^(BOOL finished) {
+							 [self removeFromSuperview];
+						 }];
+	}
+	else {
+		[self removeFromSuperview];
+	}
 }
 
 
@@ -224,14 +263,12 @@
 		INMedDetailTile *aDetailTile = [INMedDetailTile new];
 		aDetailTile.med = self.med;
 		[container addDetailTile:aDetailTile forTile:self animated:YES];
-		[container dimAllBut:self];
 	}
 }
 
 - (void)hideMedicationDetails:(id)sender
 {
 	[container removeDetailTileAnimated:YES];
-	[container undimAll];
 	showsDetailTile = NO;
 }
 
@@ -310,12 +347,14 @@
 - (UILabel *)nameLabel
 {
 	if (!nameLabel) {
-		self.nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 10.f, 10.f)];
-		nameLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+		self.nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 10.f, 24.f)];
+		nameLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
 		nameLabel.opaque = NO;
 		nameLabel.backgroundColor = [UIColor clearColor];
 		nameLabel.textColor = [UIColor blackColor];
-		nameLabel.font = [UIFont systemFontOfSize:15.f];
+		nameLabel.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
+		nameLabel.shadowOffset = CGSizeMake(0.f, 1.f);
+		nameLabel.font = [UIFont boldSystemFontOfSize:19.f];
 		nameLabel.adjustsFontSizeToFitWidth = YES;
 		nameLabel.minimumFontSize = 10.f;
 		[self addSubview:nameLabel];
@@ -331,7 +370,9 @@
 		durationLabel.opaque = NO;
 		durationLabel.backgroundColor = [UIColor clearColor];
 		durationLabel.textColor = [UIColor blackColor];
-		durationLabel.textAlignment = UITextAlignmentRight;
+		durationLabel.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
+		durationLabel.shadowOffset = CGSizeMake(0.f, 1.f);
+		durationLabel.textAlignment = UITextAlignmentLeft;
 		durationLabel.font = [UIFont systemFontOfSize:15.f];
 		durationLabel.adjustsFontSizeToFitWidth = YES;
 		durationLabel.minimumFontSize = 10.f;

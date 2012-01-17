@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EE03C02314C4D20A00E85F7E /* buttonSelected.png in Resources */ = {isa = PBXBuildFile; fileRef = EE03C02214C4D20A00E85F7E /* buttonSelected.png */; };
+		EE03C02614C4D6D000E85F7E /* reveal.png in Resources */ = {isa = PBXBuildFile; fileRef = EE03C02514C4D6CF00E85F7E /* reveal.png */; };
+		EE03C02814C4D75300E85F7E /* hide.png in Resources */ = {isa = PBXBuildFile; fileRef = EE03C02714C4D75300E85F7E /* hide.png */; };
+		EE03C02A14C5287300E85F7E /* IndivoHealth.png in Resources */ = {isa = PBXBuildFile; fileRef = EE03C02914C5287300E85F7E /* IndivoHealth.png */; };
 		EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BC145B91C30077E832 /* UIKit.framework */; };
 		EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BE145B91C30077E832 /* Foundation.framework */; };
 		EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4C0145B91C30077E832 /* CoreGraphics.framework */; };
@@ -46,6 +50,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		EE03C02214C4D20A00E85F7E /* buttonSelected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonSelected.png; sourceTree = "<group>"; };
+		EE03C02514C4D6CF00E85F7E /* reveal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = reveal.png; sourceTree = "<group>"; };
+		EE03C02714C4D75300E85F7E /* hide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hide.png; sourceTree = "<group>"; };
+		EE03C02914C5287300E85F7E /* IndivoHealth.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = IndivoHealth.png; sourceTree = "<group>"; };
 		EE30A4B8145B91C30077E832 /* MedReconcile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedReconcile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE30A4BC145B91C30077E832 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		EE30A4BE145B91C30077E832 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -181,18 +189,22 @@
 		EE472612147308F100EAFDA3 /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				EECEC44E1475A0D8009D85FC /* statusGreen@2x.png */,
 				EECEC44A1475854B009D85FC /* white_carbon.png */,
 				EE8684D4149AAE9E0002C1E2 /* diagonal.png */,
 				EE72154314748CA4008835C5 /* tile.png */,
 				EECEC44714758415009D85FC /* statusGreen.png */,
+				EECEC44E1475A0D8009D85FC /* statusGreen@2x.png */,
 				EE472610147308EA00EAFDA3 /* pillDefault.png */,
 				EE4434C01491726C00CC6344 /* buttonGray.png */,
 				EE4434C214917CF500CC6344 /* buttonRed.png */,
 				EE4434C414917F7500CC6344 /* buttonBlue.png */,
 				EE4434CA1491892600CC6344 /* buttonGreen.png */,
 				EE4434C6149188A500CC6344 /* buttonPressed.png */,
+				EE03C02214C4D20A00E85F7E /* buttonSelected.png */,
 				EE4434C8149188AB00CC6344 /* buttonDisabled.png */,
+				EE03C02514C4D6CF00E85F7E /* reveal.png */,
+				EE03C02714C4D75300E85F7E /* hide.png */,
+				EE03C02914C5287300E85F7E /* IndivoHealth.png */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -326,6 +338,10 @@
 				EE4434CB1491892600CC6344 /* buttonGreen.png in Resources */,
 				EEA00A871499321000F65AD9 /* INEditMedViewController.xib in Resources */,
 				EE8684D6149AAE9E0002C1E2 /* diagonal.png in Resources */,
+				EE03C02314C4D20A00E85F7E /* buttonSelected.png in Resources */,
+				EE03C02614C4D6D000E85F7E /* reveal.png in Resources */,
+				EE03C02814C4D75300E85F7E /* hide.png in Resources */,
+				EE03C02A14C5287300E85F7E /* IndivoHealth.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

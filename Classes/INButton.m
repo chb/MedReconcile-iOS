@@ -22,7 +22,7 @@
 
 @implementation INButton
 
-@synthesize buttonStyle, object;
+@synthesize buttonStyle, object, togglesState;
 @synthesize activity, originalTitle, originalInsets;
 
 
@@ -30,14 +30,18 @@
 {
 	self.contentEdgeInsets = UIEdgeInsetsMake(2.f, 8.f, 2.f, 8.f);
 	
-	UIImage *grayButtonImage = [[UIImage imageNamed:@"buttonGray.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
 	UIImage *disabledButtonImage = [[UIImage imageNamed:@"buttonDisabled.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
 	UIImage *pressedButtonImage = [[UIImage imageNamed:@"buttonPressed.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
-	self.buttonStyle = INButtonStyleStandard;
-	
-	[self setBackgroundImage:grayButtonImage forState:UIControlStateNormal];
+	UIImage *selectedButtonImage = [[UIImage imageNamed:@"buttonSelected.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
 	[self setBackgroundImage:disabledButtonImage forState:UIControlStateDisabled];
 	[self setBackgroundImage:pressedButtonImage forState:UIControlStateHighlighted];
+	[self setBackgroundImage:selectedButtonImage forState:UIControlStateSelected];
+	
+	[self setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
+	[self setTitleShadowColor:[UIColor colorWithWhite:0.f alpha:0.8f] forState:UIControlStateSelected];
+	
+	buttonStyle = 9999;
+	self.buttonStyle = INButtonStyleStandard;
 	
 	self.layer.shadowOffset = CGSizeMake(0.f, 1.f);
 	self.layer.shadowOpacity = 0.4f;
@@ -168,6 +172,13 @@
 		[self setTitleColor:textColor forState:UIControlStateNormal];
 		[self setTitleShadowColor:shadowColor forState:UIControlStateNormal];
 		self.titleLabel.shadowOffset = shadowOffset;
+	}
+}
+
+- (void)setSelected:(BOOL)flag
+{
+	if (togglesState) {
+		[super setSelected:flag];
 	}
 }
 

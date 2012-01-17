@@ -19,8 +19,9 @@ typedef enum {
 
 @interface INButton : UIButton
 
-@property (nonatomic, assign) INButtonStyle buttonStyle;		///< The button's style
-@property (nonatomic, strong) id object;						///< Dirty way to associate an object with the button
+@property (nonatomic, assign) INButtonStyle buttonStyle;		///< The button's style.
+@property (nonatomic, strong) id object;						///< Dirty way to associate an object with the button.
+@property (nonatomic, assign) BOOL togglesState;				///< NO by default. If YES, UIControlStateSelected may be toggled.
 
 + (id)buttonWithStyle:(INButtonStyle)aStyle;
 
