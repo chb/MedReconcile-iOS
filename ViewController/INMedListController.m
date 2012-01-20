@@ -32,6 +32,7 @@
 @property (nonatomic, strong) INButton *detailToggle;
 @property (nonatomic, strong) UISlider *timeSlider;
 @property (nonatomic, strong) UILabel *timeSliderInfo;
+@property (nonatomic, strong) UILabel *timeSliderFloater;
 @property (nonatomic, strong) NSDate *minStopDate;
 @property (nonatomic, strong) CAGradientLayer *controlTopShadow;
 
@@ -43,6 +44,7 @@
 - (void)toggleControlPane:(id)sender;
 - (void)showControlPaneAnimated:(BOOL)animated;
 - (void)hideControlPaneAnimated:(BOOL)animated;
+- (void)hideTimeSliderFloater;
 - (void)voidButtonTapped:(id)sender;
 
 - (void)documentsDidChange:(NSNotification *)aNotification;
@@ -57,7 +59,7 @@
 @synthesize recordSelectButton, sortSelector;
 @synthesize container, activeTile;
 @synthesize showVoid;
-@synthesize controlView, detailToggle, timeSlider, timeSliderInfo, minStopDate, controlTopShadow;
+@synthesize controlView, detailToggle, timeSlider, timeSliderInfo, timeSliderFloater, minStopDate, controlTopShadow;
 
 
 - (void)dealloc
@@ -166,9 +168,15 @@
 {
 	[container removeDetailTileAnimated:YES];
 	
+	// cancel previous timeout
+	if (timeSliderFloater) {
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(hideTimeSliderFloater) object:nil];
+	}
+	
 	if (1.f == timeSlider.value) {
 		self.minStopDate = [NSDate date];
-		timeSliderInfo.text = @"Current";
+		self.timeSliderInfo.text = @"Current";
+		self.timeSliderFloater.text = @"Current";
 	}
 	
 	// we calculate the timepoint of "frac" between now and -10 years (age of patient would be desireable)
@@ -180,13 +188,33 @@
 		NSDateFormatter *df = [[NSDateFormatter alloc] init];
 		df.dateStyle = NSDateFormatterMediumStyle;
 		df.timeStyle = NSDateFormatterNoStyle;
-		timeSliderInfo.text = [df stringFromDate:minStopDate];
+		self.timeSliderInfo.text = [df stringFromDate:minStopDate];
+		self.timeSliderFloater.text = [df stringFromDate:minStopDate];
 	}
 	else {
 		self.minStopDate = nil;
-		timeSliderInfo.text = @"All";
+		self.timeSliderInfo.text = @"All";
+		self.timeSliderFloater.text = @"All";
 	}
 	[self refreshListAnimated:YES];
+	
+	// attach timeslider and set timeout to hide it again
+	timeSliderFloater.layer.opacity = 1.f;
+	[self.view addSubview:timeSliderFloater];
+	[timeSliderFloater centerInSuperview];
+	[self performSelector:@selector(hideTimeSliderFloater) withObject:nil afterDelay:1.5];
+}
+
+- (void)hideTimeSliderFloater
+{
+	[UIView animateWithDuration:kINMedContainerAnimDuration
+					 animations:^{
+						 timeSliderFloater.layer.opacity = 0.f;
+					 }
+					 completion:^(BOOL finished) {
+						 [timeSliderFloater removeFromSuperview];
+						 //self.timeSliderFloater = nil;
+					 }];
 }
 
 - (void)toggleControlPane:(id)sender
@@ -209,18 +237,11 @@
 	containerFrame.size.height = mySize.height - controlFrame.size.height;
 	controlFrame.origin.y = containerFrame.size.height;
 	
-	// put the time label back
-	CGRect infoFrame = [controlView viewWithTag:2].frame;
-	infoFrame.origin.x += 8.f + infoFrame.size.width;
-	infoFrame.size.width = mySize.width - 15.f - infoFrame.origin.x;
-	
 	if (animated) {
 		[UIView animateWithDuration:0.2
 						 animations:^{
 							 container.frame = containerFrame;
 							 controlView.frame = controlFrame;
-							 timeSliderInfo.font = [UIFont systemFontOfSize:15.f];
-							 timeSliderInfo.frame = infoFrame;
 						 }];
 	}
 	else {
@@ -241,18 +262,11 @@
 	containerFrame.size.height = mySize.height - controlFrame.size.height;
 	controlFrame.origin.y = containerFrame.size.height;
 	
-	// make the time label visible
-	CGRect infoFrame = timeSliderInfo.frame;
-	infoFrame.size.height = 14.f;
-	infoFrame.origin.y = controlFrame.size.height - infoFrame.size.height;
-	
 	if (animated) {
 		[UIView animateWithDuration:0.2
 						 animations:^{
 							 container.frame = containerFrame;
 							 controlView.frame = controlFrame;
-							 timeSliderInfo.font = [UIFont systemFontOfSize:12.f];
-							 timeSliderInfo.frame = infoFrame;
 						 }];
 	}
 	else {
@@ -413,11 +427,6 @@
 			self.record = [APP_DELEGATE.indivo activeRecord];
 			[self reloadList:sender];
 		}
-		
-		// cancelled
-		else {
-			self.record = nil;
-		}
 	}];
 }
 
@@ -458,26 +467,6 @@
 	edit.delegate = self;
 	
 	[naviController pushViewController:edit animated:YES];
-	return;
-	
-	[aMed push:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-		if (userDidCancel) {
-			
-		}
-		else if (errorMessage) {
-			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to add medication"
-															message:errorMessage
-														   delegate:nil
-												  cancelButtonTitle:@"Too Bad"
-												  otherButtonTitles:nil];
-			[alert show];
-		}
-		else {
-			
-			// successfully added medication
-			[self dismissModalViewControllerAnimated:YES];
-		}
-	}];
 }
 
 
@@ -494,6 +483,11 @@
 - (void)editMedController:(INEditMedViewController *)theController didVoidMed:(IndivoMedication *)aMed
 {
 	[self dismissModalViewControllerAnimated:YES];
+}
+
+- (NSArray *)currentMedsForNewMedController:(INNewMedViewController *)theController
+{
+	return medications;
 }
 
 
@@ -540,6 +534,7 @@
 	timeSlider.enabled = (nil != record);
 	if (!record) {
 		timeSliderInfo.text = nil;
+		self.timeSliderFloater = nil;
 		[self hideControlPaneAnimated:NO];
 	}
 }
@@ -588,12 +583,12 @@
 		[controlView addSubview:showVoidButton];
 		
 		// the time info label
-		CGFloat x = voidFrame.origin.x + voidFrame.size.width + 8.f;
-		CGRect infoFrame = CGRectMake(x, height - 19.f, mySize.width - x - 15.f, 19.f);
-		self.timeSliderInfo = [[UILabel alloc] initWithFrame:infoFrame];
+		voidFrame.origin.x += voidFrame.size.width + 8.f;
+		voidFrame.size.width = mySize.width - voidFrame.origin.x - 15.f;
+		self.timeSliderInfo = [[UILabel alloc] initWithFrame:voidFrame];
 		timeSliderInfo.opaque = NO;
 		timeSliderInfo.backgroundColor = [UIColor clearColor];
-		timeSliderInfo.font = [UIFont systemFontOfSize:12.f];
+		timeSliderInfo.font = [UIFont systemFontOfSize:15.f];
 		timeSliderInfo.textColor = [UIColor darkGrayColor];
 		timeSliderInfo.textAlignment = UITextAlignmentRight;
 		timeSliderInfo.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
@@ -606,6 +601,26 @@
 	}
 	return controlView;
 }
+
+- (UILabel *)timeSliderFloater
+{
+	if (!timeSliderFloater) {
+		CGRect floatFrame = CGRectMake(0.f, 0.f, 160.f, 38.f);
+		self.timeSliderFloater = [[UILabel alloc] initWithFrame:floatFrame];
+		timeSliderFloater.opaque = NO;
+		timeSliderFloater.clipsToBounds = NO;
+		timeSliderFloater.backgroundColor = [UIColor colorWithWhite:0.f alpha:0.8f];
+		timeSliderFloater.font = [UIFont systemFontOfSize:17.f];
+		timeSliderFloater.textColor = [UIColor whiteColor];
+		timeSliderFloater.textAlignment = UITextAlignmentCenter;
+		timeSliderFloater.layer.shadowOpacity = 0.5f;
+		timeSliderFloater.layer.shadowRadius = 10.f;
+		timeSliderFloater.layer.shadowOffset = CGSizeMake(0.f, 4.f);
+		timeSliderFloater.layer.cornerRadius = 5.f;						// no effect???
+	}
+	return timeSliderFloater;
+}
+
 
 /**
  *	Returns the shadow attached to the top of the control view

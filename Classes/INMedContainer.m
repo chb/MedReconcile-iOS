@@ -118,11 +118,14 @@
 		// set frame
 		if (animated) {
 			[UIView animateWithDuration:kINMedContainerAnimDuration
+								  delay:0.0
+								options:UIViewAnimationOptionBeginFromCurrentState
 							 animations:^{
 								 tile.frame = tileFrame;
 								 tile.layer.opacity = 1.f;
 								 tile.transform = CGAffineTransformIdentity;
-							 }];
+							 }
+							 completion:NULL];
 		}
 		else {
 			tile.frame = tileFrame;

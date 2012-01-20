@@ -14,7 +14,7 @@
  */
 @interface INRxNormLoader : INURLLoader
 
-@property (nonatomic, readonly, strong) id responseObjects;
+@property (nonatomic, readonly, strong) NSMutableArray *responseObjects;
 
 + (id)loader;
 

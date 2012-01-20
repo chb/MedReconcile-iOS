@@ -18,7 +18,9 @@
 - (void)newMedController:(INNewMedViewController *)theController didSelectMed:(IndivoMedication *)aMed;
 
 @optional
+- (IndivoMedication *)initialMedForNewMedController:(INNewMedViewController *)theController;
 - (NSString *)initialMedStringForNewMedController:(INNewMedViewController *)theController;
+- (NSArray *)currentMedsForNewMedController:(INNewMedViewController *)theController;
 
 @end
 
@@ -28,5 +30,6 @@
 @property (nonatomic, assign) id<INNewMedViewControllerDelegate> delegate;
 
 - (void)loadSuggestionsFor:(NSString *)medString;
+- (void)loadSuggestionsForMed:(IndivoMedication *)aMed;
 
 @end

@@ -10,6 +10,8 @@
 #import "INAppDelegate.h"
 #import "INTableSection.h"
 #import "INRxNormLoader.h"
+#import "IndivoMedication+RxNorm.h"
+#import "INDateRangeFormatter.h"
 #import "INButton.h"
 
 #import "IndivoServer.h"
@@ -22,6 +24,7 @@
 @interface INNewMedViewController ()
 
 @property (nonatomic, strong) NSMutableArray *sections;								///< An array full of INTableSection objects
+@property (nonatomic, strong) IndivoMedication *initialMed;							///< The rxcui from which to start. Takes precedence over initialMedString
 @property (nonatomic, copy) NSString *initialMedString;								///< The string with which to start off
 @property (nonatomic, copy) NSString *currentMedString;								///< The string for which suggestions are being loaded
 @property (nonatomic, strong) INRxNormLoader *currentLoader;						///< A handle to the currently active loader so we can abort loading
@@ -47,7 +50,7 @@
 
 @synthesize delegate;
 @synthesize sections;
-@synthesize initialMedString, currentMedString, currentLoader;
+@synthesize initialMed, initialMedString, currentMedString, currentLoader;
 @synthesize nameInputField, loadingTextLabel, loadingActivity;
 
 
@@ -96,7 +99,7 @@
 	NSString *ident = (0 == indexPath.section) ? @"InputCell" : @"SuggCell";
 	cell = [aTableView dequeueReusableCellWithIdentifier:ident];
 	if (!cell) {
-		cell = [[UITableViewCell alloc] initWithStyle:((0 == indexPath.section) ? UITableViewCellStyleDefault : UITableViewCellStyleValue1) reuseIdentifier:ident];
+		cell = [[UITableViewCell alloc] initWithStyle:((0 == indexPath.section) ? UITableViewCellStyleDefault : UITableViewCellStyleSubtitle) reuseIdentifier:ident];
 		cell.textLabel.adjustsFontSizeToFitWidth = YES;
 		cell.textLabel.minimumFontSize = 10.f;
 	}
@@ -111,7 +114,11 @@
 		// create the text input if it's not here
 		if (![textField isKindOfClass:[UITextField class]]) {
 			[cell.contentView addSubview:self.nameInputField];
-			if (initialMedString) {
+			
+			if (initialMed) {
+				[self performSelector:@selector(loadSuggestionsForMed:) withObject:initialMed afterDelay:0.4];
+			}
+			else if (initialMedString) {
 				nameInputField.text = initialMedString;
 				[self performSelector:@selector(loadSuggestionsFor:) withObject:initialMedString afterDelay:0.4];
 			}
@@ -124,23 +131,34 @@
 	
 	// suggestions
 	INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
-	NSDictionary *drug = [section objectForRow:indexPath.row];
-	if ([drug isKindOfClass:[NSDictionary class]]) {
-		cell.textLabel.text = drug ? [drug objectForKey:@"name"] : @"Unknown";
-		// cell.detailTextLabel.text = [drug objectForKey:@"tty"];
+	id object = [section objectForRow:indexPath.row];
+	
+	// got a med
+	if ([object isKindOfClass:[IndivoMedication class]]) {
+		IndivoMedication *med = (IndivoMedication *)object;
+		cell.textLabel.text = [med displayName];
 		
-		BOOL canUseDrug = ([@"SBD" isEqualToString:[drug objectForKey:@"tty"]] || drug == [section selectedObject]);
-		DLog(@"%@: %d", cell.textLabel.text, canUseDrug);
+		INDateRangeFormatter *drFormatter = [INDateRangeFormatter new];
+		drFormatter.from = med.prescription.on.date;
+		drFormatter.to = med.prescription.stopOn.date;
+		cell.detailTextLabel.text = [drFormatter formattedRange];
+		
+		BOOL canUseDrug = (nil != med.record || [@"SBD" isEqualToString:med.dose.unit.abbrev] || object == [section selectedObject]);
 		INButtonStyle style = canUseDrug ? INButtonStyleAccept : INButtonStyleMain;
+		
 		INButton *use = [INButton buttonWithStyle:style];
 		use.frame = CGRectMake(0.f, 0.f, 60.f, 31.f);
 		use.object = indexPath;
 		[use addTarget:self action:@selector(useThisDrug:) forControlEvents:UIControlEventTouchUpInside];
-		[use setTitle:(canUseDrug ? @"Use" : @"More") forState:UIControlStateNormal];
+		[use setTitle:(canUseDrug ? (nil != med.record ? @"Edit" : @"Use") : @"More") forState:UIControlStateNormal];
 		cell.accessoryView = use;
 	}
 	
-	//cell.accessoryView = [section accessoryViewForRow:indexPath.row];		// returns the indicator view for the active row
+	// got a string
+	else if ([object isKindOfClass:[NSString class]]) {
+		cell.textLabel.text = (NSString *)object;
+		cell.accessoryView = nil;
+	}
 	
 	return cell;
 }
@@ -178,19 +196,38 @@
 {
 	[self goToSection:0 animated:YES];
 	
-	INTableSection *section = [INTableSection new];
-	[self addSection:section animated:YES];
-	
 	// show action
 	if (nameInputField) {
 		UIActivityIndicatorView *act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+		nameInputField.enabled = YES;
 		nameInputField.leftView = act;
 		[act startAnimating];
 	}
 	
-	self.currentMedString = medString;
+	// search in patient's current meds
+	if ([delegate respondsToSelector:@selector(currentMedsForNewMedController:)]) {
+		NSMutableArray *existing = [NSMutableArray array];
+		NSArray *currentMeds = [delegate currentMedsForNewMedController:self];
+		for (IndivoMedication *current in currentMeds) {
+			if ([current matchesName:medString]) {
+				[existing addObject:current];
+			}
+		}
+		
+		// found existing meds that match!
+		if ([existing count] > 0) {
+			INTableSection *exist = [INTableSection newWithTitle:@"Patient's medications"];
+			[exist addObjects:existing];
+			[self addSection:exist animated:YES];
+		}
+	}
 	
+	// prepare section and init suggestion loader
+	INTableSection *section = [INTableSection newWithTitle:@"Suggestions"];
+	[self addSection:section animated:YES];
+	self.currentMedString = medString;
 	self.currentLoader = [INRxNormLoader new];
+	
 	[currentLoader getSuggestionsFor:medString callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 		if (errorMessage) {
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to load suggestions"
@@ -201,27 +238,71 @@
 			[alert show];
 		}
 		
-		// got suggestions
+		// completed, did we get suggestions?
 		else if (!userDidCancel) {
-			NSArray *resArray = currentLoader.responseObjects;
-			if (!resArray || [resArray isKindOfClass:[NSArray class]]) {
-				if ([resArray count] < 1) {
-					NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:@"No suggestions found" forKey:@"name"];
-					[section addObject:fakeDrug];
-				}
-				else {
-					[section addObjects:currentLoader.responseObjects];
-				}
+			if ([currentLoader.responseObjects count] < 1) {
+				[section addObject:@"No suggestions found"];
 			}
 			else {
-				DLog(@"ERROR, expected an array, got: %@", currentLoader.responseObjects);
+				for (NSDictionary *rxDict in currentLoader.responseObjects) {
+					[section addObject:[IndivoMedication newWithRxNormDict:rxDict]];
+				}
 			}
+			
 			[section updateAnimated:YES];
 		}
 		
 		// stop action indication animation
 		nameInputField.leftView = nil;
 	}];
+}
+
+
+/**
+ *	This method can be used to start off with a given rxcui
+ */
+- (void)loadSuggestionsForMed:(IndivoMedication *)aMed
+{
+ 	[self goToSection:0 animated:YES];
+	
+	if (aMed) {
+		nameInputField.enabled = NO;
+		nameInputField.placeholder = aMed.name.abbrev ? aMed.name.abbrev : aMed.name.text;
+		NSString *rxcui= aMed.name ? aMed.name.value : aMed.brandName.value;
+		
+		// prepare section and init suggestion loader
+		INTableSection *section = [INTableSection newWithTitle:@"Suggestions"];
+		[self addSection:section animated:YES];
+		self.currentMedString = nil;
+		self.currentLoader = [INRxNormLoader new];
+		[currentLoader getRelated:nil forId:rxcui callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+			if (errorMessage) {
+				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to load suggestions"
+																message:errorMessage
+															   delegate:nil
+													  cancelButtonTitle:@"Too Bad"
+													  otherButtonTitles:nil];
+				[alert show];
+			}
+			
+			// completed, did we get suggestions?
+			else if (!userDidCancel) {
+				if ([currentLoader.responseObjects count] < 1) {
+					[section addObject:@"No suggestions found"];
+				}
+				else {
+					for (NSDictionary *rxDict in currentLoader.responseObjects) {
+						[section addObject:[IndivoMedication newWithRxNormDict:rxDict]];
+					}
+				}
+				
+				[section updateAnimated:YES];
+			}
+			
+			// stop action indication animation
+			nameInputField.leftView = nil;
+		}];
+	}
 }
 
 
@@ -236,11 +317,13 @@
 	[nameInputField resignFirstResponder];
 	
 	INTableSection *current = [sections objectAtIndex:indexPath.section];
-	NSDictionary *drugDict = [current objectForRow:indexPath.row];
+	IndivoMedication *startMed = [current objectForRow:indexPath.row];
+	if (![startMed isKindOfClass:[IndivoMedication class]]) {
+		DLog(@"Did not find a IndivoMedication object, but this: %@", startMed);
+		return;
+	}
 	
-	NSString *tty = [drugDict objectForKey:@"tty"];
-	NSString *rxcui = [drugDict objectForKey:@"rxcui"];
-	
+	NSString *tty = startMed.dose.unit.abbrev;
 	NSString *desired = nil;
 	BOOL nowAtDrugEndpoint = NO;
 	if ([@"BN" isEqualToString:tty]) {
@@ -256,6 +339,8 @@
 		[current selectRow:indexPath.row collapseAnimated:YES];
 		[current showIndicator];
 		
+		NSString *rxcui= startMed.brandName.value ? startMed.brandName.value : startMed.name.value;
+		
 		self.currentLoader = [INRxNormLoader loader];
 		[currentLoader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
 			NSMutableArray *newSections = [NSMutableArray array];
@@ -267,45 +352,41 @@
 				NSMutableArray *drugs = [NSMutableArray array];
 				
 				// look at what we've got
-				for (NSString *tty in [currentLoader.responseObjects allKeys]) {
-					NSArray *relatedArr = [currentLoader.responseObjects objectForKey:tty];
-					for (NSDictionary *related in relatedArr) {
-						NSString *name = [related objectForKey:@"name"];
-						NSString *rx = [related objectForKey:@"rxcui"];
-						
-						// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
-						if ([@"DF" isEqualToString:tty]) {
-							if (name) {
-								INTableSection *newSection = [INTableSection newWithTitle:name];
-								[newSections addObject:newSection];
-								[stripFromNames addObjectIfNotNil:name];
-							}
-							else {
-								DLog(@"Ohoh, no name for DF found!");
-							}
-						}
-						
-						// ** got IN or PIN, (precise) ingredient (e.g. "Metformin" or "Metformin hydrochloride")
-						else if ([@"IN" isEqualToString:tty]) {
+				for (NSDictionary *related in currentLoader.responseObjects) {
+					NSString *tty = [related objectForKey:@"tty"];
+					NSString *name = [related objectForKey:@"name"];
+					NSString *rx = [related objectForKey:@"rxcui"];
+					
+					// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
+					if ([@"DF" isEqualToString:tty]) {
+						if (name) {
+							INTableSection *newSection = [INTableSection newWithTitle:name];
+							[newSections addObject:newSection];
 							[stripFromNames addObjectIfNotNil:name];
 						}
-						else if ([@"PIN" isEqualToString:tty]) {
-							[stripFromNames unshiftObjectIfNotNil:name];
-						}
-						
-						// ** got the SCDC, clinical drug component (e.g. "Metformin hydrochloride 500 MG")
-						else if ([@"SCDC" isEqualToString:tty]) {
-							if (name && rx) {
-								[scdc setObject:rx forKey:name];
-							}
-						}
-						
-						// ** got a drug (BN or SBD for now)
 						else {
-							NSMutableDictionary *drug = [NSMutableDictionary dictionaryWithDictionary:related];
-							[drug setObject:tty forKey:@"tty"];
-							[drugs addObject:drug];
+							DLog(@"Ohoh, no name for DF found!");
 						}
+					}
+					
+					// ** got IN or PIN, (precise) ingredient (e.g. "Metformin" or "Metformin hydrochloride")
+					else if ([@"IN" isEqualToString:tty]) {
+						[stripFromNames addObjectIfNotNil:name];
+					}
+					else if ([@"PIN" isEqualToString:tty]) {
+						[stripFromNames unshiftObjectIfNotNil:name];
+					}
+					
+					// ** got the SCDC, clinical drug component (e.g. "Metformin hydrochloride 500 MG")
+					else if ([@"SCDC" isEqualToString:tty]) {
+						if (name && rx) {
+							[scdc setObject:rx forKey:name];
+						}
+					}
+					
+					// ** got a drug (BN or SBD for now), just collect
+					else {
+						[drugs addObject:[related mutableCopy]];
 					}
 				}
 				
@@ -315,83 +396,62 @@
 					[newSections addObject:lone];
 				}
 				
-				// revisit drugs to apply grouping and name improving
+				// ** revisit collected drugs to apply grouping and name improving
 				if ([drugs count] > 0) {
-					
-					// ** loop all drugs
 					for (NSMutableDictionary *drug in drugs) {
 						NSString *name = [drug objectForKey:@"name"];
 						if ([name length] > 0) {
-							[drug setObject:name forKey:@"fullName"];
 							
-							// use SCDC as non-branded name and for strength
+							// use SCDC to get the formulation/dose by stripping IN and MIN names
+							NSMutableString *myStrength = [NSMutableString string];
 							for (NSString *strength in [scdc allKeys]) {
 								if (NSNotFound != [name rangeOfString:strength].location) {
-									if ([drug objectForKey:@"nonbranded"]) {
-										DLog(@"xx>  Found another scdc \"%@\", but already have one for drug \"%@\", skipping", strength, name);
-									}
-									else {
-										NSDictionary *nonbranded = [NSDictionary dictionaryWithObjectsAndKeys:strength, @"name", [scdc objectForKey:strength], @"rxcui", nil];
-										[drug setObject:nonbranded forKey:@"nonbranded"];
-									}
-									
-									NSMutableString *myStrength = [drug objectForKey:@"strength"];
-									if (!myStrength) {
-										myStrength = [NSMutableString string];
-										[drug setObject:myStrength forKey:@"strength"];
-									}
-									
 									NSString *trimmed = strength;
 									for (NSString *strip in stripFromNames) {
 										trimmed = [trimmed stringByReplacingOccurrencesOfString:strip withString:@""];
 									}
 									trimmed = [trimmed stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-									if ([myStrength length] > 0) {
-										[myStrength appendFormat:@"/%@", trimmed];
-									}
-									else {
-										[myStrength setString:trimmed];
+									if ([trimmed length] > 0) {
+										if ([myStrength length] > 0) {
+											[myStrength appendFormat:@"/%@", trimmed];
+										}
+										else {
+											[myStrength setString:trimmed];
+										}
 									}
 								}
 							}
+							if ([myStrength length] > 0) {
+								[drug setObject:myStrength forKey:@"formulation"];
+							}
+							
+							// get a medication object
+							IndivoMedication *newMed = [IndivoMedication newWithRxNormDict:drug];
 							
 							// add drug to the matching section (section = DF)
-							NSUInteger i = 0;
 							NSUInteger put = 0;
 							for (INTableSection *section in newSections) {
 								if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
-									[section addObject:drug];
+									[section addObject:newMed];
 									put++;
 								}
-								i++;
 							}
 							if (put < 1) {
 								DLog(@"WARNING: Drug %@ not put in any section!!!", drug);
 							}
-							
-							// strip from names
-							for (NSString *string in stripFromNames) {
-								name = [name stringByReplacingOccurrencesOfString:string withString:@""];
-							}
-							NSRegularExpression *whitespace = [NSRegularExpression regularExpressionWithPattern:@"\\s+" options:0 error:nil];
-							name = [whitespace stringByReplacingMatchesInString:name options:0 range:NSMakeRange(0, [name length]) withTemplate:@" "];
-							name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-							[drug setObject:name forKey:@"name"];
 						}
 					}
 				}
 				else {
 					DLog(@"Not a single drug found in concepts!");
-					NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:@"No relations found" forKey:@"name"];
 					INTableSection *newSection = [INTableSection new];
-					[newSection addObject:fakeDrug];
+					[newSection addObject:@"No relations found"];
 					[newSections addObject:newSection];
 				}
 			}
 			else if (!didCancel) {
-				NSDictionary *fakeDrug = [NSDictionary dictionaryWithObject:errorString forKey:@"name"];
 				INTableSection *newSection = [INTableSection new];
-				[newSection addObject:fakeDrug];
+				[newSection addObject:errorString];
 				[newSections addObject:newSection];
 			}
 			
@@ -417,6 +477,7 @@
 		NSIndexPath *ip = sender.object;
 		
 		if (INButtonStyleAccept == sender.buttonStyle) {
+			sender.enabled = NO;
 			[self useDrug:ip];
 		}
 		else {
@@ -431,60 +492,56 @@
 - (void)useDrug:(NSIndexPath *)indexPath
 {
 	INTableSection *section = [sections objectAtIndex:indexPath.section];
-	NSDictionary *drugDict = [section objectForRow:indexPath.row];
-	
-	// create medication document
-	IndivoMedication *med = [IndivoMedication newWithRecord:APP_DELEGATE.indivo.activeRecord];
-	if (!med) {
-		DLog(@"Did not get a medication document!");
+	IndivoMedication *useMed = [section objectForRow:indexPath.row];
+	if (![useMed isKindOfClass:[IndivoMedication class]]) {
+		DLog(@"THIS IS NOT A MEDICATION, CANNOT USE");
+		return;
 	}
 	
-	// name
-	NSDictionary *nonbranded = [drugDict objectForKey:@"nonbranded"];
-	med.name = [INCodedValue newWithNodeName:@"name"];
-	if (nonbranded) {
-		if ([nonbranded objectForKey:@"rxcui"]) {
-			med.name.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
-			med.name.value = [nonbranded objectForKey:@"rxcui"];
-		}
-		else {
-			DLog(@"NO RX IDENTIFIER FOR NONBRANDED");
-		}
-		med.name.text = [nonbranded objectForKey:@"name"];
+	useMed.dose = nil;
+	
+	// if we have no medication, fetch related IN/MIN first
+	if (!useMed.name) {
+		self.currentLoader = [INRxNormLoader loader];
+		[currentLoader getRelated:@"MIN+IN" forId:useMed.brandName.value callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+			if (!userDidCancel) {
+				NSMutableArray *mins = [NSMutableArray arrayWithCapacity:[currentLoader.responseObjects count]];
+				NSMutableArray *ins = [NSMutableArray arrayWithCapacity:[currentLoader.responseObjects count]];
+				
+				// see what we got
+				for (NSDictionary *rxDict in currentLoader.responseObjects) {
+					if ([@"MIN" isEqualToString:[rxDict objectForKey:@"tty"]]) {
+						[mins addObject:rxDict];
+					}
+					else {
+						[ins addObject:rxDict];
+					}
+				}
+				
+				// prefer MIN to IN
+				NSDictionary *use = nil;
+				if ([mins count] > 0) {
+					use = [mins objectAtIndex:0];
+				}
+				else {
+					if ([ins count] > 1) {
+						DLog(@"Got no MIN, but multiple IN: %@", ins);
+					}
+					use = [ins objectAtIndex:0];
+				}
+				
+				// add and finish off
+				if (use) {
+					IndivoMedication *refMed = [IndivoMedication newWithRxNormDict:use];
+					useMed.name = refMed.name;
+				}
+				[delegate newMedController:self didSelectMed:useMed];
+			}
+		}];
 	}
 	else {
-		med.name.text = @"<Fetch generic>";
+		[delegate newMedController:self didSelectMed:useMed];
 	}
-	
-	// branded name
-	NSString *rxcui = [drugDict objectForKey:@"rxcui"];
-	med.brandName = [INCodedValue newWithNodeName:@"brandName"];
-	if (rxcui) {
-		med.brandName.type = @"http://rxnav.nlm.nih.gov/REST/rxcui/";
-		med.brandName.value = rxcui;
-	}
-	else {
-		DLog(@"NO RX IDENTIFIER FOR BRANDED");
-	}
-	med.brandName.text = [drugDict objectForKey:@"fullName"];
-	
-	/// @todo NEW SCHEMA TESTING -- dose is substitute for "formulation"
-//	med.dose = [INUnitValue newWithNodeName:@"dose"];
-//	med.dose.value = @"1";
-//	med.dose.unit.type = @"http://indivo.org/codes/units#";
-//	med.dose.unit.abbrev = @"p";
-//	med.dose.unit.value = @"pills";
-	
-	// date started and stopped
-	med.prescription = [IndivoPrescription new];
-	med.dateStarted = [INDate dateWithDate:[NSDate date]];		// to make the current scheme validate
-	med.prescription.on = [INDate dateWithDate:[NSDate date]];
-	med.prescription.stopOn = [INDate dateWithDate:[[NSDate date] dateByAddingTimeInterval:14*24*3600]];
-	med.prescription.dispenseAsWritten = [INBool newNo];
-	
-	// inform delegate
-	NSLog(@"\n%@\n", [med xml]);
-	[delegate newMedController:self didSelectMed:med];
 }
 
 
@@ -621,8 +678,12 @@
 {
     [super viewWillAppear:animated];
 	
-	// start with a given string?
-	if ([delegate respondsToSelector:@selector(initialMedStringForNewMedController:)]) {
+	// start with a given rxcui or string?
+	if (!self.initialMed && [delegate respondsToSelector:@selector(initialMedForNewMedController:)]) {
+		self.initialMed = [delegate initialMedForNewMedController:self];
+		self.initialMedString = nil;
+	}
+	if (!self.initialMed && !self.initialMedString && [delegate respondsToSelector:@selector(initialMedStringForNewMedController:)]) {
 		self.initialMedString = [delegate initialMedStringForNewMedController:self];
 	}
 }

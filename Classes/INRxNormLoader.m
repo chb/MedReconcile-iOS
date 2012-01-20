@@ -14,7 +14,7 @@
 
 @interface INRxNormLoader ()
 
-@property (nonatomic, readwrite, strong) id responseObjects;
+@property (nonatomic, readwrite, strong) NSMutableArray responseObjects;
 @property (nonatomic, strong) INURLFetcher *multiFetcher;				///< We need a handle to this guy in case we cancel the connection
 
 @end
@@ -35,6 +35,9 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 
 /**
  *	Creates a call to http://rxnav.nlm.nih.gov/REST/approxMatch
+ *	A call to approxMatch returns a list of "candidate" RxNorm objects. For all of the candidate objects, we create a call to
+ *	get the properties for each. At the end of the call, "responseObjects" will contain an array full of NSDictionary objects
+ *	describing a suggested match. Each match is an rxcui, tty and a name.
  */
 - (void)getSuggestionsFor:(NSString *)searchString callback:(INCancelErrorBlock)callback;
 {
@@ -214,12 +217,16 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 
 /**
  *	Creates a call to http://rxnav.nlm.nih.gov/REST/rxcui/<rxcui>/related?tty=<relType>
+ *	Upon return, NSDictionary objects in "responseObjects" will have "name", "rxcui", "tty" strings and the drug argument in "from".
+ *	@param relType The desired type to get (e.g. IN, MIN, SCDC, ...). If nil will fetch "allrelated"
+ *	@param drug A dictionary of the drug for which to get related. Must contain the keys "rxcui" and should contain "tty".
+ *	@param aCallback A INCancelErrorBlock callback. When the block is called, "responseObjects" has been set already.
  */
-- (void)getRelated:(NSString *)relType forId:(NSString *)rxcui callback:(INCancelErrorBlock)callback
+- (void)getRelated:(NSString *)relType forId:(NSString *)rxcui callback:(INCancelErrorBlock)aCallback
 {
 	if (!rxcui) {
-		if (callback) {
-			callback(NO, @"No rxcui given");
+		if (aCallback) {
+			aCallback(NO, @"No rxcui given");
 		}
 		return;
 	}
@@ -244,28 +251,25 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 			
 			// parsed successfully, drill down
 			if (body) {
-				NSArray *concepts = [[body childNamed:@"relatedGroup"] childrenNamed:@"conceptGroup"];
+				INXMLNode *relGroup = [body childNamed:@"relatedGroup"] ? [body childNamed:@"relatedGroup"] : [body childNamed:@"allRelatedGroup"];
+				NSArray *concepts = [relGroup childrenNamed:@"conceptGroup"];
 				if ([concepts count] > 0) {
-					NSMutableDictionary *found = [NSMutableDictionary dictionaryWithCapacity:[concepts count]];
+					NSMutableArray *found = [NSMutableArray array];
 					
 					for (INXMLNode *conceptGroup in concepts) {
-						NSString *tty = [[conceptGroup childNamed:@"tty"] text];
 						NSArray *propertyNodes = [conceptGroup childrenNamed:@"conceptProperties"];
 						
 						// loop the properties
 						if ([propertyNodes count] > 0) {
+							NSString *tty = [[conceptGroup childNamed:@"tty"] text];
+							
 							for (INXMLNode *property in propertyNodes) {
 								NSString *rxcui = [[property childNamed:@"rxcui"] text];
 								NSString *name = [[property childNamed:@"name"] text];
 								DLog(@"==>  %@: %@", tty, name);
 								
-								NSDictionary *props = [NSDictionary dictionaryWithObjectsAndKeys:rxcui, @"rxcui", name, @"name", nil];
-								NSMutableArray *ttyArr = [found objectForKey:tty];
-								if (!ttyArr) {
-									ttyArr = [NSMutableArray array];
-									[found setObject:ttyArr forKey:tty];
-								}
-								[ttyArr addObject:props];
+								NSDictionary *newDrug = [NSDictionary dictionaryWithObjectsAndKeys:rxcui, @"rxcui", name, @"name", tty, @"tty", rxcui, @"from", nil];
+								[found addObject:newDrug];
 							}
 						}
 					}
@@ -285,8 +289,8 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 		}
 		
 		// callback
-		if (callback) {
-			callback(didCancel, myErrString);
+		if (aCallback) {
+			aCallback(didCancel, myErrString);
 		}
 	}];
 }

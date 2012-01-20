@@ -26,6 +26,8 @@
 		EE4434CB1491892600CC6344 /* buttonGreen.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4434CA1491892600CC6344 /* buttonGreen.png */; };
 		EE47260E1472D22600EAFDA3 /* INRxNormLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */; };
 		EE472611147308EA00EAFDA3 /* pillDefault.png in Resources */ = {isa = PBXBuildFile; fileRef = EE472610147308EA00EAFDA3 /* pillDefault.png */; };
+		EE5E9C4514C869AC00101AC0 /* IndivoHealth@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = EE5E9C4414C869AC00101AC0 /* IndivoHealth@2x.png */; };
+		EE5E9C4914C8B37700101AC0 /* IndivoMedication+RxNorm.m in Sources */ = {isa = PBXBuildFile; fileRef = EE5E9C4814C8B37700101AC0 /* IndivoMedication+RxNorm.m */; };
 		EE6461E2145F1AA20007C6B9 /* INAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CC145B91C30077E832 /* INAppDelegate.m */; };
 		EE6461E3145F1AA60007C6B9 /* INMedListController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE30A4CF145B91C30077E832 /* INMedListController.m */; };
 		EE6461E4145F1AA80007C6B9 /* INNewMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */; };
@@ -80,6 +82,9 @@
 		EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INRxNormLoader.h; path = Classes/INRxNormLoader.h; sourceTree = "<group>"; };
 		EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INRxNormLoader.m; path = Classes/INRxNormLoader.m; sourceTree = "<group>"; };
 		EE472610147308EA00EAFDA3 /* pillDefault.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pillDefault.png; sourceTree = "<group>"; };
+		EE5E9C4414C869AC00101AC0 /* IndivoHealth@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "IndivoHealth@2x.png"; sourceTree = "<group>"; };
+		EE5E9C4714C8B37700101AC0 /* IndivoMedication+RxNorm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "IndivoMedication+RxNorm.h"; sourceTree = "<group>"; };
+		EE5E9C4814C8B37700101AC0 /* IndivoMedication+RxNorm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "IndivoMedication+RxNorm.m"; sourceTree = "<group>"; };
 		EE6461D3145F17FC0007C6B9 /* INNewMedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INNewMedViewController.h; sourceTree = "<group>"; };
 		EE6461D4145F17FC0007C6B9 /* INNewMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INNewMedViewController.m; sourceTree = "<group>"; };
 		EE72154314748CA4008835C5 /* tile.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tile.png; sourceTree = "<group>"; };
@@ -205,6 +210,7 @@
 				EE03C02514C4D6CF00E85F7E /* reveal.png */,
 				EE03C02714C4D75300E85F7E /* hide.png */,
 				EE03C02914C5287300E85F7E /* IndivoHealth.png */,
+				EE5E9C4414C869AC00101AC0 /* IndivoHealth@2x.png */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -227,6 +233,8 @@
 		EE8684CD149A915F0002C1E2 /* Helper */ = {
 			isa = PBXGroup;
 			children = (
+				EE5E9C4714C8B37700101AC0 /* IndivoMedication+RxNorm.h */,
+				EE5E9C4814C8B37700101AC0 /* IndivoMedication+RxNorm.m */,
 				EE9F067614688252000412C4 /* NSArray+NilProtection.h */,
 				EE9F067714688252000412C4 /* NSArray+NilProtection.m */,
 				EE72154514749298008835C5 /* UIView+Utilities.h */,
@@ -342,6 +350,7 @@
 				EE03C02614C4D6D000E85F7E /* reveal.png in Resources */,
 				EE03C02814C4D75300E85F7E /* hide.png in Resources */,
 				EE03C02A14C5287300E85F7E /* IndivoHealth.png in Resources */,
+				EE5E9C4514C869AC00101AC0 /* IndivoHealth@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -366,6 +375,7 @@
 				EE4434BD1491608000CC6344 /* INMedDetailTile.m in Sources */,
 				EEA00A8B149950F700F65AD9 /* INButton.m in Sources */,
 				EEA00A8F1499595400F65AD9 /* UIViewController+Utilities.m in Sources */,
+				EE5E9C4914C8B37700101AC0 /* IndivoMedication+RxNorm.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -45,6 +45,7 @@
 @property (nonatomic, assign) IBOutlet UILabel *drugDesc;
 @property (nonatomic, assign) IBOutlet UILabel *drugNameHint;
 
+@property (nonatomic, assign) IBOutlet UIView *details;
 @property (nonatomic, assign) IBOutlet UITextField *dose;
 @property (nonatomic, assign) IBOutlet UITextField *start;
 @property (nonatomic, assign) IBOutlet UITextField *stop;

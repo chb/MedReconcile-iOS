@@ -90,7 +90,14 @@
 - (void)layoutSubviews
 {
 	[super layoutSubviews];
-	/// @todo update instructions size
+	
+	CGSize mySize = [self bounds].size;
+	
+	CGRect instrFrame = prescInstructions.frame;
+	CGSize max = CGSizeMake(instrFrame.size.width, CGFLOAT_MAX);
+	CGSize need = [prescInstructions.text sizeWithFont:prescInstructions.font constrainedToSize:max lineBreakMode:UILineBreakModeWordWrap];
+	instrFrame.size.height = fminf(need.height, mySize.height - instrFrame.origin.y - 15.f);
+	prescInstructions.frame = instrFrame;
 }
 
 - (void)pointAtX:(CGFloat)x
@@ -188,7 +195,7 @@
 		self.drFormatter.to = med.prescription.stopOn.date;
 		prescDuration.text = [drFormatter formattedRangeForLabel:prescDuration];
 		
-		// med status -- WE AUTOMATICALLY ARCHIVE THE MEDICATION IF "to" DATE IS A PAST DATE
+		// med status
 		NSDate *now = [NSDate date];
 		UIColor *dateCol = [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
 		if (INDocumentStatusActive == med.status) {
@@ -200,8 +207,7 @@
 			else if (med.prescription.stopOn.date && med.prescription.stopOn.date == [med.prescription.stopOn.date earlierDate:now]) {
 				dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 				
-				/// @attention AUTO-ARCHIVING MED!
-				[med archive:YES forReason:@"auto-discontinuing" callback:NULL];
+				// THIS MED SHOULD BE ARCHIVED
 			}
 		}
 		else if (INDocumentStatusArchived == med.status) {
@@ -217,6 +223,8 @@
 		}
 		prescDuration.textColor = dateCol;
 		
+		// instructions
+		prescInstructions.text = med.prescription.instructions.string;
 		
 		// image
 		if (med.pillImage) {

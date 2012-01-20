@@ -31,7 +31,7 @@
 @synthesize delegate, med;
 @synthesize scrollView, agentContainer, drugContainer, buttonContainer;
 @synthesize agent, agentDesc, agentNameHint, drug, drugDesc, drugNameHint;
-@synthesize dose, start, stop, numDays;
+@synthesize details, dose, start, stop, numDays;
 @synthesize instructions, prescriber;
 @synthesize voidButton, replaceButton, mainButton;
 
@@ -60,12 +60,7 @@
 	[scrollView addSubview:agentContainer];
 	[scrollView addSubview:drugContainer];
 	
-	CGRect buttonFrame = buttonContainer.frame;
-	buttonFrame.origin.x = 0.f;
-	buttonFrame.origin.y = myBounds.size.height - buttonFrame.size.height;
-	buttonFrame.size.width = myBounds.size.width;
-	buttonContainer.frame = buttonFrame;
-	[self.view addSubview:buttonContainer];
+	// styling
 	
 	instructions.layer.borderColor = [[UIColor lightGrayColor] CGColor];
 	instructions.layer.cornerRadius = 6.f;
@@ -74,6 +69,14 @@
 	voidButton.buttonStyle = INButtonStyleDestructive;
 	mainButton.buttonStyle = INButtonStyleDestructive;
 	
+	// setup the control button strip sticking to the lower part of the screen
+	CGRect buttonFrame = buttonContainer.frame;
+	buttonFrame.origin.x = 0.f;
+	buttonFrame.origin.y = myBounds.size.height - buttonFrame.size.height;
+	buttonFrame.size.width = myBounds.size.width;
+	buttonContainer.frame = buttonFrame;
+	[self.view addSubview:buttonContainer];
+	
 	// load med values
 	[self loadMed];
 }
@@ -81,15 +84,50 @@
 
 - (void)layoutAnimated:(BOOL)animated
 {
-	// drug area
-	CGRect frame1 = agentContainer.frame;
-	CGRect refFrame = agentNameHint.hidden ? agent.frame : agentNameHint.frame;
-	frame1.origin.y = 0.f;
-	frame1.size.height = refFrame.origin.y + refFrame.size.height;
+	DLog(@"layout animated: %d", animated);
+	CGSize mySize = [self.view bounds].size;
+	CGFloat y = 20.f;
+	CGSize max = CGSizeMake(mySize.width - 2*20.f, CGFLOAT_MAX);
 	
-	// prescription area
+	// ** drug area
+	CGRect frame1 = agentContainer.frame;
+	frame1.origin.y = 0.f;
+	
+	if (!agentNameHint.hidden) {
+		CGSize need = [agentNameHint.text sizeWithFont:agentNameHint.font constrainedToSize:max lineBreakMode:UILineBreakModeWordWrap];
+		agentNameHint.frame = CGRectMake(20.f, y, max.width, need.height);
+		y += need.height + 2.f;
+	}
+	CGRect agentFrame = agent.frame;
+	agentFrame.origin.y = y;
+	agentFrame.size.width = max.width;
+	agent.frame = agentFrame;
+	y = agentFrame.origin.y + agentFrame.size.height;
+	
+	if (!agentDesc.hidden) {
+		y += 8.f;
+		CGSize need = [agentDesc.text sizeWithFont:agentDesc.font constrainedToSize:max lineBreakMode:UILineBreakModeWordWrap];
+		agentDesc.frame = CGRectMake(20.f, y, max.width, need.height);
+		y += need.height;
+	}
+	frame1.size.height = y;
+	
+	// ** prescription area
 	CGRect frame2 = drugContainer.frame;
 	frame2.origin.y = frame1.size.height;
+	y = [drug frame].origin.y + [drug frame].size.height;
+	if (!drugDesc.hidden) {
+		y += 8.f;
+		CGSize need = [drugDesc.text sizeWithFont:drugDesc.font constrainedToSize:max lineBreakMode:UILineBreakModeWordWrap];
+		drugDesc.frame = CGRectMake(20.f, y, max.width, need.height);
+		y += need.height;
+	}
+	y += 20.f;
+	CGRect detailRect = details.frame;
+	detailRect.origin.y = y;
+	details.frame = detailRect;
+	y += detailRect.size.height;
+	frame2.size.height = y;
 	
 	// button area
 	CGSize buttons = [buttonContainer bounds].size;
@@ -135,12 +173,19 @@
 {
 	if (med && [self isViewLoaded]) {
 		agent.text = med.name.abbrev ? med.name.abbrev : med.name.text;
-		agentDesc.text = med.name.text;
+		agentDesc.text = [med medicationCodedName];
 		drug.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
-		drugDesc.text = med.brandName.text;
+		drugDesc.text = [med prescriptionCodedName];
 		
+		dose.text = med.dose.unit.value;
+		
+		// date started and stopped
 		INDate *startDate = med.prescription.on;
+		if (!startDate) {
+			startDate = [INDate dateWithDate:[NSDate date]];
+		}
 		INDate *stopDate = med.prescription.stopOn;
+		
 		start.text = startDate && ![startDate isNull] ? [startDate isoString] : @"";
 		stop.text = stopDate && ![stopDate isNull] ? [stopDate isoString] : @"";
 		
@@ -153,7 +198,7 @@
 			case INDocumentStatusActive:
 				agentNameHint.hidden = NO;
 				drugNameHint.hidden = NO;
-				drugNameHint.text = @"Use \"Replace\" to change the medication";
+				drugNameHint.text = @"Use \"Replace...\" to change the medication";
 				
 				[mainButton setTitle:@"Stop" forState:UIControlStateNormal];
 				[mainButton addTarget:self action:@selector(archiveMed:) forControlEvents:UIControlEventTouchUpInside];
@@ -249,16 +294,27 @@
 
 - (void)saveMed:(id)sender
 {
+	if (!med.record) {
+		med.record = APP_DELEGATE.indivo.activeRecord;
+	}
+	
+	// update display names
 	med.name.abbrev = agent.text;
 	med.brandName.abbrev = drug.text;
 	
-	IndivoPrescription *prescription = [IndivoPrescription new];
-	prescription.nodeName = @"prescription";
+	// update details
+	IndivoPrescription *prescription = med.prescription;
+	if (!prescription) {
+		prescription = [IndivoPrescription new];
+	}
 	prescription.on = [INDate dateFromISOString:start.text];
 	prescription.stopOn = [INDate dateFromISOString:stop.text];
 	prescription.instructions = [INString newWithString:instructions.text];
 	prescription.dispenseAsWritten = [INBool newNo];
 	med.prescription = prescription;
+	
+	med.dose = [INUnitValue new];			// must be present for the current scheme to validate
+	med.frequency = [INCodedValue new];		// must be present for the current scheme to validate
 	
 	DLog(@"Save med: %@", [med xml]);
 	[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {		// "replace" will call "push" if the med is new
@@ -374,9 +430,9 @@
 
 
 #pragma mark - INNewMedViewControllerDelegate
-- (NSString *)initialMedStringForNewMedController:(INNewMedViewController *)theController
+- (IndivoMedication *)initialMedForNewMedController:(INNewMedViewController *)theController
 {
-	return self.med.brandName.text;
+	return self.med;
 }
 
 - (void)newMedController:(INNewMedViewController *)theController didSelectMed:(IndivoMedication *)aMed;
@@ -488,6 +544,10 @@
 {
 	if (aMed != med) {
 		med = aMed;
+		
+		if (!med.dateStarted) {
+			med.dateStarted = [INDate dateWithDate:[NSDate date]];		// to make the current scheme validate. We don't use this property.
+		}
 		[self loadMed];
 	}
 }
