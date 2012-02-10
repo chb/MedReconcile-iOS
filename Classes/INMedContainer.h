@@ -33,7 +33,6 @@
 
 - (void)dimAllBut:(INMedTile *)aTile;
 - (void)undimAll;
-- (void)rearrangeByMedList:(NSArray *)medList animated:(BOOL)animated;
 
 
 @end

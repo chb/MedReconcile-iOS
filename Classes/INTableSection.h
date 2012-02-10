@@ -21,6 +21,7 @@
 + (INTableSection *)newWithType:(NSString *)aType;
 
 - (NSUInteger)numRows;
+- (NSString *)displayTitle;
 
 - (void)showIndicator;
 - (void)hideIndicator;

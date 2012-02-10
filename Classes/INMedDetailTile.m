@@ -7,7 +7,7 @@
 //
 
 #import "INMedDetailTile.h"
-#import "IndivoMedication.h"
+#import "IndivoDocuments.h"
 #import "INEditMedViewController.h"
 #import "INMedTile.h"
 #import "INMedContainer.h"
@@ -98,6 +98,10 @@
 	CGSize need = [prescInstructions.text sizeWithFont:prescInstructions.font constrainedToSize:max lineBreakMode:UILineBreakModeWordWrap];
 	instrFrame.size.height = fminf(need.height, mySize.height - instrFrame.origin.y - 15.f);
 	prescInstructions.frame = instrFrame;
+	
+	// update layers
+	topShadow.bounds = CGRectMake(0.f, 0.f, mySize.width, 40.f);
+	bottomShadow.bounds = CGRectMake(0.f, 0.f, mySize.width, 22.f);
 }
 
 - (void)pointAtX:(CGFloat)x

@@ -73,7 +73,7 @@
 	return [objects count];
 }
 
-- (NSString *)title
+- (NSString *)displayTitle
 {
 	if ([self numRows] < 1) {
 		return nil;

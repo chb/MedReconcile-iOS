@@ -11,7 +11,7 @@
 #import "INAppDelegate.h"
 #import "IndivoServer.h"
 #import "IndivoRecord.h"
-#import "IndivoMedication.h"
+#import "IndivoDocuments.h"
 #import "INEditMedViewController.h"
 #import "INMedContainer.h"
 #import "INMedTile.h"
@@ -34,7 +34,6 @@
 @property (nonatomic, strong) UILabel *timeSliderInfo;
 @property (nonatomic, strong) UILabel *timeSliderFloater;
 @property (nonatomic, strong) NSDate *minStopDate;
-@property (nonatomic, strong) CAGradientLayer *controlTopShadow;
 
 - (void)refreshListAnimated:(BOOL)animated;
 - (void)showNewMedView:(id)sender;
@@ -59,7 +58,7 @@
 @synthesize recordSelectButton, sortSelector;
 @synthesize container, activeTile;
 @synthesize showVoid;
-@synthesize controlView, detailToggle, timeSlider, timeSliderInfo, timeSliderFloater, minStopDate, controlTopShadow;
+@synthesize controlView, detailToggle, timeSlider, timeSliderInfo, timeSliderFloater, minStopDate;
 
 
 - (void)dealloc
@@ -427,6 +426,8 @@
 			self.record = [APP_DELEGATE.indivo activeRecord];
 			[self reloadList:sender];
 		}
+		
+		[self setRecordButtonTitle:nil];		// resets the activity spinner to the connect button
 	}];
 }
 
@@ -596,8 +597,9 @@
 		timeSliderInfo.text = @"Current";
 		[controlView addSubview:timeSliderInfo];
 		
-		// add the top shadow
-		[controlView.layer addSublayer:self.controlTopShadow];
+		// add a shadow
+		controlView.layer.shadowOpacity = 0.5f;
+		controlView.layer.shadowRadius = 10.f;
 	}
 	return controlView;
 }
@@ -619,32 +621,6 @@
 		timeSliderFloater.layer.cornerRadius = 5.f;						// no effect???
 	}
 	return timeSliderFloater;
-}
-
-
-/**
- *	Returns the shadow attached to the top of the control view
- */
-- (CAGradientLayer *)controlTopShadow
-{
-	if (!controlTopShadow) {
-		self.controlTopShadow = [CAGradientLayer new];
-		CGRect shadowFrame = CGRectMake(0.f, -22.f, [self.view bounds].size.width, 22.f);
-		controlTopShadow.frame = shadowFrame;
-		
-		// create colors
-		NSMutableArray *colors = [NSMutableArray arrayWithCapacity:6];
-		CGFloat alphas[] = { 0.f, 0.0125f, 0.05f, 0.1125f, 0.2f, 0.3125f, 0.45f };
-		for (NSUInteger i = 0; i < 7; i++) {
-			CGColorRef color = CGColorRetain([[UIColor colorWithWhite:0.f alpha:alphas[i]] CGColor]);
-			[colors addObject:(__bridge_transfer id)color];
-		}
-		controlTopShadow.colors = colors;
-		
-		// prevent frame animation
-		//bottomShadow.actions = [NSDictionary dictionaryWithObject:[NSNull null] forKey:@"position"];
-	}
-	return controlTopShadow;
 }
 
 

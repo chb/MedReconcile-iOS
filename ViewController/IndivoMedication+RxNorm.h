@@ -6,12 +6,13 @@
 //  Copyright (c) 2012 Children's Hospital Boston. All rights reserved.
 //
 
-#import "IndivoMedication.h"
+#import "IndivoDocuments.h"
 
 @interface IndivoMedication (RxNorm)
 
 + (id)newWithRxNormDict:(NSDictionary *)aDict;
 - (NSDictionary *)rxNormDict;
+- (BOOL)matchesName:(NSString *)aName;
 
 
 @end

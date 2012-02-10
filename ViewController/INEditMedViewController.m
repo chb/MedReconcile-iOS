@@ -7,7 +7,7 @@
 //
 
 #import "INEditMedViewController.h"
-#import "IndivoMedication.h"
+#import "IndivoDocuments.h"
 #import "INButton.h"
 #import "UIViewController+Utilities.h"
 #import "INAppDelegate.h"
@@ -163,6 +163,11 @@
 	scrollView.contentSize = CGSizeMake([self.view bounds].size.width, frame2.origin.y + frame2.size.height + buttons.height);
 }
 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+	return SUPPORTED_ORIENTATION(interfaceOrientation);
+}
+
 
 
 #pragma mark - Medication Actions
@@ -173,9 +178,11 @@
 {
 	if (med && [self isViewLoaded]) {
 		agent.text = med.name.abbrev ? med.name.abbrev : med.name.text;
-		agentDesc.text = [med medicationCodedName];
+		//agentDesc.text = [med medicationCodedName];
+		agentDesc.text = [med displayName];
 		drug.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
-		drugDesc.text = [med prescriptionCodedName];
+		//drugDesc.text = [med prescriptionCodedName];
+		drugDesc.text = [med displayName];
 		
 		dose.text = med.dose.unit.value;
 		
@@ -313,7 +320,9 @@
 	prescription.dispenseAsWritten = [INBool newNo];
 	med.prescription = prescription;
 	
-	med.dose = [INUnitValue new];			// must be present for the current scheme to validate
+	if (!med.dose) {
+		med.dose = [INUnitValue new];			// must be present for the current scheme to validate
+	}
 	med.frequency = [INCodedValue new];		// must be present for the current scheme to validate
 	
 	DLog(@"Save med: %@", [med xml]);

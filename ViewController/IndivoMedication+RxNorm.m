@@ -30,7 +30,6 @@
 		if (NSNotFound != matchRange.location && matchRange.length > 0) {
 			brandName = [name substringWithRange:matchRange];
 		}
-		DLog(@"[%@] %@ -> %@", NSStringFromRange(matchRange), name, brandName);
 		
 		// add formulation to the brandName if we have it
 		if ([aDict objectForKey:@"formulation"]) {
@@ -66,6 +65,7 @@
 		newMed.dose.unit.abbrev = tty;										// hacked in here to have access to the type (!)
 		newMed.dose.unit.value = [aDict objectForKey:@"formulation"];
 		
+		//DLog(@"%@ -> %@", aDict, newMed);
 		return newMed;
 	}
 	return nil;
@@ -82,6 +82,14 @@
 	NSString *tty = self.dose.unit.abbrev;								///< COMPLETE HACK!!!
 	
 	return [NSDictionary dictionaryWithObjectsAndKeys:name, @"name", rxcui, @"rxcui", tty, @"tty", nil];
+}
+
+
+- (BOOL)matchesName:(NSString *)aName
+{
+	return [@"Etanercept" isEqualToString:self.name.text];
+	NSString *name = self.name.text;
+	return ([name rangeOfString:aName].location > -1);
 }
 
 

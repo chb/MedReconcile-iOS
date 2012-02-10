@@ -20,6 +20,7 @@
 @property (nonatomic, strong) IndivoMedication *med;					///< The medication we're representing
 @property (nonatomic, assign) INMedContainer *container;				///< Our container view
 @property (nonatomic, assign) BOOL showsDetailTile;						///< Somewhat fragile way to track whether a detail tile is shown for this tile; used by the container
+@property (nonatomic, strong) UIView *shadow;							///< Can be added to the same superview but at a different level, will always have the same frame
 
 
 + (INMedTile *)tileWithMedication:(IndivoMedication *)aMed;

@@ -264,11 +264,11 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 							NSString *tty = [[conceptGroup childNamed:@"tty"] text];
 							
 							for (INXMLNode *property in propertyNodes) {
-								NSString *rxcui = [[property childNamed:@"rxcui"] text];
+								NSString *myRxcui = [[property childNamed:@"rxcui"] text];
 								NSString *name = [[property childNamed:@"name"] text];
 								DLog(@"==>  %@: %@", tty, name);
 								
-								NSDictionary *newDrug = [NSDictionary dictionaryWithObjectsAndKeys:rxcui, @"rxcui", name, @"name", tty, @"tty", rxcui, @"from", nil];
+								NSDictionary *newDrug = [NSDictionary dictionaryWithObjectsAndKeys:myRxcui, @"rxcui", name, @"name", tty, @"tty", myRxcui, @"from", nil];
 								[found addObject:newDrug];
 							}
 						}

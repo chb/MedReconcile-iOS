@@ -17,7 +17,7 @@
 #import "IndivoServer.h"
 #import "INXMLParser.h"
 #import "INXMLNode.h"
-#import "IndivoMedication.h"
+#import "IndivoDocuments.h"
 #import "NSArray+NilProtection.h"
 
 
@@ -477,7 +477,6 @@
 		NSIndexPath *ip = sender.object;
 		
 		if (INButtonStyleAccept == sender.buttonStyle) {
-			sender.enabled = NO;
 			[self useDrug:ip];
 		}
 		else {
@@ -498,9 +497,7 @@
 		return;
 	}
 	
-	useMed.dose = nil;
-	
-	// if we have no medication, fetch related IN/MIN first
+	// if we have no medication.name, fetch related IN/MIN first
 	if (!useMed.name) {
 		self.currentLoader = [INRxNormLoader loader];
 		[currentLoader getRelated:@"MIN+IN" forId:useMed.brandName.value callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {

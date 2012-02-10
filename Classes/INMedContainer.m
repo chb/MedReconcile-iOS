@@ -8,7 +8,7 @@
 
 #import "INMedContainer.h"
 #import <QuartzCore/QuartzCore.h>
-#import "IndivoMedication.h"
+#import "IndivoDocuments.h"
 #import "INMedTile.h"
 #import "INMedDetailTile.h"
 #import "NSArray+NilProtection.h"
@@ -16,7 +16,7 @@
 
 @interface INMedContainer ()
 
-@property (nonatomic, strong) CAGradientLayer *bottomShadow;
+@property (nonatomic, strong) CAGradientLayer *topShadow;
 
 - (void)layoutSubviewsAnimated:(BOOL)animated;
 
@@ -26,7 +26,7 @@
 @implementation INMedContainer
 
 @synthesize viewController, detailTile;
-@synthesize bottomShadow;
+@synthesize topShadow;
 
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -56,7 +56,8 @@
 - (void)layoutSubviewsAnimated:(BOOL)animated
 {
 	CGFloat myWidth = [self bounds].size.width;
-	NSUInteger perRow = 2;								/// @todo determine based on view width
+	CGFloat minTileWidth = IS_IPAD ? 250.f : 160.f;		// min width for a tile
+	NSUInteger perRow = floorf(myWidth / minTileWidth);
 	CGFloat tileWidth = roundf(myWidth / perRow);		/// @todo compensate for rounded pixels
 	CGFloat tileHeight = 70.f;
 	
@@ -82,10 +83,11 @@
 		
 		// a tile
 		if ([tile isKindOfClass:[INMedTile class]]) {
+			NSUInteger i = (tileNum % perRow);
 			tileFrame.size = CGSizeMake(tileWidth, tileHeight);
 			
 			// advance a row
-			if (0 == tileNum % perRow) {
+			if (0 == i) {
 				y = lastBottom;
 				
 				// if we have an uneven number, stretch the last tile to cover the full row
@@ -93,7 +95,7 @@
 					tileFrame.size.width = myWidth;
 				}
 			}
-			tileFrame.origin = CGPointMake((0 == tileNum % perRow) ? 0.f : tileWidth, y);
+			tileFrame.origin = CGPointMake(i * tileWidth, y);
 			
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
 			tileNum++;
@@ -115,6 +117,11 @@
 			tile.transform = CGAffineTransformMakeScale(3.f, 3.f);
 		}
 		
+		// subviews tagged "68" will move to a new position
+	//	else if (68 == tile.tag) {
+	//		tile.transform = CGAffineTransformMakeScale(1.25f, 1.25f);
+	//	}		// resetting this does not work??
+		
 		// set frame
 		if (animated) {
 			[UIView animateWithDuration:kINMedContainerAnimDuration
@@ -123,7 +130,9 @@
 							 animations:^{
 								 tile.frame = tileFrame;
 								 tile.layer.opacity = 1.f;
-								 tile.transform = CGAffineTransformIdentity;
+								 if (67 == tile.tag) {
+									 tile.transform = CGAffineTransformIdentity;
+								 }
 							 }
 							 completion:NULL];
 		}
@@ -134,14 +143,18 @@
 		}
 	}
 	
-	// bottom shadow
-	CGRect shadowFrame = self.bottomShadow.frame;
-	shadowFrame.origin = CGPointMake(0.f, lastBottom);
-	shadowFrame.size.width = myWidth;
-	bottomShadow.frame = shadowFrame;
+	// shadow width
+	topShadow.frame = CGRectMake(0.f, 0.f, myWidth, 30.f);
 	
 	// aaand our own height (the bottom shadow overflows)
 	self.contentSize = CGSizeMake(myWidth, lastBottom);
+}
+
+- (void)didMoveToSuperview
+{
+	if (!topShadow) {
+		[self.layer addSublayer:self.topShadow];
+	}
 }
 
 
@@ -152,6 +165,8 @@
  */
 - (void)showMeds:(NSArray *)medArray animated:(BOOL)animated
 {
+	[self undimAll];
+	
 	// no new medications, just remove old and be done with it
 	if ([medArray count] < 1) {
 		/// @todo Ignores animated property. Maybe fade out?
@@ -183,6 +198,7 @@
 		for (INMedTile *existingTile in existing) {
 			if ([existingTile.med isEqual:med]) {
 				tile = existingTile;
+				tile.med = med;
 				break;
 			}
 		}
@@ -191,12 +207,14 @@
 			tile.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
 			tile.tag = 67;
 		}
-		tile.container = self;
-		[self addSubview:tile];
+		else {
+			tile.tag = 68;
+		}
+		[self addTile:tile];
 		
 		// load pill image
-		if (YES || med.pillImage) {
-			[tile showImage:med.pillImage];
+		if (YES || [med pillImage]) {
+			[tile showImage:[med pillImage]];
 		}
 		else {
 			[tile indicateImageAction:YES];
@@ -216,21 +234,13 @@
 
 
 /**
- *	Rearranges the existing tiles by comparing each tile's medication to the array provided
- */
-- (void)rearrangeByMedList:(NSArray *)medList animated:(BOOL)animated
-{
-	
-}
-
-
-/**
  *	Adds a medication tile
  */
 - (void)addTile:(INMedTile *)aTile
 {
 	aTile.container = self;
 	[self addSubview:aTile];
+	[self insertSubview:aTile.shadow atIndex:0];
 	[self setNeedsLayout];
 }
 
@@ -252,8 +262,10 @@
 	}
 	
 	// shrink frame if adding animated
+	CGSize mySize = [self bounds].size;
 	__block CGRect detailFrame = aDetailTile.frame;
 	detailFrame.origin.y = [aTile frame].origin.y + [aTile frame].size.height;
+	detailFrame.size.width = mySize.width;
 	CGFloat detailOrigHeight = detailFrame.size.height;
 	if (animated && !detailTile) {
 		detailFrame.size.height = 2.f;
@@ -354,12 +366,12 @@
 /**
  *	Returns the bottom shadow layer
  */
-- (CAGradientLayer *)bottomShadow
+- (CAGradientLayer *)topShadow
 {
-	if (!bottomShadow) {
-		self.bottomShadow = [CAGradientLayer new];
+	if (!topShadow) {
+		self.topShadow = [CAGradientLayer new];
 		CGRect shadowFrame = CGRectMake(0.f, 0.f, [self bounds].size.width, 30.f);
-		bottomShadow.frame = shadowFrame;
+		topShadow.frame = shadowFrame;
 		
 		// create colors
 		NSMutableArray *colors = [NSMutableArray arrayWithCapacity:6];
@@ -368,14 +380,14 @@
 			CGColorRef color = CGColorRetain([[UIColor colorWithWhite:0.f alpha:alphas[i]] CGColor]);
 			[colors addObject:(__bridge_transfer id)color];
 		}
-		bottomShadow.colors = colors;
+		topShadow.colors = colors;
 		
 		// prevent frame animation
-		//bottomShadow.actions = [NSDictionary dictionaryWithObject:[NSNull null] forKey:@"position"];
+		//topShadow.actions = [NSDictionary dictionaryWithObject:[NSNull null] forKey:@"position"];
 		
-		[self.layer addSublayer:bottomShadow];
+		[self.layer addSublayer:topShadow];
 	}
-	return bottomShadow;
+	return topShadow;
 }
 
 

@@ -9,7 +9,7 @@
 #import "INMedTile.h"
 #import "INMedContainer.h"
 #import "INMedDetailTile.h"
-#import "IndivoMedication.h"
+#import "IndivoDocuments.h"
 #import "INDateRangeFormatter.h"
 #import "UIView+Utilities.h"
 #import <QuartzCore/QuartzCore.h>
@@ -17,7 +17,6 @@
 
 @interface INMedTile ()
 
-@property (nonatomic, strong) UIImageView *bgView;
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UIImageView *statusView;
 @property (nonatomic, strong) UILabel *durationLabel;
@@ -39,23 +38,25 @@
 
 @synthesize med;
 @synthesize container;
-@synthesize bgView, imageView, statusView, durationLabel, nameLabel;
+@synthesize imageView, statusView, durationLabel, nameLabel;
 @synthesize dimView, activityView, imageActivityView, keepDimmedAfterAction;
 @synthesize drFormatter, showsDetailTile;
+@synthesize shadow;
 
 
 - (id)initWithFrame:(CGRect)aFrame
 {
 	if ((self = [super initWithFrame:aFrame])) {
 		self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"diagonal.png"]];
 		self.clipsToBounds = YES;
+		self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"diagonal.png"]];
 		
 		//UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(1.f, 1.f, 1.f, 1.f)];		// iOS 5+ only
 		UIImage *bgImage = [[UIImage imageNamed:@"tile.png"] stretchableImageWithLeftCapWidth:1 topCapHeight:1];
-		self.bgView = [[UIImageView alloc] initWithImage:bgImage];
-		self.bgView.frame = self.bounds;
-		self.bgView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		UIView *bgView = [[UIImageView alloc] initWithImage:bgImage];
+		bgView.tag = 1;
+		bgView.frame = self.bounds;
+		bgView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		[self addSubview:bgView];
 		
 		self.drFormatter = [INDateRangeFormatter new];
@@ -79,7 +80,7 @@
 	CGRect bnds = [self bounds];
 	CGSize size = bnds.size;
 	
-	bgView.frame = bnds;
+	[self viewWithTag:1].frame = bnds;
 	dimView.frame = bnds;
 	
 	CGFloat horiPad = 15.f;
@@ -125,6 +126,12 @@
 	self.nameLabel.frame = lblFrame;		//	*/
 }
 
+- (void)setFrame:(CGRect)aFrame
+{
+	[super setFrame:aFrame];
+	shadow.frame = aFrame;
+}
+
 - (void)updateDurationLabel
 {
 	drFormatter.from = med.prescription.on.date;
@@ -165,15 +172,17 @@
 		self.tag = 66;
 		[UIView animateWithDuration:kINMedContainerAnimDuration
 						 animations:^{
-							 self.layer.opacity = 0.5f;
-							 self.transform = CGAffineTransformMakeScale(0.2f, 0.2f);
+							 self.layer.opacity = shadow.layer.opacity = 0.5f;
+							 self.transform = shadow.transform = CGAffineTransformMakeScale(0.2f, 0.2f);
 						 }
 						 completion:^(BOOL finished) {
 							 [self removeFromSuperview];
+							 [shadow removeFromSuperview];
 						 }];
 	}
 	else {
 		[self removeFromSuperview];
+		[shadow removeFromSuperview];
 	}
 }
 
@@ -409,6 +418,20 @@
 		imageActivityView.hidesWhenStopped = YES;
 	}
 	return imageActivityView;
+}
+
+- (UIView *)shadow
+{
+	if (!shadow) {
+		self.shadow = [[UIView alloc] initWithFrame:self.frame];
+		UIColor *back = [[self viewWithTag:1] backgroundColor];
+		back = back ? back : [UIColor whiteColor];
+		shadow.backgroundColor = back;
+		shadow.layer.shadowOffset = CGSizeMake(0.f, 4.f);
+		shadow.layer.shadowOpacity = 0.5f;
+		shadow.layer.shadowRadius = 10.f;
+	}
+	return shadow;
 }
 
 
