@@ -56,9 +56,16 @@
 - (void)layoutSubviewsAnimated:(BOOL)animated
 {
 	CGFloat myWidth = [self bounds].size.width;
+	
 	CGFloat minTileWidth = IS_IPAD ? 250.f : 160.f;		// min width for a tile
 	NSUInteger perRow = floorf(myWidth / minTileWidth);
-	CGFloat tileWidth = roundf(myWidth / perRow);		/// @todo compensate for rounded pixels
+	CGFloat tileWidth = roundf(myWidth / perRow);
+	CGFloat lastTileExtra = myWidth - (perRow * tileWidth);
+	
+	NSUInteger specialPerRow = perRow;
+	CGFloat specialTileWidth = tileWidth;
+	CGFloat lastSpecialTileExtra = lastTileExtra;
+	
 	CGFloat tileHeight = 70.f;
 	
 	CGFloat y = 0.f;
@@ -72,7 +79,26 @@
 		}
 	}
 	
-	// loop all tiles
+	// loop all subviews to count the tiles
+	NSUInteger numTiles = 0;
+	for (UIView *tile in [self subviews]) {
+		if (66 == tile.tag || 70 == tile.tag) {
+			continue;
+		}
+		
+		// a tile
+		if ([tile isKindOfClass:[INMedTile class]]) {
+			numTiles++;
+		}
+	}
+	NSUInteger specialIndex = numTiles - (numTiles % perRow);
+	if (specialIndex < numTiles) {
+		specialPerRow = (numTiles - specialIndex);
+		specialTileWidth = roundf(myWidth / specialPerRow);
+		lastSpecialTileExtra = myWidth - (specialPerRow * specialTileWidth);
+	}
+	
+	// loop all subviews
 	for (UIView *tile in [self subviews]) {
 		CGRect tileFrame = tile.frame;
 		
@@ -83,11 +109,13 @@
 		
 		// a tile
 		if ([tile isKindOfClass:[INMedTile class]]) {
-			NSUInteger i = (tileNum % perRow);
-			tileFrame.size = CGSizeMake(tileWidth, tileHeight);
+			NSUInteger r = (tileNum % perRow);
+			
+			tileFrame.size.width = tileWidth;
+			tileFrame.size.height = tileHeight;
 			
 			// advance a row
-			if (0 == i) {
+			if (0 == r) {
 				y = lastBottom;
 				
 				// if we have an uneven number, stretch the last tile to cover the full row
@@ -95,7 +123,19 @@
 					tileFrame.size.width = myWidth;
 				}
 			}
-			tileFrame.origin = CGPointMake(i * tileWidth, y);
+			tileFrame.origin = CGPointMake(r * tileWidth, y);
+			
+			// special width?
+			if (tileNum >= specialIndex) {
+				tileFrame.size.width = specialTileWidth;
+				tileFrame.origin.x = r * specialTileWidth;
+				if (r + 1 == specialPerRow) {
+					tileFrame.size.width += lastSpecialTileExtra;
+				}
+			}
+			else if (r + 1 == perRow) {
+				tileFrame.size.width += lastTileExtra;
+			}
 			
 			lastBottom = fmaxf(lastBottom, tileFrame.origin.y + tileFrame.size.height);
 			tileNum++;
