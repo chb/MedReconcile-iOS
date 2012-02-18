@@ -22,8 +22,11 @@
 @property (nonatomic, strong) UIBarButtonItem *recordSelectButton;
 @property (nonatomic, strong) UISegmentedControl *sortSelector;
 
+- (void)processMedicationsAndRefresh:(BOOL)refresh;
+
 - (void)reloadList:(id)sender;
 - (void)dismissModalViewController:(id)sender;
+- (void)indicateActivity:(BOOL)active;
 
 
 @end

@@ -259,7 +259,7 @@
 
 
 /**
- *	This method can be used to start off with a given rxcui
+ *	This method can be used to start off with a given medication object
  */
 - (void)loadSuggestionsForMed:(IndivoMedication *)aMed
 {
@@ -306,11 +306,65 @@
 }
 
 
+// COPY FROM ABOVE to test barcode scanning
+- (void)loadSuggestionsForRxCUI:(NSString *)rxcui
+{
+ 	[self goToSection:0 animated:YES];
+	
+	if (rxcui) {
+		
+		// show action
+		if (nameInputField) {
+			nameInputField.enabled = NO;
+			nameInputField.placeholder = @"(Barcode Results)";
+			
+			UIActivityIndicatorView *act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+			nameInputField.enabled = YES;
+			nameInputField.leftView = act;
+			[act startAnimating];
+		}
+		
+		// prepare section and init suggestion loader
+		INTableSection *section = [INTableSection newWithTitle:@"Suggestions"];
+		[self addSection:section animated:YES];
+		self.currentMedString = nil;
+		self.currentLoader = [INRxNormLoader new];
+		[currentLoader getRelated:@"SBD" forId:rxcui callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+			if (errorMessage) {
+				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to load suggestions"
+																message:errorMessage
+															   delegate:nil
+													  cancelButtonTitle:@"Too Bad"
+													  otherButtonTitles:nil];
+				[alert show];
+			}
+			
+			// completed, did we get suggestions?
+			else if (!userDidCancel) {
+				if ([currentLoader.responseObjects count] < 1) {
+					[section addObject:@"No suggestions found"];
+				}
+				else {
+					for (NSDictionary *rxDict in currentLoader.responseObjects) {
+						[section addObject:[IndivoMedication newWithRxNormDict:rxDict]];
+					}
+				}
+				
+				[section updateAnimated:YES];
+			}
+			
+			// stop action indication animation
+			nameInputField.leftView = nil;
+		}];
+	}
+}
+
+
 
 #pragma mark - User Flow
 /**
  *	An RX object was selected, go to the next step
- *	The sequence is: IN -> BN -> SBD
+ *	The sequence is: IN/MIN -> BN -> SBD
  */
 - (void)proceedWith:(NSIndexPath *)indexPath
 {
@@ -330,7 +384,7 @@
 		nowAtDrugEndpoint = YES;
 		desired = @"SBD+DF+IN+PIN+SCDC";
 	}
-	else if ([@"IN" isEqualToString:tty]) {
+	else if ([@"IN" isEqualToString:tty] || [@"MIN" isEqualToString:tty]) {
 		desired = @"BN";
 	}
 	
@@ -659,6 +713,96 @@
 
 
 
+#pragma mark - Barcode Scanning
+- (void)showCameraScanner:(id)sender
+{
+	ZBarReaderViewController *reader = [ZBarReaderViewController new];
+	reader.readerDelegate = self;
+	
+	// we only need to look out for UPC-A and EAN-13 codes
+	[reader.scanner setSymbology:0 config:ZBAR_CFG_ENABLE to:0];
+	[reader.scanner setSymbology:ZBAR_UPCA config:ZBAR_CFG_ENABLE to:1];
+	[reader.scanner setSymbology:ZBAR_EAN13 config:ZBAR_CFG_ENABLE to:1];
+	
+	reader.readerView.zoom = 1.0;
+//	reader.scanCrop = CGRectMake(0.f, 0.3f, 1.f, 0.4f);
+	
+	[self presentModalViewController:reader animated:YES];
+}
+
+- (void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary*)info
+{
+	id<NSFastEnumeration> results = [info objectForKey: ZBarReaderControllerResults];
+	for (ZBarSymbol *rslt in results) {
+		
+		// loop results
+		if ([rslt isKindOfClass:[ZBarSymbol class]]) {
+			NSMutableString *code = [[rslt.data substringToIndex:[rslt.data length] - 1] mutableCopy];		// chop off control digit
+			
+			// UPC-A start with a "3"
+			if ([@"UPC-A" isEqualToString:rslt.typeName]) {
+				[code replaceCharactersInRange:NSMakeRange(0, 1) withString:@""];
+			}
+			
+			// EAN-13 start with "03"
+			else if ([@"EAN-13" isEqualToString:rslt.typeName]) {
+				[code replaceCharactersInRange:NSMakeRange(0, 2) withString:@""];
+			}
+			
+			if ([code length] < 10) {
+				DLog(@"This cannot be right: \"%@\"", code);
+			}
+			
+			// got the ten-digit code, which could be in these formats: 4-4-2, 5-3-2, or 5-4-1 (and the normalized 11-digit version)
+			else {
+				NSMutableArray *variants = [NSMutableArray arrayWithCapacity:4];
+				[variants addObject:[NSString stringWithFormat:@"0%@", code]];
+				
+				NSUInteger i = 0;
+				for (; i < 3; i++) {
+					NSMutableString *variant = [code mutableCopy];
+					if (0 == i) {
+						[variant insertString:@"-" atIndex:8];
+						[variant insertString:@"-" atIndex:4];
+					}
+					else if (1 == i) {
+						[variant insertString:@"-" atIndex:8];
+						[variant insertString:@"-" atIndex:5];
+					}
+					else {
+						[variant insertString:@"-" atIndex:9];
+						[variant insertString:@"-" atIndex:5];
+					}
+					[variants addObject:variant];
+				}
+				
+				// try to get the rxcui for the code
+				NSString *queryURLString = [NSString stringWithFormat:@"http://10.17.20.127:8002/ndc/%@", [variants objectAtIndex:0]];
+				INURLLoader *loader = [INURLLoader loaderWithURL:[NSURL URLWithString:queryURLString]];
+				[loader getWithCallback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+					if (errorMessage) {
+						DLog(@"Error: %@", errorMessage);
+					}
+					else if (!userDidCancel) {
+						[self imagePickerControllerDidCancel:picker];
+						[self loadSuggestionsForRxCUI:loader.responseString];
+					}
+				}];
+			}
+		}
+		else {
+			DLog(@"No ZBarSymbol, got: %@", rslt);
+		}
+	}
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController*)picker
+{
+	[self dismissModalViewControllerAnimated:YES];
+}
+
+
+
 #pragma mark - View lifecycle
 - (void)loadView
 {
@@ -668,6 +812,10 @@
 	self.tableView.dataSource = self;
 	self.tableView.delegate = self;
 	self.view = self.tableView;
+	
+	// add the scan button
+	UIBarButtonItem *cameraButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(showCameraScanner:)];
+	self.navigationItem.leftBarButtonItem = cameraButton;
 }
 
 

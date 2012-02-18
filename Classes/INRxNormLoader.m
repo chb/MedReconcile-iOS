@@ -14,7 +14,7 @@
 
 @interface INRxNormLoader ()
 
-@property (nonatomic, readwrite, strong) NSMutableArray responseObjects;
+@property (nonatomic, readwrite, strong) NSMutableArray *responseObjects;
 @property (nonatomic, strong) INURLFetcher *multiFetcher;				///< We need a handle to this guy in case we cancel the connection
 
 @end
@@ -234,13 +234,13 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 	// create the URL
 	NSString *allRel = relType ? [NSString stringWithFormat:@"related?tty=%@", relType] : @"allrelated";
 	NSString *urlString = [NSString stringWithFormat:@"http://rxnav.nlm.nih.gov/REST/rxcui/%@/%@", rxcui, allRel];
-	DLog(@"-->  %@", urlString);
 	self.url = [NSURL URLWithString:urlString];
 	
 	self.responseObjects = nil;
 	__block INRxNormLoader *this = self;
 	
 	// load
+	DLog(@">>>  %@", urlString);
 	[self getWithCallback:^(BOOL didCancel, NSString *errorString) {
 		NSString *myErrString = nil;
 		

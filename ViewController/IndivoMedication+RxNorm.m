@@ -60,7 +60,7 @@
 		
 		/// @todo NEW SCHEMA TESTING -- dose is substitute for "formulation"
 		newMed.dose = [INUnitValue newWithNodeName:@"dose"];
-		newMed.dose.value = @"1";											// ignored but needed for validation
+		newMed.dose.value = [NSDecimalNumber one];							// ignored but needed for validation
 		newMed.dose.unit.type = @"http://indivo.org/codes/units#";			// ignored but needed for validation
 		newMed.dose.unit.abbrev = tty;										// hacked in here to have access to the type (!)
 		newMed.dose.unit.value = [aDict objectForKey:@"formulation"];
@@ -87,9 +87,13 @@
 
 - (BOOL)matchesName:(NSString *)aName
 {
-	return [@"Etanercept" isEqualToString:self.name.text];
-	NSString *name = self.name.text;
-	return ([name rangeOfString:aName].location > -1);
+	if ([self.name.text rangeOfString:aName].location > -1
+		|| [self.name.abbrev rangeOfString:aName].location > -1
+		|| [self.brandName.text rangeOfString:aName].location > -1
+		|| [self.brandName.abbrev rangeOfString:aName].location > -1) {
+		return YES;
+	}
+	return NO;
 }
 
 

@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ZBarSDK.h"
 
 @class INMedListController;
 @class INNewMedViewController;
@@ -25,7 +26,7 @@
 @end
 
 
-@interface INNewMedViewController : UITableViewController <UITextFieldDelegate>
+@interface INNewMedViewController : UITableViewController <UITextFieldDelegate, ZBarReaderDelegate>
 
 @property (nonatomic, assign) id<INNewMedViewControllerDelegate> delegate;
 

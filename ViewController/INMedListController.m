@@ -12,6 +12,10 @@
 #import "IndivoServer.h"
 #import "IndivoRecord.h"
 #import "IndivoDocuments.h"
+#import "IndivoMedicationGroup.h"
+
+#import "INMedicationProcessor.h"
+
 #import "INEditMedViewController.h"
 #import "INMedContainer.h"
 #import "INMedTile.h"
@@ -295,9 +299,9 @@
  */
 - (void)reloadList:(id)sender
 {
+	[medications removeAllObjects];
+	[container showMeds:nil animated:NO];
 	if (!record) {
-		[medications removeAllObjects];
-		[container showMeds:nil animated:NO];
 		return;
 	}
 	
@@ -319,7 +323,7 @@
 		// successfully fetched medications, display
 		else {
 			[medications setArray:[userInfo objectForKey:INResponseArrayKey]];
-			[self refreshListAnimated:NO];
+			[self processMedicationsAndRefresh:YES];
 		}
 	}];
 }
@@ -394,19 +398,44 @@
 }
 
 
+
+#pragma mark - Medication Processing
+/**
+ *	This methods walks through all IndivoMedication objects in self.medications and tries to group them
+ */
+- (void)processMedicationsAndRefresh:(BOOL)refresh
+{
+	if ([medications count] > 0) {
+		[self indicateActivity:YES];
+		
+		INMedicationProcessor *proc = [INMedicationProcessor newWithMedications:medications];
+		[proc processWithCallback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+			
+			//--
+			[medications removeAllObjects];
+			for (IndivoMedicationGroup *group in proc.processedMedGroups) {
+				IndivoMedication *med = [group.members firstObject];
+				[medications addObjectIfNotNil:med];
+			}
+			//--
+			
+			if (refresh) {
+				[self refreshListAnimated:NO];
+			}
+			[self indicateActivity:NO];
+		}];
+	}
+}
+
+
+
 #pragma mark - Indivo
 /**
  *	Connecting to the server retrieves the records of your users account
  */
 - (void)selectRecord:(id)sender
 {
-	// create an activity indicator to show that something is happening
-	UIActivityIndicatorView *activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-	UIBarButtonItem *activityButton = [[UIBarButtonItem alloc] initWithCustomView:activityView];
-	[activityButton setTarget:self];
-	[activityButton setAction:@selector(cancelSelection:)];
-	self.navigationItem.leftBarButtonItem = activityButton;
-	[activityView startAnimating];
+	[self indicateActivity:YES];
 	
 	// select record
 	[APP_DELEGATE.indivo selectRecord:^(BOOL userDidCancel, NSString *errorMessage) {
@@ -427,7 +456,7 @@
 			[self reloadList:sender];
 		}
 		
-		[self setRecordButtonTitle:nil];		// resets the activity spinner to the connect button
+		[self indicateActivity:NO];		// resets the activity spinner to the connect button
 	}];
 }
 
@@ -445,10 +474,10 @@
  */
 - (void)documentsDidChange:(NSNotification *)aNotification
 {
-	IndivoRecord *aRecord = [[aNotification userInfo] objectForKey:INRecordUserInfoKey];
-	if ([aRecord isEqual:self.record]) {		// will always be true anyway...
-		[self reloadList:nil];
-	}
+//	IndivoRecord *aRecord = [[aNotification userInfo] objectForKey:INRecordUserInfoKey];
+//	if ([aRecord isEqual:self.record]) {		// will always be true anyway...
+//		[self reloadList:nil];
+//	}
 }
 
 
@@ -499,7 +528,7 @@
  */
 - (void)setRecordButtonTitle:(NSString *)aTitle
 {
-	NSString *title = ([aTitle length] > 0) ? aTitle : @"Connect";
+	NSString *title = ([aTitle length] > 0) ? aTitle : (([record.label length] > 0) ? record.label : @"Connect");
 	UIBarButtonItem *connectButton = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStyleBordered target:self action:@selector(selectRecord:)];
 	self.navigationItem.leftBarButtonItem = connectButton;
 }
@@ -514,6 +543,25 @@
 	}
 	else {
 		[self dismissModalViewControllerAnimated:YES];
+	}
+}
+
+/**
+ *	Starts or stops the activity spinner
+ */
+- (void)indicateActivity:(BOOL)active
+{
+	if (active) {
+		UIActivityIndicatorView *activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+		UIBarButtonItem *activityButton = [[UIBarButtonItem alloc] initWithCustomView:activityView];
+		[activityButton setTarget:self];
+		[activityButton setAction:@selector(cancelSelection:)];
+		
+		self.navigationItem.leftBarButtonItem = activityButton;
+		[activityView startAnimating];
+	}
+	else {
+		[self setRecordButtonTitle:nil];
 	}
 }
 

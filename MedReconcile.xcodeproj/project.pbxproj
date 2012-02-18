@@ -11,10 +11,20 @@
 		EE03C02614C4D6D000E85F7E /* reveal.png in Resources */ = {isa = PBXBuildFile; fileRef = EE03C02514C4D6CF00E85F7E /* reveal.png */; };
 		EE03C02814C4D75300E85F7E /* hide.png in Resources */ = {isa = PBXBuildFile; fileRef = EE03C02714C4D75300E85F7E /* hide.png */; };
 		EE03C02A14C5287300E85F7E /* IndivoHealth.png in Resources */ = {isa = PBXBuildFile; fileRef = EE03C02914C5287300E85F7E /* IndivoHealth.png */; };
+		EE306FAD14EEE2B100A4ABCF /* INMedicationProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = EE306FAC14EEE2B100A4ABCF /* INMedicationProcessor.m */; };
+		EE306FB114EEEA6D00A4ABCF /* IndivoMedicationGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = EE306FB014EEEA6D00A4ABCF /* IndivoMedicationGroup.m */; };
 		EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BC145B91C30077E832 /* UIKit.framework */; };
 		EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BE145B91C30077E832 /* Foundation.framework */; };
 		EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4C0145B91C30077E832 /* CoreGraphics.framework */; };
 		EE30A4C7145B91C30077E832 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = EE30A4C5145B91C30077E832 /* InfoPlist.strings */; };
+		EE4397EF14E9CAB600FCFC47 /* zbar-back.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4397EA14E9CAB600FCFC47 /* zbar-back.png */; };
+		EE4397F014E9CAB600FCFC47 /* zbar-help.html in Resources */ = {isa = PBXBuildFile; fileRef = EE4397EB14E9CAB600FCFC47 /* zbar-help.html */; };
+		EE4397F114E9CAB600FCFC47 /* zbar-helpicons.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4397EC14E9CAB600FCFC47 /* zbar-helpicons.png */; };
+		EE4397F414E9CB0F00FCFC47 /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4397E814E9CAB600FCFC47 /* libzbar.a */; };
+		EE4397F614E9CB2200FCFC47 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4397F514E9CB2200FCFC47 /* AVFoundation.framework */; };
+		EE4397F814E9CB2E00FCFC47 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4397F714E9CB2D00FCFC47 /* CoreMedia.framework */; };
+		EE4397FA14E9CB3600FCFC47 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4397F914E9CB3600FCFC47 /* CoreVideo.framework */; };
+		EE4397FC14E9CB4600FCFC47 /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EE4397FB14E9CB4600FCFC47 /* libiconv.dylib */; };
 		EE4434B914915FAC00CC6344 /* INEditMedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EE4434B814915FAC00CC6344 /* INEditMedViewController.m */; };
 		EE4434BD1491608000CC6344 /* INMedDetailTile.m in Sources */ = {isa = PBXBuildFile; fileRef = EE4434BC1491608000CC6344 /* INMedDetailTile.m */; };
 		EE4434BF149168BA00CC6344 /* INMedDetailTile.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE4434BE149168BA00CC6344 /* INMedDetailTile.xib */; };
@@ -41,6 +51,7 @@
 		EEA00A8F1499595400F65AD9 /* UIViewController+Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA00A8E1499595300F65AD9 /* UIViewController+Utilities.m */; };
 		EEA4507F146D764500DC9EB1 /* INMedContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA4507E146D764500DC9EB1 /* INMedContainer.m */; };
 		EEA45084146D768500DC9EB1 /* INMedTile.m in Sources */ = {isa = PBXBuildFile; fileRef = EEA45083146D768500DC9EB1 /* INMedTile.m */; };
+		EEA88B5F14EA9CA200B7599D /* zbar-samples.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4397ED14E9CAB600FCFC47 /* zbar-samples.png */; };
 		EECEC44814758415009D85FC /* statusGreen.png in Resources */ = {isa = PBXBuildFile; fileRef = EECEC44714758415009D85FC /* statusGreen.png */; };
 		EECEC44B1475854B009D85FC /* white_carbon.png in Resources */ = {isa = PBXBuildFile; fileRef = EECEC44A1475854B009D85FC /* white_carbon.png */; };
 		EECEC44D1475891D009D85FC /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EECEC44C1475891D009D85FC /* QuartzCore.framework */; };
@@ -56,6 +67,10 @@
 		EE03C02514C4D6CF00E85F7E /* reveal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = reveal.png; sourceTree = "<group>"; };
 		EE03C02714C4D75300E85F7E /* hide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hide.png; sourceTree = "<group>"; };
 		EE03C02914C5287300E85F7E /* IndivoHealth.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = IndivoHealth.png; sourceTree = "<group>"; };
+		EE306FAB14EEE2B100A4ABCF /* INMedicationProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; path = INMedicationProcessor.h; sourceTree = "<group>"; };
+		EE306FAC14EEE2B100A4ABCF /* INMedicationProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INMedicationProcessor.m; sourceTree = "<group>"; };
+		EE306FAF14EEEA6D00A4ABCF /* IndivoMedicationGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; path = IndivoMedicationGroup.h; sourceTree = "<group>"; };
+		EE306FB014EEEA6D00A4ABCF /* IndivoMedicationGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IndivoMedicationGroup.m; sourceTree = "<group>"; };
 		EE30A4B8145B91C30077E832 /* MedReconcile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedReconcile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE30A4BC145B91C30077E832 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		EE30A4BE145B91C30077E832 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -68,6 +83,35 @@
 		EE30A4CC145B91C30077E832 /* INAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INAppDelegate.m; sourceTree = "<group>"; };
 		EE30A4CE145B91C30077E832 /* INMedListController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = INMedListController.h; sourceTree = "<group>"; };
 		EE30A4CF145B91C30077E832 /* INMedListController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INMedListController.m; sourceTree = "<group>"; };
+		EE4397D414E9CAB600FCFC47 /* Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Decoder.h; sourceTree = "<group>"; };
+		EE4397D514E9CAB600FCFC47 /* Exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exception.h; sourceTree = "<group>"; };
+		EE4397D614E9CAB600FCFC47 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
+		EE4397D714E9CAB600FCFC47 /* ImageScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageScanner.h; sourceTree = "<group>"; };
+		EE4397D814E9CAB600FCFC47 /* Processor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Processor.h; sourceTree = "<group>"; };
+		EE4397D914E9CAB600FCFC47 /* Scanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scanner.h; sourceTree = "<group>"; };
+		EE4397DA14E9CAB600FCFC47 /* Symbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Symbol.h; sourceTree = "<group>"; };
+		EE4397DB14E9CAB600FCFC47 /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
+		EE4397DC14E9CAB600FCFC47 /* Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
+		EE4397DD14E9CAB600FCFC47 /* zbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zbar.h; sourceTree = "<group>"; };
+		EE4397DE14E9CAB600FCFC47 /* ZBarCameraSimulator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarCameraSimulator.h; sourceTree = "<group>"; };
+		EE4397DF14E9CAB600FCFC47 /* ZBarCaptureReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarCaptureReader.h; sourceTree = "<group>"; };
+		EE4397E014E9CAB600FCFC47 /* ZBarHelpController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarHelpController.h; sourceTree = "<group>"; };
+		EE4397E114E9CAB600FCFC47 /* ZBarImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarImage.h; sourceTree = "<group>"; };
+		EE4397E214E9CAB600FCFC47 /* ZBarImageScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarImageScanner.h; sourceTree = "<group>"; };
+		EE4397E314E9CAB600FCFC47 /* ZBarReaderController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarReaderController.h; sourceTree = "<group>"; };
+		EE4397E414E9CAB600FCFC47 /* ZBarReaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarReaderView.h; sourceTree = "<group>"; };
+		EE4397E514E9CAB600FCFC47 /* ZBarReaderViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarReaderViewController.h; sourceTree = "<group>"; };
+		EE4397E614E9CAB600FCFC47 /* ZBarSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarSDK.h; sourceTree = "<group>"; };
+		EE4397E714E9CAB600FCFC47 /* ZBarSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZBarSymbol.h; sourceTree = "<group>"; };
+		EE4397E814E9CAB600FCFC47 /* libzbar.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libzbar.a; sourceTree = "<group>"; };
+		EE4397EA14E9CAB600FCFC47 /* zbar-back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-back.png"; sourceTree = "<group>"; };
+		EE4397EB14E9CAB600FCFC47 /* zbar-help.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "zbar-help.html"; sourceTree = "<group>"; };
+		EE4397EC14E9CAB600FCFC47 /* zbar-helpicons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-helpicons.png"; sourceTree = "<group>"; };
+		EE4397ED14E9CAB600FCFC47 /* zbar-samples.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "zbar-samples.png"; sourceTree = "<group>"; };
+		EE4397F514E9CB2200FCFC47 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		EE4397F714E9CB2D00FCFC47 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		EE4397F914E9CB3600FCFC47 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		EE4397FB14E9CB4600FCFC47 /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
 		EE4434B714915FAB00CC6344 /* INEditMedViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INEditMedViewController.h; sourceTree = "<group>"; };
 		EE4434B814915FAC00CC6344 /* INEditMedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INEditMedViewController.m; sourceTree = "<group>"; };
 		EE4434BB1491608000CC6344 /* INMedDetailTile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INMedDetailTile.h; path = Classes/INMedDetailTile.h; sourceTree = "<group>"; };
@@ -79,8 +123,8 @@
 		EE4434C6149188A500CC6344 /* buttonPressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonPressed.png; sourceTree = "<group>"; };
 		EE4434C8149188AB00CC6344 /* buttonDisabled.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonDisabled.png; sourceTree = "<group>"; };
 		EE4434CA1491892600CC6344 /* buttonGreen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonGreen.png; sourceTree = "<group>"; };
-		EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INRxNormLoader.h; path = Classes/INRxNormLoader.h; sourceTree = "<group>"; };
-		EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INRxNormLoader.m; path = Classes/INRxNormLoader.m; sourceTree = "<group>"; };
+		EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; path = INRxNormLoader.h; sourceTree = "<group>"; };
+		EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INRxNormLoader.m; sourceTree = "<group>"; };
 		EE472610147308EA00EAFDA3 /* pillDefault.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pillDefault.png; sourceTree = "<group>"; };
 		EE5E9C4414C869AC00101AC0 /* IndivoHealth@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "IndivoHealth@2x.png"; sourceTree = "<group>"; };
 		EE5E9C4714C8B37700101AC0 /* IndivoMedication+RxNorm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "IndivoMedication+RxNorm.h"; sourceTree = "<group>"; };
@@ -110,8 +154,8 @@
 		EEDB8DB2145CE695001C6C2C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		EEE62F91146ACB75000DA370 /* libIndivoServer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivoServer.a; path = "../../../Library/Developer/Xcode/DerivedData/MedicationReconciliation-aglgthohrfcqnagvmblvlhwzellq/Build/Products/Debug-iphoneos/libIndivoServer.a"; sourceTree = "<group>"; };
-		EEE62F94146AFACD000DA370 /* INTableSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = INTableSection.h; path = Classes/INTableSection.h; sourceTree = "<group>"; };
-		EEE62F95146AFACD000DA370 /* INTableSection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = INTableSection.m; path = Classes/INTableSection.m; sourceTree = "<group>"; };
+		EEE62F94146AFACD000DA370 /* INTableSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INTableSection.h; sourceTree = "<group>"; };
+		EEE62F95146AFACD000DA370 /* INTableSection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INTableSection.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +163,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE4397FC14E9CB4600FCFC47 /* libiconv.dylib in Frameworks */,
+				EE4397FA14E9CB3600FCFC47 /* CoreVideo.framework in Frameworks */,
+				EE4397F814E9CB2E00FCFC47 /* CoreMedia.framework in Frameworks */,
+				EE4397F614E9CB2200FCFC47 /* AVFoundation.framework in Frameworks */,
 				EECEC44D1475891D009D85FC /* QuartzCore.framework in Frameworks */,
 				EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */,
 				EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */,
@@ -126,6 +174,7 @@
 				EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */,
 				EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */,
 				EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */,
+				EE4397F414E9CB0F00FCFC47 /* libzbar.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,6 +201,10 @@
 		EE30A4BB145B91C30077E832 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EE4397FB14E9CB4600FCFC47 /* libiconv.dylib */,
+				EE4397F914E9CB3600FCFC47 /* CoreVideo.framework */,
+				EE4397F714E9CB2D00FCFC47 /* CoreMedia.framework */,
+				EE4397F514E9CB2200FCFC47 /* AVFoundation.framework */,
 				EECEC44C1475891D009D85FC /* QuartzCore.framework */,
 				EEE62F91146ACB75000DA370 /* libIndivoServer.a */,
 				EE30A4BC145B91C30077E832 /* UIKit.framework */,
@@ -175,6 +228,7 @@
 				EE6461D9145F18020007C6B9 /* View Controller */,
 				EE8684CD149A915F0002C1E2 /* Helper */,
 				EE472612147308F100EAFDA3 /* Images */,
+				EE4397D014E9CAB600FCFC47 /* ZBarSDK */,
 				EE30A4C3145B91C30077E832 /* Supporting Files */,
 			);
 			name = MedReconcile;
@@ -189,6 +243,70 @@
 				EE30A4CA145B91C30077E832 /* MedReconcile-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		EE4397D014E9CAB600FCFC47 /* ZBarSDK */ = {
+			isa = PBXGroup;
+			children = (
+				EE4397D114E9CAB600FCFC47 /* Headers */,
+				EE4397E914E9CAB600FCFC47 /* Resources */,
+				EE4397E814E9CAB600FCFC47 /* libzbar.a */,
+			);
+			path = ZBarSDK;
+			sourceTree = "<group>";
+		};
+		EE4397D114E9CAB600FCFC47 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				EE4397D214E9CAB600FCFC47 /* ZBarSDK */,
+			);
+			path = Headers;
+			sourceTree = "<group>";
+		};
+		EE4397D214E9CAB600FCFC47 /* ZBarSDK */ = {
+			isa = PBXGroup;
+			children = (
+				EE4397D314E9CAB600FCFC47 /* zbar */,
+				EE4397DD14E9CAB600FCFC47 /* zbar.h */,
+				EE4397DE14E9CAB600FCFC47 /* ZBarCameraSimulator.h */,
+				EE4397DF14E9CAB600FCFC47 /* ZBarCaptureReader.h */,
+				EE4397E014E9CAB600FCFC47 /* ZBarHelpController.h */,
+				EE4397E114E9CAB600FCFC47 /* ZBarImage.h */,
+				EE4397E214E9CAB600FCFC47 /* ZBarImageScanner.h */,
+				EE4397E314E9CAB600FCFC47 /* ZBarReaderController.h */,
+				EE4397E414E9CAB600FCFC47 /* ZBarReaderView.h */,
+				EE4397E514E9CAB600FCFC47 /* ZBarReaderViewController.h */,
+				EE4397E614E9CAB600FCFC47 /* ZBarSDK.h */,
+				EE4397E714E9CAB600FCFC47 /* ZBarSymbol.h */,
+			);
+			path = ZBarSDK;
+			sourceTree = "<group>";
+		};
+		EE4397D314E9CAB600FCFC47 /* zbar */ = {
+			isa = PBXGroup;
+			children = (
+				EE4397D414E9CAB600FCFC47 /* Decoder.h */,
+				EE4397D514E9CAB600FCFC47 /* Exception.h */,
+				EE4397D614E9CAB600FCFC47 /* Image.h */,
+				EE4397D714E9CAB600FCFC47 /* ImageScanner.h */,
+				EE4397D814E9CAB600FCFC47 /* Processor.h */,
+				EE4397D914E9CAB600FCFC47 /* Scanner.h */,
+				EE4397DA14E9CAB600FCFC47 /* Symbol.h */,
+				EE4397DB14E9CAB600FCFC47 /* Video.h */,
+				EE4397DC14E9CAB600FCFC47 /* Window.h */,
+			);
+			path = zbar;
+			sourceTree = "<group>";
+		};
+		EE4397E914E9CAB600FCFC47 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				EE4397EA14E9CAB600FCFC47 /* zbar-back.png */,
+				EE4397EB14E9CAB600FCFC47 /* zbar-help.html */,
+				EE4397EC14E9CAB600FCFC47 /* zbar-helpicons.png */,
+				EE4397ED14E9CAB600FCFC47 /* zbar-samples.png */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		EE472612147308F100EAFDA3 /* Images */ = {
@@ -274,10 +392,15 @@
 			children = (
 				EEE62F94146AFACD000DA370 /* INTableSection.h */,
 				EEE62F95146AFACD000DA370 /* INTableSection.m */,
+				EE306FAF14EEEA6D00A4ABCF /* IndivoMedicationGroup.h */,
+				EE306FB014EEEA6D00A4ABCF /* IndivoMedicationGroup.m */,
+				EE306FAB14EEE2B100A4ABCF /* INMedicationProcessor.h */,
+				EE306FAC14EEE2B100A4ABCF /* INMedicationProcessor.m */,
 				EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */,
 				EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */,
 			);
 			name = Models;
+			path = Classes;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -351,6 +474,10 @@
 				EE03C02814C4D75300E85F7E /* hide.png in Resources */,
 				EE03C02A14C5287300E85F7E /* IndivoHealth.png in Resources */,
 				EE5E9C4514C869AC00101AC0 /* IndivoHealth@2x.png in Resources */,
+				EE4397EF14E9CAB600FCFC47 /* zbar-back.png in Resources */,
+				EE4397F014E9CAB600FCFC47 /* zbar-help.html in Resources */,
+				EE4397F114E9CAB600FCFC47 /* zbar-helpicons.png in Resources */,
+				EEA88B5F14EA9CA200B7599D /* zbar-samples.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,6 +503,8 @@
 				EEA00A8B149950F700F65AD9 /* INButton.m in Sources */,
 				EEA00A8F1499595400F65AD9 /* UIViewController+Utilities.m in Sources */,
 				EE5E9C4914C8B37700101AC0 /* IndivoMedication+RxNorm.m in Sources */,
+				EE306FAD14EEE2B100A4ABCF /* INMedicationProcessor.m in Sources */,
+				EE306FB114EEEA6D00A4ABCF /* IndivoMedicationGroup.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -451,6 +580,10 @@
 				GCC_PREFIX_HEADER = "MedReconcile-Prefix.pch";
 				INFOPLIST_FILE = "MedReconcile-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(LOCAL_LIBRARY_DIR)/Indivo/MedReconcile/ZBarSDK\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -463,6 +596,10 @@
 				GCC_PREFIX_HEADER = "MedReconcile-Prefix.pch";
 				INFOPLIST_FILE = "MedReconcile-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(LOCAL_LIBRARY_DIR)/Indivo/MedReconcile/ZBarSDK\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
