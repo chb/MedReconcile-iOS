@@ -503,16 +503,22 @@
 - (void)editMedController:(INEditMedViewController *)theController didActOnMed:(IndivoMedication *)aMed
 {
 	[self dismissModalViewControllerAnimated:YES];
+	if (![medications containsObject:aMed]) {			// this way we avoid one round-trip to the server
+		[medications addObject:aMed];
+	}
+	[self refreshListAnimated:NO];
 }
 
 - (void)editMedController:(INEditMedViewController *)theController didReplaceMed:(IndivoMedication *)aMed withMed:(IndivoMedication *)newMed
 {
 	[self dismissModalViewControllerAnimated:YES];
+	[self refreshListAnimated:NO];
 }
 
 - (void)editMedController:(INEditMedViewController *)theController didVoidMed:(IndivoMedication *)aMed
 {
 	[self dismissModalViewControllerAnimated:YES];
+	[self refreshListAnimated:NO];
 }
 
 - (NSArray *)currentMedsForNewMedController:(INNewMedViewController *)theController

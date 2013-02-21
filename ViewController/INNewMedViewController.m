@@ -370,156 +370,158 @@
 {
 	[nameInputField resignFirstResponder];
 	
-	INTableSection *current = [sections objectAtIndex:indexPath.section];
-	IndivoMedication *startMed = [current objectForRow:indexPath.row];
-	if (![startMed isKindOfClass:[IndivoMedication class]]) {
-		DLog(@"Did not find a IndivoMedication object, but this: %@", startMed);
-		return;
-	}
-	
-	NSString *tty = startMed.dose.unit.abbrev;
-	NSString *desired = nil;
-	BOOL nowAtDrugEndpoint = NO;
-	if ([@"BN" isEqualToString:tty]) {
-		nowAtDrugEndpoint = YES;
-		desired = @"SBD+DF+IN+PIN+SCDC";
-	}
-	else if ([@"IN" isEqualToString:tty] || [@"MIN" isEqualToString:tty]) {
-		desired = @"BN";
-	}
-	
-	// continue
-	if (desired) {
-		[current selectRow:indexPath.row collapseAnimated:YES];
-		[current showIndicator];
+	if ([sections count] > indexPath.section) {
+		INTableSection *current = [sections objectAtIndex:indexPath.section];
+		IndivoMedication *startMed = [current objectForRow:indexPath.row];
+		if (![startMed isKindOfClass:[IndivoMedication class]]) {
+			DLog(@"Did not find a IndivoMedication object, but this: %@", startMed);
+			return;
+		}
 		
-		NSString *rxcui= startMed.brandName.value ? startMed.brandName.value : startMed.name.value;
+		NSString *tty = startMed.dose.unit.abbrev;
+		NSString *desired = nil;
+		BOOL nowAtDrugEndpoint = NO;
+		if ([@"BN" isEqualToString:tty]) {
+			nowAtDrugEndpoint = YES;
+			desired = @"SBD+DF+IN+PIN+SCDC";
+		}
+		else if ([@"IN" isEqualToString:tty] || [@"MIN" isEqualToString:tty]) {
+			desired = @"BN";
+		}
 		
-		self.currentLoader = [INRxNormLoader loader];
-		[currentLoader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
-			NSMutableArray *newSections = [NSMutableArray array];
+		// continue
+		if (desired) {
+			[current selectRow:indexPath.row collapseAnimated:YES];
+			[current showIndicator];
 			
-			// got some data
-			if (!errorString) {
-				NSMutableArray *stripFromNames = [NSMutableArray array];
-				NSMutableDictionary *scdc = [NSMutableDictionary dictionary];
-				NSMutableArray *drugs = [NSMutableArray array];
+			NSString *rxcui= startMed.brandName.value ? startMed.brandName.value : startMed.name.value;
+			
+			self.currentLoader = [INRxNormLoader loader];
+			[currentLoader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
+				NSMutableArray *newSections = [NSMutableArray array];
 				
-				// look at what we've got
-				for (NSDictionary *related in currentLoader.responseObjects) {
-					NSString *tty = [related objectForKey:@"tty"];
-					NSString *name = [related objectForKey:@"name"];
-					NSString *rx = [related objectForKey:@"rxcui"];
+				// got some data
+				if (!errorString) {
+					NSMutableArray *stripFromNames = [NSMutableArray array];
+					NSMutableDictionary *scdc = [NSMutableDictionary dictionary];
+					NSMutableArray *drugs = [NSMutableArray array];
 					
-					// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
-					if ([@"DF" isEqualToString:tty]) {
-						if (name) {
-							INTableSection *newSection = [INTableSection newWithTitle:name];
-							[newSections addObject:newSection];
+					// look at what we've got
+					for (NSDictionary *related in currentLoader.responseObjects) {
+						NSString *tty = [related objectForKey:@"tty"];
+						NSString *name = [related objectForKey:@"name"];
+						NSString *rx = [related objectForKey:@"rxcui"];
+						
+						// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
+						if ([@"DF" isEqualToString:tty]) {
+							if (name) {
+								INTableSection *newSection = [INTableSection newWithTitle:name];
+								[newSections addObject:newSection];
+								[stripFromNames addObjectIfNotNil:name];
+							}
+							else {
+								DLog(@"Ohoh, no name for DF found!");
+							}
+						}
+						
+						// ** got IN or PIN, (precise) ingredient (e.g. "Metformin" or "Metformin hydrochloride")
+						else if ([@"IN" isEqualToString:tty]) {
 							[stripFromNames addObjectIfNotNil:name];
 						}
+						else if ([@"PIN" isEqualToString:tty]) {
+							[stripFromNames unshiftObjectIfNotNil:name];
+						}
+						
+						// ** got the SCDC, clinical drug component (e.g. "Metformin hydrochloride 500 MG")
+						else if ([@"SCDC" isEqualToString:tty]) {
+							if (name && rx) {
+								[scdc setObject:rx forKey:name];
+							}
+						}
+						
+						// ** got a drug (BN or SBD for now), just collect
 						else {
-							DLog(@"Ohoh, no name for DF found!");
+							[drugs addObject:[related mutableCopy]];
 						}
 					}
 					
-					// ** got IN or PIN, (precise) ingredient (e.g. "Metformin" or "Metformin hydrochloride")
-					else if ([@"IN" isEqualToString:tty]) {
-						[stripFromNames addObjectIfNotNil:name];
-					}
-					else if ([@"PIN" isEqualToString:tty]) {
-						[stripFromNames unshiftObjectIfNotNil:name];
+					// no DF-sections found, just add them to one general section
+					if ([newSections count] < 1) {
+						INTableSection *lone = [INTableSection new];
+						[newSections addObject:lone];
 					}
 					
-					// ** got the SCDC, clinical drug component (e.g. "Metformin hydrochloride 500 MG")
-					else if ([@"SCDC" isEqualToString:tty]) {
-						if (name && rx) {
-							[scdc setObject:rx forKey:name];
+					// ** revisit collected drugs to apply grouping and name improving
+					if ([drugs count] > 0) {
+						for (NSMutableDictionary *drug in drugs) {
+							NSString *name = [drug objectForKey:@"name"];
+							if ([name length] > 0) {
+								
+								// use SCDC to get the formulation/dose by stripping IN and MIN names
+								NSMutableString *myStrength = [NSMutableString string];
+								for (NSString *strength in [scdc allKeys]) {
+									if (NSNotFound != [name rangeOfString:strength].location) {
+										NSString *trimmed = strength;
+										for (NSString *strip in stripFromNames) {
+											trimmed = [trimmed stringByReplacingOccurrencesOfString:strip withString:@""];
+										}
+										trimmed = [trimmed stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+										if ([trimmed length] > 0) {
+											if ([myStrength length] > 0) {
+												[myStrength appendFormat:@"/%@", trimmed];
+											}
+											else {
+												[myStrength setString:trimmed];
+											}
+										}
+									}
+								}
+								if ([myStrength length] > 0) {
+									[drug setObject:myStrength forKey:@"formulation"];
+								}
+								
+								// get a medication object
+								IndivoMedication *newMed = [IndivoMedication newWithRxNormDict:drug];
+								
+								// add drug to the matching section (section = DF)
+								NSUInteger put = 0;
+								for (INTableSection *section in newSections) {
+									if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
+										[section addObject:newMed];
+										put++;
+									}
+								}
+								if (put < 1) {
+									DLog(@"WARNING: Drug %@ not put in any section!!!", drug);
+								}
+							}
 						}
 					}
-					
-					// ** got a drug (BN or SBD for now), just collect
 					else {
-						[drugs addObject:[related mutableCopy]];
+						DLog(@"Not a single drug found in concepts!");
+						INTableSection *newSection = [INTableSection new];
+						[newSection addObject:@"No relations found"];
+						[newSections addObject:newSection];
 					}
 				}
-				
-				// no DF-sections found, just add them to one general section
-				if ([newSections count] < 1) {
-					INTableSection *lone = [INTableSection new];
-					[newSections addObject:lone];
-				}
-				
-				// ** revisit collected drugs to apply grouping and name improving
-				if ([drugs count] > 0) {
-					for (NSMutableDictionary *drug in drugs) {
-						NSString *name = [drug objectForKey:@"name"];
-						if ([name length] > 0) {
-							
-							// use SCDC to get the formulation/dose by stripping IN and MIN names
-							NSMutableString *myStrength = [NSMutableString string];
-							for (NSString *strength in [scdc allKeys]) {
-								if (NSNotFound != [name rangeOfString:strength].location) {
-									NSString *trimmed = strength;
-									for (NSString *strip in stripFromNames) {
-										trimmed = [trimmed stringByReplacingOccurrencesOfString:strip withString:@""];
-									}
-									trimmed = [trimmed stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-									if ([trimmed length] > 0) {
-										if ([myStrength length] > 0) {
-											[myStrength appendFormat:@"/%@", trimmed];
-										}
-										else {
-											[myStrength setString:trimmed];
-										}
-									}
-								}
-							}
-							if ([myStrength length] > 0) {
-								[drug setObject:myStrength forKey:@"formulation"];
-							}
-							
-							// get a medication object
-							IndivoMedication *newMed = [IndivoMedication newWithRxNormDict:drug];
-							
-							// add drug to the matching section (section = DF)
-							NSUInteger put = 0;
-							for (INTableSection *section in newSections) {
-								if (!section.title || NSNotFound != [name rangeOfString:section.title].location) {
-									[section addObject:newMed];
-									put++;
-								}
-							}
-							if (put < 1) {
-								DLog(@"WARNING: Drug %@ not put in any section!!!", drug);
-							}
-						}
-					}
-				}
-				else {
-					DLog(@"Not a single drug found in concepts!");
+				else if (!didCancel) {
 					INTableSection *newSection = [INTableSection new];
-					[newSection addObject:@"No relations found"];
+					[newSection addObject:errorString];
 					[newSections addObject:newSection];
 				}
-			}
-			else if (!didCancel) {
-				INTableSection *newSection = [INTableSection new];
-				[newSection addObject:errorString];
-				[newSections addObject:newSection];
-			}
-			
-			// update table
-			for (INTableSection *section in newSections) {
-				[self addSection:section animated:YES];
-			}
-			[current hideIndicator];
-		}];
-	}
-	
-	// ok, we're happy with the selected drug, move on!
-	else {
-		[self useDrug:indexPath];
+				
+				// update table
+				for (INTableSection *section in newSections) {
+					[self addSection:section animated:YES];
+				}
+				[current hideIndicator];
+			}];
+		}
+		
+		// ok, we're happy with the selected drug, move on!
+		else {
+			[self useDrug:indexPath];
+		}
 	}
 }
 
@@ -544,6 +546,7 @@
  */
 - (void)useDrug:(NSIndexPath *)indexPath
 {
+	if ([sections count] > indexPath.section) {
 	INTableSection *section = [sections objectAtIndex:indexPath.section];
 	IndivoMedication *useMed = [section objectForRow:indexPath.row];
 	if (![useMed isKindOfClass:[IndivoMedication class]]) {
@@ -574,7 +577,7 @@
 				if ([mins count] > 0) {
 					use = [mins objectAtIndex:0];
 				}
-				else {
+				else if ([ins count] > 0) {
 					if ([ins count] > 1) {
 						DLog(@"Got no MIN, but multiple IN: %@", ins);
 					}
@@ -592,6 +595,10 @@
 	}
 	else {
 		[delegate newMedController:self didSelectMed:useMed];
+	}
+	}
+	else {
+		DLog(@"We don't have a section at index %d!", indexPath.section);
 	}
 }
 
@@ -739,12 +746,12 @@
 		if ([rslt isKindOfClass:[ZBarSymbol class]]) {
 			NSMutableString *code = [[rslt.data substringToIndex:[rslt.data length] - 1] mutableCopy];		// chop off control digit
 			
-			// UPC-A start with a "3"
+			// UPC-A codes start with a "3"
 			if ([@"UPC-A" isEqualToString:rslt.typeName]) {
 				[code replaceCharactersInRange:NSMakeRange(0, 1) withString:@""];
 			}
 			
-			// EAN-13 start with "03"
+			// EAN-13 codes start with "03"
 			else if ([@"EAN-13" isEqualToString:rslt.typeName]) {
 				[code replaceCharactersInRange:NSMakeRange(0, 2) withString:@""];
 			}

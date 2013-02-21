@@ -306,8 +306,14 @@
 	}
 	
 	// update display names
-	med.name.abbrev = agent.text;
-	med.brandName.abbrev = drug.text;
+	if (!med.name) {
+		med.name = [INCodedValue new];
+	}
+	med.name.text = agent.text;
+	if (!med.brandName) {
+		med.brandName = [INCodedValue new];
+	}
+	med.brandName.text = drug.text;
 	
 	// update details
 	IndivoPrescription *prescription = med.prescription;
@@ -323,9 +329,8 @@
 	if (!med.dose) {
 		med.dose = [INUnitValue new];			// must be present for the current scheme to validate
 	}
-	med.frequency = [INCodedValue new];		// must be present for the current scheme to validate
+	med.frequency = [INCodedValue new];			// must be present for the current scheme to validate
 	
-	DLog(@"Save med: %@", [med xml]);
 	[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {		// "replace" will call "push" if the med is new
 		if (errorMessage) {
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to update"

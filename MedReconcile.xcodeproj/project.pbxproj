@@ -17,6 +17,7 @@
 		EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4BE145B91C30077E832 /* Foundation.framework */; };
 		EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE30A4C0145B91C30077E832 /* CoreGraphics.framework */; };
 		EE30A4C7145B91C30077E832 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = EE30A4C5145B91C30077E832 /* InfoPlist.strings */; };
+		EE3E772F1517C6850023BB1C /* libIndivo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EE3E772E1517C6850023BB1C /* libIndivo.a */; };
 		EE4397EF14E9CAB600FCFC47 /* zbar-back.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4397EA14E9CAB600FCFC47 /* zbar-back.png */; };
 		EE4397F014E9CAB600FCFC47 /* zbar-help.html in Resources */ = {isa = PBXBuildFile; fileRef = EE4397EB14E9CAB600FCFC47 /* zbar-help.html */; };
 		EE4397F114E9CAB600FCFC47 /* zbar-helpicons.png in Resources */ = {isa = PBXBuildFile; fileRef = EE4397EC14E9CAB600FCFC47 /* zbar-helpicons.png */; };
@@ -58,7 +59,6 @@
 		EECEC44F1475A0D8009D85FC /* statusGreen@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = EECEC44E1475A0D8009D85FC /* statusGreen@2x.png */; };
 		EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB2145CE695001C6C2C /* Security.framework */; };
 		EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */; };
-		EEE62F92146ACB75000DA370 /* libIndivoServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE62F91146ACB75000DA370 /* libIndivoServer.a */; };
 		EEE62F96146AFACD000DA370 /* INTableSection.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE62F95146AFACD000DA370 /* INTableSection.m */; };
 /* End PBXBuildFile section */
 
@@ -67,9 +67,9 @@
 		EE03C02514C4D6CF00E85F7E /* reveal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = reveal.png; sourceTree = "<group>"; };
 		EE03C02714C4D75300E85F7E /* hide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hide.png; sourceTree = "<group>"; };
 		EE03C02914C5287300E85F7E /* IndivoHealth.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = IndivoHealth.png; sourceTree = "<group>"; };
-		EE306FAB14EEE2B100A4ABCF /* INMedicationProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; path = INMedicationProcessor.h; sourceTree = "<group>"; };
+		EE306FAB14EEE2B100A4ABCF /* INMedicationProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INMedicationProcessor.h; sourceTree = "<group>"; };
 		EE306FAC14EEE2B100A4ABCF /* INMedicationProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INMedicationProcessor.m; sourceTree = "<group>"; };
-		EE306FAF14EEEA6D00A4ABCF /* IndivoMedicationGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; path = IndivoMedicationGroup.h; sourceTree = "<group>"; };
+		EE306FAF14EEEA6D00A4ABCF /* IndivoMedicationGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndivoMedicationGroup.h; sourceTree = "<group>"; };
 		EE306FB014EEEA6D00A4ABCF /* IndivoMedicationGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IndivoMedicationGroup.m; sourceTree = "<group>"; };
 		EE30A4B8145B91C30077E832 /* MedReconcile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedReconcile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE30A4BC145B91C30077E832 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -83,6 +83,7 @@
 		EE30A4CC145B91C30077E832 /* INAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INAppDelegate.m; sourceTree = "<group>"; };
 		EE30A4CE145B91C30077E832 /* INMedListController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = INMedListController.h; sourceTree = "<group>"; };
 		EE30A4CF145B91C30077E832 /* INMedListController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = INMedListController.m; sourceTree = "<group>"; };
+		EE3E772E1517C6850023BB1C /* libIndivo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivo.a; path = "../IndivoFramework-ios/IndivoFramework/build/Release-iphoneos/libIndivo.a"; sourceTree = "<group>"; };
 		EE4397D414E9CAB600FCFC47 /* Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Decoder.h; sourceTree = "<group>"; };
 		EE4397D514E9CAB600FCFC47 /* Exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exception.h; sourceTree = "<group>"; };
 		EE4397D614E9CAB600FCFC47 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
@@ -123,7 +124,7 @@
 		EE4434C6149188A500CC6344 /* buttonPressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonPressed.png; sourceTree = "<group>"; };
 		EE4434C8149188AB00CC6344 /* buttonDisabled.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonDisabled.png; sourceTree = "<group>"; };
 		EE4434CA1491892600CC6344 /* buttonGreen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonGreen.png; sourceTree = "<group>"; };
-		EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; path = INRxNormLoader.h; sourceTree = "<group>"; };
+		EE47260C1472D22600EAFDA3 /* INRxNormLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INRxNormLoader.h; sourceTree = "<group>"; };
 		EE47260D1472D22600EAFDA3 /* INRxNormLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INRxNormLoader.m; sourceTree = "<group>"; };
 		EE472610147308EA00EAFDA3 /* pillDefault.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pillDefault.png; sourceTree = "<group>"; };
 		EE5E9C4414C869AC00101AC0 /* IndivoHealth@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "IndivoHealth@2x.png"; sourceTree = "<group>"; };
@@ -150,10 +151,8 @@
 		EECEC44A1475854B009D85FC /* white_carbon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = white_carbon.png; sourceTree = "<group>"; };
 		EECEC44C1475891D009D85FC /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		EECEC44E1475A0D8009D85FC /* statusGreen@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "statusGreen@2x.png"; sourceTree = "<group>"; };
-		EEDB8DAD145CE260001C6C2C /* libIndivoServer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivoServer.a; path = "../IndivoFramework/IndivoFramework/build/Release-iphoneos/libIndivoServer.a"; sourceTree = "<group>"; };
 		EEDB8DB2145CE695001C6C2C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
-		EEE62F91146ACB75000DA370 /* libIndivoServer.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libIndivoServer.a; path = "../../../Library/Developer/Xcode/DerivedData/MedicationReconciliation-aglgthohrfcqnagvmblvlhwzellq/Build/Products/Debug-iphoneos/libIndivoServer.a"; sourceTree = "<group>"; };
 		EEE62F94146AFACD000DA370 /* INTableSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INTableSection.h; sourceTree = "<group>"; };
 		EEE62F95146AFACD000DA370 /* INTableSection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INTableSection.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -163,6 +162,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE3E772F1517C6850023BB1C /* libIndivo.a in Frameworks */,
 				EE4397FC14E9CB4600FCFC47 /* libiconv.dylib in Frameworks */,
 				EE4397FA14E9CB3600FCFC47 /* CoreVideo.framework in Frameworks */,
 				EE4397F814E9CB2E00FCFC47 /* CoreMedia.framework in Frameworks */,
@@ -170,7 +170,6 @@
 				EECEC44D1475891D009D85FC /* QuartzCore.framework in Frameworks */,
 				EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */,
 				EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */,
-				EEE62F92146ACB75000DA370 /* libIndivoServer.a in Frameworks */,
 				EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */,
 				EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */,
 				EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */,
@@ -201,16 +200,15 @@
 		EE30A4BB145B91C30077E832 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EE3E772E1517C6850023BB1C /* libIndivo.a */,
 				EE4397FB14E9CB4600FCFC47 /* libiconv.dylib */,
 				EE4397F914E9CB3600FCFC47 /* CoreVideo.framework */,
 				EE4397F714E9CB2D00FCFC47 /* CoreMedia.framework */,
 				EE4397F514E9CB2200FCFC47 /* AVFoundation.framework */,
 				EECEC44C1475891D009D85FC /* QuartzCore.framework */,
-				EEE62F91146ACB75000DA370 /* libIndivoServer.a */,
 				EE30A4BC145B91C30077E832 /* UIKit.framework */,
 				EE30A4BE145B91C30077E832 /* Foundation.framework */,
 				EE30A4C0145B91C30077E832 /* CoreGraphics.framework */,
-				EEDB8DAD145CE260001C6C2C /* libIndivoServer.a */,
 				EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */,
 				EEDB8DB2145CE695001C6C2C /* Security.framework */,
 			);
@@ -429,7 +427,7 @@
 		EE30A4AF145B91C30077E832 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = "Children's Hospital Boston";
 			};
 			buildConfigurationList = EE30A4B2145B91C30077E832 /* Build configuration list for PBXProject "MedReconcile" */;
@@ -528,6 +526,10 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -541,6 +543,7 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				OTHER_LDFLAGS = "-ObjC";
@@ -556,12 +559,17 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
