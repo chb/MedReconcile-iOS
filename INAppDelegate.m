@@ -23,6 +23,9 @@
 	// create Indivo Instance
 	self.indivo = [IndivoServer serverWithDelegate:self];
 	
+	// determine appearance
+	[[UINavigationBar appearance] setTintColor:[self naviTintColor]];
+	
     // create med list controller
 	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
 	    self.medListController = [INMedListController new];
@@ -31,9 +34,7 @@
 	}
 	
 	// wrap in a navi controller
-	UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:medListController];
-	nav.navigationBar.tintColor = [self naviTintColor];
-	self.window.rootViewController = nav;
+	self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:medListController];
     [self.window makeKeyAndVisible];
 	
     return YES;

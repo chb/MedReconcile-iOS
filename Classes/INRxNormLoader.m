@@ -24,8 +24,6 @@
 
 NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 
-@synthesize responseObjects, multiFetcher;
-
 
 + (id)loader
 {
@@ -95,7 +93,7 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 						
 						// ** start fetching the suggestion's properties
 						this.multiFetcher = [INURLFetcher new];
-						[multiFetcher getURLs:urls callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+						[_multiFetcher getURLs:urls callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 							NSMutableArray *found = [NSMutableArray array];
 							
 							if (errorMessage) {
@@ -104,13 +102,13 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 							
 							// **** did fetch all properties, parse!
 							else if (!userDidCancel) {
-								if ([multiFetcher.successfulLoads count] > 0) {
+								if ([_multiFetcher.successfulLoads count] > 0) {
 									NSMutableArray *suggIN = [NSMutableArray array];
 									NSMutableArray *suggBN = [NSMutableArray array];
 									NSMutableArray *suggSBD = [NSMutableArray array];
 									NSMutableDictionary *userSuggestionMatches = [NSMutableDictionary dictionary];
 									
-									for (INURLLoader *loader in multiFetcher.successfulLoads) {
+									for (INURLLoader *loader in _multiFetcher.successfulLoads) {
 										
 										// parse XML
 										NSError *error = nil;
@@ -217,7 +215,8 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 
 
 /**
- *  Creates a call to http://rxnav.nlm.nih.gov/REST/rxcui/<rxcui>/related?tty=<relType>
+ *  Creates a call to http://rxnav.nlm.nih.gov/REST/rxcui/{rxcui}/related?tty={relType}
+ *
  *  Upon return, NSDictionary objects in "responseObjects" will have "name", "rxcui", "tty" strings and the drug argument in "from".
  *  @param relType The desired type to get (e.g. IN, MIN, SCDC, ...). If nil will fetch "allrelated"
  *  @param drug A dictionary of the drug for which to get related. Must contain the keys "rxcui" and should contain "tty".
@@ -234,7 +233,7 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 	
 	// create the URL
 	NSString *allRel = relType ? [NSString stringWithFormat:@"related?tty=%@", relType] : @"allrelated";
-	NSString *urlString = [NSString stringWithFormat:@"http://rxnav.nlm.nih.gov/REST/rxcui/%@/%@", rxcui, allRel];
+	NSString *urlString = [NSString stringWithFormat:@"%@/rxcui/%@/%@", baseURL, rxcui, allRel];
 	self.url = [NSURL URLWithString:urlString];
 	
 	self.responseObjects = nil;
@@ -328,8 +327,8 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 #pragma mark - Overrides
 - (void)cancel
 {
-	if (multiFetcher) {
-		[multiFetcher cancel];
+	if (_multiFetcher) {
+		[_multiFetcher cancel];
 		self.multiFetcher = nil;
 	}
 	else {

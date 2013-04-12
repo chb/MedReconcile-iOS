@@ -286,13 +286,7 @@
 	newMed.delegate = self;
 	
 	UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:newMed];
-	navi.navigationBar.tintColor = [APP_DELEGATE naviTintColor];
-	if ([self respondsToSelector:@selector(presentViewController:animated:completion:)]) {		// iOS 5+ only
-		[self presentViewController:navi animated:YES completion:NULL];
-	}
-	else {
-		[self presentModalViewController:navi animated:YES];
-	}
+	[self presentViewController:navi animated:YES completion:NULL];
 }
 
 /**
@@ -325,7 +319,6 @@
 	if (!med.quantity) {
 		med.quantity = [INUnitValue new];			// must be present for the current scheme to validate
 	}
-	med.frequency = [INCodedValue new];			// must be present for the current scheme to validate
 	
 	[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {		// "replace" will call "push" if the med is new
 		if (errorMessage) {

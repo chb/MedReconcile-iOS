@@ -144,25 +144,25 @@
 		CGSize shadowOffset = CGSizeZero;
 		
 		if (INButtonStyleDestructive == buttonStyle) {
-			bgImage = [[UIImage imageNamed:@"buttonRed.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];		///< @todo Update to newer method once iOS < 5 is dropped
+			bgImage = [[UIImage imageNamed:@"buttonRed.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(0.f, 4.f, 0.f, 4.f)];
 			shadowColor = [UIColor colorWithWhite:0.f alpha:0.8f];
 			textColor = [UIColor whiteColor];
 			shadowOffset = CGSizeMake(0.f, -1.f);
 		}
 		else if (INButtonStyleAccept == buttonStyle) {
-			bgImage = [[UIImage imageNamed:@"buttonGreen.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
+			bgImage = [[UIImage imageNamed:@"buttonGreen.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(0.f, 4.f, 0.f, 4.f)];
 			shadowColor = [UIColor colorWithWhite:0.f alpha:0.8f];
 			textColor = [UIColor whiteColor];
 			shadowOffset = CGSizeMake(0.f, -1.f);
 		}
 		else if (INButtonStyleMain == buttonStyle) {
-			bgImage = [[UIImage imageNamed:@"buttonBlue.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
+			bgImage = [[UIImage imageNamed:@"buttonBlue.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(0.f, 4.f, 0.f, 4.f)];
 			shadowColor = [UIColor colorWithWhite:0.f alpha:0.8f];
 			textColor = [UIColor whiteColor];
 			shadowOffset = CGSizeMake(0.f, -1.f);
 		}
 		else {
-			bgImage = [[UIImage imageNamed:@"buttonGray.png"] stretchableImageWithLeftCapWidth:4 topCapHeight:0];
+			bgImage = [[UIImage imageNamed:@"buttonGray.png"] resizableImageWithCapInsets:UIEdgeInsetsMake(0.f, 4.f, 0.f, 4.f)];
 			shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
 			textColor = [UIColor darkGrayColor];
 			shadowOffset = CGSizeMake(0.f, 1.f);

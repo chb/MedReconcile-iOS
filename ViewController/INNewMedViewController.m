@@ -48,11 +48,6 @@
 
 @implementation INNewMedViewController
 
-@synthesize delegate;
-@synthesize sections;
-@synthesize initialMed, initialMedString, currentMedString, currentLoader;
-@synthesize nameInputField, loadingTextLabel, loadingActivity;
-
 
 - (id)init
 {
@@ -64,7 +59,7 @@
     if ((self = [super initWithNibName:nibName bundle:aBundle])) {
 		self.title = @"New Medication";
 		self.sections = [NSMutableArray arrayWithCapacity:8];
-		[sections addObject:[INTableSection new]];
+		[_sections addObject:[INTableSection new]];
     }
     return self;
 }
@@ -74,7 +69,7 @@
 #pragma mark - Table View Data Source
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)aTableView
 {
-	return [sections count];
+	return [_sections count];
 }
 
 - (NSInteger)tableView:(UITableView *)aTableView numberOfRowsInSection:(NSInteger)section
@@ -82,14 +77,14 @@
 	if (0 == section) {
 		return 1;
 	}
-	INTableSection *sect = [sections objectOrNilAtIndex:section];
+	INTableSection *sect = [_sections objectOrNilAtIndex:section];
 	return [sect numRows];
 
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-	INTableSection *sect = [sections objectOrNilAtIndex:section];
+	INTableSection *sect = [_sections objectOrNilAtIndex:section];
 	return [sect title];
 }
 
@@ -115,22 +110,22 @@
 		if (![textField isKindOfClass:[UITextField class]]) {
 			[cell.contentView addSubview:self.nameInputField];
 			
-			if (initialMed) {
-				[self performSelector:@selector(loadSuggestionsForMed:) withObject:initialMed afterDelay:0.4];
+			if (_initialMed) {
+				[self performSelector:@selector(loadSuggestionsForMed:) withObject:_initialMed afterDelay:0.4];
 			}
-			else if (initialMedString) {
-				nameInputField.text = initialMedString;
-				[self performSelector:@selector(loadSuggestionsFor:) withObject:initialMedString afterDelay:0.4];
+			else if (_initialMedString) {
+				_nameInputField.text = _initialMedString;
+				[self performSelector:@selector(loadSuggestionsFor:) withObject:_initialMedString afterDelay:0.4];
 			}
 			else {
-				[nameInputField performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.0];
+				[_nameInputField performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.0];
 			}
 		}
 		return cell;
 	}
 	
 	// suggestions
-	INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
+	INTableSection *section = [_sections objectOrNilAtIndex:indexPath.section];
 	id object = [section objectForRow:indexPath.row];
 	
 	// got a med
@@ -171,8 +166,8 @@
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 	
 	if (indexPath.section > 0) {
-		[nameInputField resignFirstResponder];
-		INTableSection *section = [sections objectOrNilAtIndex:indexPath.section];
+		[_nameInputField resignFirstResponder];
+		INTableSection *section = [_sections objectOrNilAtIndex:indexPath.section];
 		
 		// collapsed level tapped
 		if ([section isCollapsed]) {
@@ -197,17 +192,17 @@
 	[self goToSection:0 animated:YES];
 	
 	// show action
-	if (nameInputField) {
+	if (_nameInputField) {
 		UIActivityIndicatorView *act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-		nameInputField.enabled = YES;
-		nameInputField.leftView = act;
+		_nameInputField.enabled = YES;
+		_nameInputField.leftView = act;
 		[act startAnimating];
 	}
 	
 	// search in patient's current meds
-	if ([delegate respondsToSelector:@selector(currentMedsForNewMedController:)]) {
+	if ([_delegate respondsToSelector:@selector(currentMedsForNewMedController:)]) {
 		NSMutableArray *existing = [NSMutableArray array];
-		NSArray *currentMeds = [delegate currentMedsForNewMedController:self];
+		NSArray *currentMeds = [_delegate currentMedsForNewMedController:self];
 		for (IndivoMedication *current in currentMeds) {
 			if ([current matchesName:medString]) {
 				[existing addObject:current];
@@ -228,7 +223,7 @@
 	self.currentMedString = medString;
 	self.currentLoader = [INRxNormLoader new];
 	
-	[currentLoader getSuggestionsFor:medString callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+	[_currentLoader getSuggestionsFor:medString callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 		if (errorMessage) {
 			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to load suggestions"
 															message:errorMessage
@@ -240,11 +235,11 @@
 		
 		// completed, did we get suggestions?
 		else if (!userDidCancel) {
-			if ([currentLoader.responseObjects count] < 1) {
+			if ([_currentLoader.responseObjects count] < 1) {
 				[section addObject:@"No suggestions found"];
 			}
 			else {
-				for (NSDictionary *rxDict in currentLoader.responseObjects) {
+				for (NSDictionary *rxDict in _currentLoader.responseObjects) {
 					[section addObject:[IndivoMedication newWithRxNormDict:rxDict]];
 				}
 			}
@@ -253,7 +248,7 @@
 		}
 		
 		// stop action indication animation
-		nameInputField.leftView = nil;
+		_nameInputField.leftView = nil;
 	}];
 }
 
@@ -266,8 +261,8 @@
  	[self goToSection:0 animated:YES];
 	
 	if (aMed) {
-		nameInputField.enabled = NO;
-		nameInputField.placeholder = aMed.drugName.title;
+		_nameInputField.enabled = NO;
+		_nameInputField.placeholder = aMed.drugName.title;
 		NSString *rxcui= aMed.drugName.identifier;
 		
 		// prepare section and init suggestion loader
@@ -275,7 +270,7 @@
 		[self addSection:section animated:YES];
 		self.currentMedString = nil;
 		self.currentLoader = [INRxNormLoader new];
-		[currentLoader getRelated:nil forId:rxcui callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		[_currentLoader getRelated:nil forId:rxcui callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 			if (errorMessage) {
 				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to load suggestions"
 																message:errorMessage
@@ -287,11 +282,11 @@
 			
 			// completed, did we get suggestions?
 			else if (!userDidCancel) {
-				if ([currentLoader.responseObjects count] < 1) {
+				if ([_currentLoader.responseObjects count] < 1) {
 					[section addObject:@"No suggestions found"];
 				}
 				else {
-					for (NSDictionary *rxDict in currentLoader.responseObjects) {
+					for (NSDictionary *rxDict in _currentLoader.responseObjects) {
 						[section addObject:[IndivoMedication newWithRxNormDict:rxDict]];
 					}
 				}
@@ -300,7 +295,7 @@
 			}
 			
 			// stop action indication animation
-			nameInputField.leftView = nil;
+			_nameInputField.leftView = nil;
 		}];
 	}
 }
@@ -314,13 +309,13 @@
 	if (rxcui) {
 		
 		// show action
-		if (nameInputField) {
-			nameInputField.enabled = NO;
-			nameInputField.placeholder = @"(Barcode Results)";
+		if (_nameInputField) {
+			_nameInputField.enabled = NO;
+			_nameInputField.placeholder = @"(Barcode Results)";
 			
 			UIActivityIndicatorView *act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-			nameInputField.enabled = YES;
-			nameInputField.leftView = act;
+			_nameInputField.enabled = YES;
+			_nameInputField.leftView = act;
 			[act startAnimating];
 		}
 		
@@ -329,7 +324,7 @@
 		[self addSection:section animated:YES];
 		self.currentMedString = nil;
 		self.currentLoader = [INRxNormLoader new];
-		[currentLoader getRelated:@"SBD" forId:rxcui callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		[_currentLoader getRelated:@"SBD" forId:rxcui callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 			if (errorMessage) {
 				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Failed to load suggestions"
 																message:errorMessage
@@ -341,11 +336,11 @@
 			
 			// completed, did we get suggestions?
 			else if (!userDidCancel) {
-				if ([currentLoader.responseObjects count] < 1) {
+				if ([_currentLoader.responseObjects count] < 1) {
 					[section addObject:@"No suggestions found"];
 				}
 				else {
-					for (NSDictionary *rxDict in currentLoader.responseObjects) {
+					for (NSDictionary *rxDict in _currentLoader.responseObjects) {
 						[section addObject:[IndivoMedication newWithRxNormDict:rxDict]];
 					}
 				}
@@ -354,7 +349,7 @@
 			}
 			
 			// stop action indication animation
-			nameInputField.leftView = nil;
+			_nameInputField.leftView = nil;
 		}];
 	}
 }
@@ -368,10 +363,10 @@
  */
 - (void)proceedWith:(NSIndexPath *)indexPath
 {
-	[nameInputField resignFirstResponder];
+	[_nameInputField resignFirstResponder];
 	
-	if ([sections count] > indexPath.section) {
-		INTableSection *current = [sections objectAtIndex:indexPath.section];
+	if ([_sections count] > indexPath.section) {
+		INTableSection *current = [_sections objectAtIndex:indexPath.section];
 		IndivoMedication *startMed = [current objectForRow:indexPath.row];
 		if (![startMed isKindOfClass:[IndivoMedication class]]) {
 			DLog(@"Did not find a IndivoMedication object, but this: %@", startMed);
@@ -397,7 +392,7 @@
 			NSString *rxcui= startMed.drugName.identifier;
 			
 			self.currentLoader = [INRxNormLoader loader];
-			[currentLoader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
+			[_currentLoader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
 				NSMutableArray *newSections = [NSMutableArray array];
 				
 				// got some data
@@ -407,7 +402,7 @@
 					NSMutableArray *drugs = [NSMutableArray array];
 					
 					// look at what we've got
-					for (NSDictionary *related in currentLoader.responseObjects) {
+					for (NSDictionary *related in _currentLoader.responseObjects) {
 						NSString *tty = [related objectForKey:@"tty"];
 						NSString *name = [related objectForKey:@"name"];
 						NSString *rx = [related objectForKey:@"rxcui"];
@@ -546,8 +541,8 @@
  */
 - (void)useDrug:(NSIndexPath *)indexPath
 {
-	if ([sections count] > indexPath.section) {
-	INTableSection *section = [sections objectAtIndex:indexPath.section];
+	if ([_sections count] > indexPath.section) {
+	INTableSection *section = [_sections objectAtIndex:indexPath.section];
 	IndivoMedication *useMed = [section objectForRow:indexPath.row];
 	if (![useMed isKindOfClass:[IndivoMedication class]]) {
 		DLog(@"THIS IS NOT A MEDICATION, CANNOT USE");
@@ -557,13 +552,13 @@
 	// if we have no medication.name, fetch related IN/MIN first
 	if (!useMed.drugName) {
 		self.currentLoader = [INRxNormLoader loader];
-		[currentLoader getRelated:@"MIN+IN" forId:useMed.drugName.identifier callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		[_currentLoader getRelated:@"MIN+IN" forId:useMed.drugName.identifier callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 			if (!userDidCancel) {
-				NSMutableArray *mins = [NSMutableArray arrayWithCapacity:[currentLoader.responseObjects count]];
-				NSMutableArray *ins = [NSMutableArray arrayWithCapacity:[currentLoader.responseObjects count]];
+				NSMutableArray *mins = [NSMutableArray arrayWithCapacity:[_currentLoader.responseObjects count]];
+				NSMutableArray *ins = [NSMutableArray arrayWithCapacity:[_currentLoader.responseObjects count]];
 				
 				// see what we got
-				for (NSDictionary *rxDict in currentLoader.responseObjects) {
+				for (NSDictionary *rxDict in _currentLoader.responseObjects) {
 					if ([@"MIN" isEqualToString:[rxDict objectForKey:@"tty"]]) {
 						[mins addObject:rxDict];
 					}
@@ -589,12 +584,12 @@
 					IndivoMedication *refMed = [IndivoMedication newWithRxNormDict:use];
 					useMed.drugName = refMed.drugName;
 				}
-				[delegate newMedController:self didSelectMed:useMed];
+				[_delegate newMedController:self didSelectMed:useMed];
 			}
 		}];
 	}
 	else {
-		[delegate newMedController:self didSelectMed:useMed];
+		[_delegate newMedController:self didSelectMed:useMed];
 	}
 	}
 	else {
@@ -611,17 +606,17 @@
 - (void)clearSuggestions
 {
 	// abort loader
-	if (currentLoader) {
-		[currentLoader cancel];
+	if (_currentLoader) {
+		[_currentLoader cancel];
 	}
 	
 	// clear sections
-	NSRange mostRange = NSMakeRange(1, [sections count]-1);
+	NSRange mostRange = NSMakeRange(1, [_sections count]-1);
 	NSIndexSet *mostSections = [NSIndexSet indexSetWithIndexesInRange:mostRange];
 	
 	[self.tableView beginUpdates];
-	[sections removeAllObjects];
-	[sections addObject:[INTableSection new]];
+	[_sections removeAllObjects];
+	[_sections addObject:[INTableSection new]];
 	
 	[self.tableView deleteSections:mostSections withRowAnimation:UITableViewRowAnimationBottom];
 	[self.tableView endUpdates];
@@ -634,8 +629,8 @@
 {
 	if (newSection) {
 		[self.tableView beginUpdates];
-		NSUInteger section = [sections count];
-		[sections addObject:newSection];
+		NSUInteger section = [_sections count];
+		[_sections addObject:newSection];
 		[newSection addToTable:self.tableView asSection:section animated:animated];
 		[self.tableView endUpdates];
 	}
@@ -648,14 +643,14 @@
 {
 	[self.tableView beginUpdates];
 	
-	NSInteger i = [sections count] - 1;
+	NSInteger i = [_sections count] - 1;
 	while (i > 0) {						// if we use > 0 we let the first row/section in peace
-		INTableSection *existing = [sections objectAtIndex:i];
+		INTableSection *existing = [_sections objectAtIndex:i];
 		
 		// remove or expand higher sections
 		if (i > sectionIdx) {
 			[existing removeAnimated:animated];
-			[sections removeLastObject];
+			[_sections removeLastObject];
 		}
 		
 		// target section, expand
@@ -831,12 +826,12 @@
     [super viewWillAppear:animated];
 	
 	// start with a given rxcui or string?
-	if (!self.initialMed && [delegate respondsToSelector:@selector(initialMedForNewMedController:)]) {
-		self.initialMed = [delegate initialMedForNewMedController:self];
+	if (!self.initialMed && [_delegate respondsToSelector:@selector(initialMedForNewMedController:)]) {
+		self.initialMed = [_delegate initialMedForNewMedController:self];
 		self.initialMedString = nil;
 	}
-	if (!self.initialMed && !self.initialMedString && [delegate respondsToSelector:@selector(initialMedStringForNewMedController:)]) {
-		self.initialMedString = [delegate initialMedStringForNewMedController:self];
+	if (!self.initialMed && !self.initialMedString && [_delegate respondsToSelector:@selector(initialMedStringForNewMedController:)]) {
+		self.initialMedString = [_delegate initialMedStringForNewMedController:self];
 	}
 }
 
@@ -865,22 +860,22 @@
 #pragma mark - KVC
 - (UITextField *)nameInputField
 {
-	if (!nameInputField) {
+	if (!_nameInputField) {
 		self.nameInputField = [[UITextField alloc] initWithFrame:CGRectMake(10.f, 10.f, 300.f, 27.f)];
-		nameInputField.tag = 99;
-		nameInputField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-		nameInputField.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		nameInputField.enablesReturnKeyAutomatically = NO;
-		nameInputField.returnKeyType = UIReturnKeyDone;
-		nameInputField.clearButtonMode = UITextFieldViewModeAlways;
-		nameInputField.autocorrectionType = UITextAutocorrectionTypeNo;
-		nameInputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-		nameInputField.placeholder = @"Medication Name";
-		nameInputField.font = [UIFont systemFontOfSize:17.f];
-		nameInputField.leftViewMode = UITextFieldViewModeAlways;
-		nameInputField.delegate = self;
+		_nameInputField.tag = 99;
+		_nameInputField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+		_nameInputField.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		_nameInputField.enablesReturnKeyAutomatically = NO;
+		_nameInputField.returnKeyType = UIReturnKeyDone;
+		_nameInputField.clearButtonMode = UITextFieldViewModeAlways;
+		_nameInputField.autocorrectionType = UITextAutocorrectionTypeNo;
+		_nameInputField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+		_nameInputField.placeholder = @"Medication Name";
+		_nameInputField.font = [UIFont systemFontOfSize:17.f];
+		_nameInputField.leftViewMode = UITextFieldViewModeAlways;
+		_nameInputField.delegate = self;
 	}
-	return nameInputField;
+	return _nameInputField;
 }
 
 

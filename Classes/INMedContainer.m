@@ -152,6 +152,7 @@
 		// subviews tagged "67" have just been added and should not have an animated frame
 		if (67 == tile.tag) {
 			tile.frame = tileFrame;
+			[tile layoutSubviews];
 			tile.tag = 0;
 			tile.layer.opacity = 0.5f;
 			tile.transform = CGAffineTransformMakeScale(3.f, 3.f);
@@ -209,7 +210,7 @@
 	
 	// no new medications, just remove old and be done with it
 	if ([medArray count] < 1) {
-		/// @todo Ignores animated property. Maybe fade out?
+		// TODO: Ignores animated property. Maybe fade out?
 		[[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
 		return;
 	}

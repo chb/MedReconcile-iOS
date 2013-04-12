@@ -25,7 +25,7 @@
 - (void)processMedicationsAndRefresh:(BOOL)refresh;
 
 - (void)reloadList:(id)sender;
-- (void)dismissModalViewController:(id)sender;
+- (void)dismissPresentedViewControllerAnimated:(BOOL)animated;
 - (void)indicateActivity:(BOOL)active;
 
 

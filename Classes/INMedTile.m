@@ -36,13 +36,6 @@
 
 @implementation INMedTile
 
-@synthesize med;
-@synthesize container;
-@synthesize imageView, statusView, durationLabel, nameLabel;
-@synthesize dimView, activityView, imageActivityView, keepDimmedAfterAction;
-@synthesize drFormatter, showsDetailTile;
-@synthesize shadow;
-
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -81,7 +74,7 @@
 	CGSize size = bnds.size;
 	
 	[self viewWithTag:1].frame = bnds;
-	dimView.frame = bnds;
+	_dimView.frame = bnds;
 	
 	CGFloat horiPad = 15.f;
 	CGFloat vertPad = roundf(size.height / 10);
@@ -90,73 +83,52 @@
 	CGRect lblFrame = self.nameLabel.frame;
 	lblFrame.origin = CGPointMake(horiPad, vertPad);
 	lblFrame.size.width = size.width - 2*horiPad;
-	nameLabel.frame = lblFrame;
+	_nameLabel.frame = lblFrame;
 	
 	// time and status
 	CGRect durFrame = self.durationLabel.frame;
 	CGRect statFrame = self.statusView.frame;
 	durFrame.origin = CGPointMake(horiPad, lblFrame.origin.y + lblFrame.size.height + 4.f);
 	durFrame.size.width = size.width - horiPad - horiPad - statFrame.size.width - 8.f;
-	durationLabel.frame = durFrame;
+	_durationLabel.frame = durFrame;
 	[self updateDurationLabel];
 	
 	statFrame.origin.x = durFrame.origin.x + durFrame.size.width + 8.f;
 	statFrame.origin.y = durFrame.origin.y + roundf((durFrame.size.height - statFrame.size.height) / 2);
-	statusView.frame = statFrame;
-	
-	
-	/*			OLD LAYOUT
-	// image
-	CGFloat imgWidth = roundf(size.height / 2);
-	CGRect imgFrame = CGRectMake(horiPad, vertPad, imgWidth, imgWidth);
-	self.imageView.frame = imgFrame;
-	
-	// duration
-	CGRect durFrame = self.durationLabel.frame;
-	durFrame.origin.x = imgFrame.origin.x + imgFrame.size.width + roundf(horiPad / 2);
-	durFrame.origin.y = imgFrame.origin.y;
-	durFrame.size.width = size.width - durFrame.origin.x - horiPad;
-	durationLabel.frame = durFrame;
-	
-	[self updateDurationLabel];
-	
-	// name label
-	CGRect lblFrame = CGRectMake(horiPad, 0.f, size.width - 2* horiPad, 21.f);
-	lblFrame.origin.y = size.height - lblFrame.size.height - vertPad;
-	self.nameLabel.frame = lblFrame;		//	*/
+	_statusView.frame = statFrame;
 }
 
 - (void)setFrame:(CGRect)aFrame
 {
 	[super setFrame:aFrame];
-	shadow.frame = aFrame;
+	_shadow.frame = aFrame;
 }
 
 - (void)updateDurationLabel
 {
-	drFormatter.from = med.startDate.date;
-	drFormatter.to = med.endDate.date;
-	durationLabel.text = [drFormatter formattedRangeForLabel:durationLabel];
+	_drFormatter.from = _med.startDate.date;
+	_drFormatter.to = _med.endDate.date;
+	_durationLabel.text = [_drFormatter formattedRangeForLabel:_durationLabel];
 	
 	/// @todo this should go to IndivoMedication
 	NSDate *now = [NSDate date];
 	UIColor *dateCol = [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
-	if (INDocumentStatusActive == med.documentStatus) {
-		if (med.startDate.date == [med.startDate.date laterDate:now]) {
+	if (INDocumentStatusActive == _med.documentStatus) {
+		if (_med.startDate.date == [_med.startDate.date laterDate:now]) {
 			dateCol = [UIColor colorWithRed:0.5f green:0.25f blue:0.f alpha:1.f];
 		}
-		else if (med.endDate.date && med.endDate.date == [med.endDate.date earlierDate:now]) {
+		else if (_med.endDate.date && _med.endDate.date == [_med.endDate.date earlierDate:now]) {
 			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 		}
 	}
-	else if (INDocumentStatusArchived == med.documentStatus) {
+	else if (INDocumentStatusArchived == _med.documentStatus) {
 		dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 	}
-	else if (INDocumentStatusVoid == med.documentStatus) {
+	else if (INDocumentStatusVoid == _med.documentStatus) {
 		dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
-		durationLabel.text = @"Voided";
+		_durationLabel.text = @"Voided";
 	}
-	durationLabel.textColor = dateCol;
+	_durationLabel.textColor = dateCol;
 }
 
 
@@ -172,17 +144,17 @@
 		self.tag = 66;
 		[UIView animateWithDuration:kINMedContainerAnimDuration
 						 animations:^{
-							 self.layer.opacity = shadow.layer.opacity = 0.5f;
-							 self.transform = shadow.transform = CGAffineTransformMakeScale(0.2f, 0.2f);
+							 self.layer.opacity = _shadow.layer.opacity = 0.5f;
+							 self.transform = _shadow.transform = CGAffineTransformMakeScale(0.2f, 0.2f);
 						 }
 						 completion:^(BOOL finished) {
 							 [self removeFromSuperview];
-							 [shadow removeFromSuperview];
+							 [_shadow removeFromSuperview];
 						 }];
 	}
 	else {
 		[self removeFromSuperview];
-		[shadow removeFromSuperview];
+		[_shadow removeFromSuperview];
 	}
 }
 
@@ -194,19 +166,19 @@
  */
 - (void)dimAnimated:(BOOL)animated
 {
-	if (![activityView superview]) {
-		keepDimmedAfterAction = YES;
+	if (![_activityView superview]) {
+		_keepDimmedAfterAction = YES;
 		[self.dimView addTarget:self action:@selector(hideMedicationDetails:) forControlEvents:UIControlEventTouchUpInside];
 	}
-	if ([dimView superview]) {
+	if ([_dimView superview]) {
 		return;
 	}
 	[self addSubview:self.dimView];
-	[self bringSubviewToFront:dimView];
+	[self bringSubviewToFront:_dimView];
 	
 	[UIView animateWithDuration:(animated ? 0.2 : 0.0)
 					 animations:^{
-						 dimView.layer.opacity = 1.f;
+						 _dimView.layer.opacity = 1.f;
 					 }];
 }
 
@@ -215,17 +187,17 @@
  */
 - (void)undimAnimated:(BOOL)animated
 {
-	if (![activityView superview]) {
+	if (![_activityView superview]) {
 		[UIView animateWithDuration:(animated ? 0.2 : 0.0)
 						 animations:^{
-							 dimView.layer.opacity = 0.f;
+							 _dimView.layer.opacity = 0.f;
 						 }
 						 completion:^(BOOL finished) {
-							 [dimView removeFromSuperview];
+							 [_dimView removeFromSuperview];
 							 self.dimView = nil;
 						 }];
 	}
-	keepDimmedAfterAction = NO;
+	_keepDimmedAfterAction = NO;
 }
 
 
@@ -237,19 +209,19 @@
 	// show activity indicator
 	if (flag) {
 		[self.dimView addSubview:self.activityView];
-		[activityView centerInSuperview];
-		[activityView startAnimating];
+		[_activityView centerInSuperview];
+		[_activityView startAnimating];
 		
 		[self dimAnimated:YES];
 	}
 	
 	// hide activity indicator
 	else {
-		[activityView stopAnimating];
-		[activityView removeFromSuperview];
+		[_activityView stopAnimating];
+		[_activityView removeFromSuperview];
 		self.activityView = nil;
 		
-		if (!keepDimmedAfterAction) {
+		if (!_keepDimmedAfterAction) {
 			[self undimAnimated:YES];
 		}
 	}
@@ -263,22 +235,22 @@
  */
 - (void)showMedicationDetails:(id)sender
 {
-	if (showsDetailTile) {
+	if (_showsDetailTile) {
 		[self hideMedicationDetails:sender];
 	}
 	else {
-		showsDetailTile = YES;
+		_showsDetailTile = YES;
 		
 		INMedDetailTile *aDetailTile = [INMedDetailTile new];
 		aDetailTile.med = self.med;
-		[container addDetailTile:aDetailTile forTile:self animated:YES];
+		[_container addDetailTile:aDetailTile forTile:self animated:YES];
 	}
 }
 
 - (void)hideMedicationDetails:(id)sender
 {
-	[container removeDetailTileAnimated:YES];
-	showsDetailTile = NO;
+	[_container removeDetailTileAnimated:YES];
+	_showsDetailTile = NO;
 }
 
 
@@ -290,13 +262,13 @@
 - (void)indicateImageAction:(BOOL)flag
 {
 	if (flag) {
-		[imageView addSubview:self.imageActivityView];
-		[imageActivityView centerInSuperview];
-		[imageActivityView startAnimating];
+		[_imageView addSubview:self.imageActivityView];
+		[_imageActivityView centerInSuperview];
+		[_imageActivityView startAnimating];
 	}
 	else {
-		[imageActivityView stopAnimating];
-		[imageActivityView removeFromSuperview];
+		[_imageActivityView stopAnimating];
+		[_imageActivityView removeFromSuperview];
 		self.imageActivityView = nil;
 	}
 }
@@ -306,7 +278,7 @@
  */
 - (void)showImage:(UIImage *)anImage
 {
-	imageView.image = anImage ? anImage : [UIImage imageNamed:@"pillDefault.png"];
+	_imageView.image = anImage ? anImage : [UIImage imageNamed:@"pillDefault.png"];
 }
 
 
@@ -314,124 +286,126 @@
 #pragma mark - KVC
 - (void)setMed:(IndivoMedication *)newMed
 {
-	if (newMed != med) {
-		med = newMed;
+	if (newMed != _med) {
+		_med = newMed;
 		
-		self.nameLabel.text = [med displayName];
+		self.nameLabel.text = [_med displayName];
 	}
 }
 
 - (UIImageView *)imageView
 {
-	if (!imageView) {
+	if (!_imageView) {
 		self.imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"pillDefault.png"]];
-		imageView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
-		imageView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
-		imageView.layer.cornerRadius = 6.f;
-		imageView.layer.shadowColor = [[UIColor colorWithWhite:1.f alpha:0.8f] CGColor];
-		imageView.layer.shadowRadius = 0.f;
-		imageView.layer.shadowOffset = CGSizeMake(0.f, 1.f);
-		imageView.layer.shadowOpacity = 1.f;
-	//	imageView.clipsToBounds = YES;
-		imageView.contentMode = UIViewContentModeScaleAspectFit;
-		imageView.backgroundColor = [UIColor blackColor];
-		[self addSubview:imageView];
+		_imageView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+		_imageView.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+		_imageView.layer.cornerRadius = 6.f;
+		_imageView.layer.shadowColor = [[UIColor colorWithWhite:1.f alpha:0.8f] CGColor];
+		_imageView.layer.shadowRadius = 0.f;
+		_imageView.layer.shadowOffset = CGSizeMake(0.f, 1.f);
+		_imageView.layer.shadowOpacity = 1.f;
+	//	_imageView = YES;
+		_imageView.contentMode = UIViewContentModeScaleAspectFit;
+		_imageView.backgroundColor = [UIColor blackColor];
+		[self addSubview:_imageView];
 	}
-	return imageView;
+	return _imageView;
 }
 
 - (UIImageView *)statusView
 {
-	if (!statusView) {
+	if (!_statusView) {
 		self.statusView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"statusGreen.png"]];
-		statusView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
-		//statusView.layer.shadowOpacity = 0.3f;
-		//statusView.layer.shadowOffset = CGSizeMake(0.f, 2.f);
-		//statusView.layer.shadowRadius = 3.f;
-		[self addSubview:statusView];
+		_statusView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
+		//_statusView.layer.shadowOpacity = 0.3f;
+		//_statusView.layer.shadowOffset = CGSizeMake(0.f, 2.f);
+		//_statusView.layer.shadowRadius = 3.f;
+		[self addSubview:_statusView];
 	}
-	return statusView;
+	return _statusView;
 }
 
 - (UILabel *)nameLabel
 {
-	if (!nameLabel) {
-		self.nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 10.f, 24.f)];
-		nameLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-		nameLabel.opaque = NO;
-		nameLabel.backgroundColor = [UIColor clearColor];
-		nameLabel.textColor = [UIColor blackColor];
-		nameLabel.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
-		nameLabel.shadowOffset = CGSizeMake(0.f, 1.f);
-		nameLabel.font = [UIFont boldSystemFontOfSize:19.f];
-		nameLabel.adjustsFontSizeToFitWidth = YES;
-		nameLabel.minimumFontSize = 10.f;
-		[self addSubview:nameLabel];
+	if (!_nameLabel) {
+		self.nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 130.f, 24.f)];
+		_nameLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+		_nameLabel.opaque = NO;
+		_nameLabel.backgroundColor = [UIColor clearColor];
+		_nameLabel.textColor = [UIColor blackColor];
+		_nameLabel.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
+		_nameLabel.shadowOffset = CGSizeMake(0.f, 1.f);
+		_nameLabel.font = [UIFont boldSystemFontOfSize:19.f];
+		_nameLabel.adjustsFontSizeToFitWidth = YES;
+		_nameLabel.minimumFontSize = 10.f;
+		[self addSubview:_nameLabel];
 	}
-	return nameLabel;
+	return _nameLabel;
 }
 
 - (UILabel *)durationLabel
 {
-	if (!durationLabel) {
-		self.durationLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 10.f, 19.f)];
-		durationLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-		durationLabel.opaque = NO;
-		durationLabel.backgroundColor = [UIColor clearColor];
-		durationLabel.textColor = [UIColor blackColor];
-		durationLabel.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
-		durationLabel.shadowOffset = CGSizeMake(0.f, 1.f);
-		durationLabel.textAlignment = UITextAlignmentLeft;
-		durationLabel.font = [UIFont systemFontOfSize:15.f];
-		durationLabel.adjustsFontSizeToFitWidth = YES;
-		durationLabel.minimumFontSize = 10.f;
-		[self addSubview:durationLabel];
+	if (!_durationLabel) {
+		self.durationLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.f, 0.f, 90.f, 19.f)];
+		_durationLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+		_durationLabel.opaque = NO;
+		_durationLabel.backgroundColor = [UIColor clearColor];
+		_durationLabel.textColor = [UIColor blackColor];
+		_durationLabel.shadowColor = [UIColor colorWithWhite:1.f alpha:0.8f];
+		_durationLabel.shadowOffset = CGSizeMake(0.f, 1.f);
+		_durationLabel.textAlignment = UITextAlignmentLeft;
+		_durationLabel.font = [UIFont systemFontOfSize:15.f];
+		_durationLabel.adjustsFontSizeToFitWidth = YES;
+		_durationLabel.minimumFontSize = 10.f;
+		[self addSubview:_durationLabel];
 	}
-	return durationLabel;
+	return _durationLabel;
 }
 
 - (UIControl *)dimView
 {
-	if (!dimView) {
+	if (!_dimView) {
 		self.dimView = [[UIControl alloc] initWithFrame:self.bounds];
-		dimView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		dimView.opaque = NO;
-		dimView.backgroundColor = [UIColor colorWithWhite:0.f alpha:0.75f];
-		dimView.layer.opacity = 0.f;
+		_dimView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		_dimView.opaque = NO;
+		_dimView.backgroundColor = [UIColor colorWithWhite:0.f alpha:0.75f];
+		_dimView.layer.opacity = 0.f;
 	}
-	return dimView;
+	return _dimView;
 }
 
 - (UIActivityIndicatorView *)activityView
 {
-	if (!activityView) {
+	if (!_activityView) {
 		self.activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-		activityView.hidesWhenStopped = YES;
+		_activityView.hidesWhenStopped = YES;
 	}
-	return activityView;
+	return _activityView;
 }
 
 - (UIActivityIndicatorView *)imageActivityView
 {
-	if (!imageActivityView) {
+	if (!_imageActivityView) {
 		self.imageActivityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-		imageActivityView.hidesWhenStopped = YES;
+		_imageActivityView.hidesWhenStopped = YES;
 	}
-	return imageActivityView;
+	return _imageActivityView;
 }
 
 - (UIView *)shadow
 {
-	if (!shadow) {
+	// TODO: figure out why the transform is not being applied, then re-enable
+	return nil;
+	if (!_shadow) {
 		self.shadow = [[UIView alloc] initWithFrame:self.frame];
 		UIColor *back = [[self viewWithTag:1] backgroundColor];
 		back = back ? back : [UIColor whiteColor];
-		shadow.backgroundColor = back;
-		shadow.layer.shadowOffset = CGSizeMake(0.f, 4.f);
-		shadow.layer.shadowOpacity = 0.5f;
-		shadow.layer.shadowRadius = 10.f;
+		_shadow.backgroundColor = back;
+		_shadow.layer.shadowOffset = CGSizeMake(0.f, 4.f);
+		_shadow.layer.shadowOpacity = 0.5f;
+		_shadow.layer.shadowRadius = 10.f;
 	}
-	return shadow;
+	return _shadow;
 }
 
 

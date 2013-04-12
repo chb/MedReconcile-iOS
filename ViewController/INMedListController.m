@@ -377,20 +377,14 @@
 - (void)showNewMedView:(id)sender
 {
 	if (self.record) {
-		UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissModalViewController:)];
+		UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismissPresentedViewController:)];
 		
 		INNewMedViewController *newMed = [INNewMedViewController new];
 		newMed.navigationItem.rightBarButtonItem = doneButton;
 		newMed.delegate = self;
 		
 		UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:newMed];
-		navi.navigationBar.tintColor = [APP_DELEGATE naviTintColor];
-		if ([self respondsToSelector:@selector(presentViewController:animated:completion:)]) {		// iOS 5+ only
-			[self presentViewController:navi animated:YES completion:NULL];
-		}
-		else {
-			[self presentModalViewController:navi animated:YES];
-		}
+		[self presentViewController:navi animated:YES completion:NULL];
 	}
 	else {
 		DLog(@"Tried to add a medication without active record");
@@ -502,7 +496,7 @@
 
 - (void)editMedController:(INEditMedViewController *)theController didActOnMed:(IndivoMedication *)aMed
 {
-	[self dismissModalViewControllerAnimated:YES];
+	[self dismissPresentedViewControllerAnimated:YES];
 	if (![medications containsObject:aMed]) {			// this way we avoid one round-trip to the server
 		[medications addObject:aMed];
 	}
@@ -511,13 +505,13 @@
 
 - (void)editMedController:(INEditMedViewController *)theController didReplaceMed:(IndivoMedication *)aMed withMed:(IndivoMedication *)newMed
 {
-	[self dismissModalViewControllerAnimated:YES];
+	[self dismissPresentedViewControllerAnimated:YES];
 	[self refreshListAnimated:NO];
 }
 
 - (void)editMedController:(INEditMedViewController *)theController didVoidMed:(IndivoMedication *)aMed
 {
-	[self dismissModalViewControllerAnimated:YES];
+	[self dismissPresentedViewControllerAnimated:YES];
 	[self refreshListAnimated:NO];
 }
 
@@ -542,14 +536,14 @@
 /**
  *  Dismiss current overlay view controller
  */
-- (void)dismissModalViewController:(id)sender
+- (void)dismissPresentedViewController:(id)sender
 {
-	if ([self respondsToSelector:@selector(dismissViewControllerAnimated:completion:)]) {			// iOS 5+ only
-		[self dismissViewControllerAnimated:YES completion:NULL];
-	}
-	else {
-		[self dismissModalViewControllerAnimated:YES];
-	}
+	[self dismissPresentedViewControllerAnimated:(nil != sender)];
+}
+
+- (void)dismissPresentedViewControllerAnimated:(BOOL)animated
+{
+	[self dismissViewControllerAnimated:animated completion:NULL];
 }
 
 /**
