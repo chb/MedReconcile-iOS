@@ -43,7 +43,7 @@
 
 #pragma mark - View Layout
 /**
- *	The standard layouting method, calls layoutSubviewsAnimated:NO
+ *  The standard layouting method, calls layoutSubviewsAnimated:NO
  */
 - (void)layoutSubviews
 {
@@ -51,7 +51,7 @@
 }
 
 /**
- *	Layout subviews, optionally animated.
+ *  Layout subviews, optionally animated.
  */
 - (void)layoutSubviewsAnimated:(BOOL)animated
 {
@@ -201,7 +201,7 @@
 
 #pragma mark - Adding & Removing Tiles
 /**
- *	Given an array of IndivoMedication objects, creates and shows tiles for these
+ *  Given an array of IndivoMedication objects, creates and shows tiles for these
  */
 - (void)showMeds:(NSArray *)medArray animated:(BOOL)animated
 {
@@ -274,7 +274,7 @@
 
 
 /**
- *	Adds a medication tile
+ *  Adds a medication tile
  */
 - (void)addTile:(INMedTile *)aTile
 {
@@ -285,7 +285,7 @@
 }
 
 /**
- *	Adds a detail tile for a given tile
+ *  Adds a detail tile for a given tile
  */
 - (void)addDetailTile:(INMedDetailTile *)aDetailTile forTile:(INMedTile *)aTile animated:(BOOL)animated
 {
@@ -347,7 +347,7 @@
 
 
 /**
- *	Removes the detail tile by shrinking it, if animated is YES
+ *  Removes the detail tile by shrinking it, if animated is YES
  */
 - (void)removeDetailTileAnimated:(BOOL)animated
 {
@@ -377,7 +377,7 @@
 
 #pragma mark - Dimming
 /**
- *	Dims all but the given tile - all if nil is given
+ *  Dims all but the given tile - all if nil is given
  */
 - (void)dimAllBut:(INMedTile *)aTile
 {
@@ -389,7 +389,7 @@
 }
 
 /**
- *	Undims all tiles
+ *  Undims all tiles
  */
 - (void)undimAll
 {
@@ -404,7 +404,7 @@
 
 #pragma mark - KVC
 /**
- *	Returns the bottom shadow layer
+ *  Returns the bottom shadow layer
  */
 - (CAGradientLayer *)topShadow
 {

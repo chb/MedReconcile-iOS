@@ -24,7 +24,7 @@
 
 
 /**
- *	This view controller allows to edit a medication and its prescription
+ *  This view controller allows to edit a medication and its prescription
  */
 @interface INEditMedViewController : UIViewController <INNewMedViewControllerDelegate, UITextFieldDelegate, UITextViewDelegate>
 
@@ -46,7 +46,7 @@
 @property (nonatomic, assign) IBOutlet UILabel *drugNameHint;
 
 @property (nonatomic, assign) IBOutlet UIView *details;
-@property (nonatomic, assign) IBOutlet UITextField *dose;
+@property (nonatomic, assign) IBOutlet UITextField *quantity;
 @property (nonatomic, assign) IBOutlet UITextField *start;
 @property (nonatomic, assign) IBOutlet UITextField *stop;
 @property (nonatomic, assign) IBOutlet UILabel *numDays;

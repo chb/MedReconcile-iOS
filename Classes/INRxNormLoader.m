@@ -34,10 +34,11 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 
 
 /**
- *	Creates a call to http://rxnav.nlm.nih.gov/REST/approxMatch
- *	A call to approxMatch returns a list of "candidate" RxNorm objects. For all of the candidate objects, we create a call to
- *	get the properties for each. At the end of the call, "responseObjects" will contain an array full of NSDictionary objects
- *	describing a suggested match. Each match is an rxcui, tty and a name.
+ *  Creates a call to http://rxnav.nlm.nih.gov/REST/approxMatch
+*
+ *  A call to approxMatch returns a list of "candidate" RxNorm objects. For all of the candidate objects, we create a call to get the properties for each. At
+ *  the end of the call, "responseObjects" will contain an array full of NSDictionary objects describing a suggested match. Each match is an rxcui, tty and a
+ *  name.
  */
 - (void)getSuggestionsFor:(NSString *)searchString callback:(INCancelErrorBlock)callback;
 {
@@ -216,11 +217,11 @@ NSString *const baseURL = @"http://rxnav.nlm.nih.gov/REST";
 
 
 /**
- *	Creates a call to http://rxnav.nlm.nih.gov/REST/rxcui/<rxcui>/related?tty=<relType>
- *	Upon return, NSDictionary objects in "responseObjects" will have "name", "rxcui", "tty" strings and the drug argument in "from".
- *	@param relType The desired type to get (e.g. IN, MIN, SCDC, ...). If nil will fetch "allrelated"
- *	@param drug A dictionary of the drug for which to get related. Must contain the keys "rxcui" and should contain "tty".
- *	@param aCallback A INCancelErrorBlock callback. When the block is called, "responseObjects" has been set already.
+ *  Creates a call to http://rxnav.nlm.nih.gov/REST/rxcui/<rxcui>/related?tty=<relType>
+ *  Upon return, NSDictionary objects in "responseObjects" will have "name", "rxcui", "tty" strings and the drug argument in "from".
+ *  @param relType The desired type to get (e.g. IN, MIN, SCDC, ...). If nil will fetch "allrelated"
+ *  @param drug A dictionary of the drug for which to get related. Must contain the keys "rxcui" and should contain "tty".
+ *  @param aCallback A INCancelErrorBlock callback. When the block is called, "responseObjects" has been set already.
  */
 - (void)getRelated:(NSString *)relType forId:(NSString *)rxcui callback:(INCancelErrorBlock)aCallback
 {

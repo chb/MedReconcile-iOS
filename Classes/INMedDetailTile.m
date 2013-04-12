@@ -191,35 +191,35 @@
 	if (med) {
 		
 		// name and info
-		agentName.text = med.name.abbrev ? med.name.abbrev : med.name.text;
-		prescName.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
+		agentName.text = med.drugName.title;
+		prescName.text = med.drugName.title;
 		
 		// date
-		self.drFormatter.from = med.prescription.on.date;
-		self.drFormatter.to = med.prescription.stopOn.date;
+		self.drFormatter.from = med.startDate.date;
+		self.drFormatter.to = med.endDate.date;
 		prescDuration.text = [drFormatter formattedRangeForLabel:prescDuration];
 		
 		// med status
 		NSDate *now = [NSDate date];
 		UIColor *dateCol = [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
-		if (INDocumentStatusActive == med.status) {
+		if (INDocumentStatusActive == med.documentStatus) {
 			[prescMainButton setTitle:@"Stop" forState:UIControlStateNormal];
 			prescMainButton.buttonStyle = INButtonStyleDestructive;
-			if (med.prescription.on.date == [med.prescription.on.date laterDate:now]) {
+			if (med.startDate.date == [med.startDate.date laterDate:now]) {
 				dateCol = [UIColor colorWithRed:0.5f green:0.25f blue:0.f alpha:1.f];
 			}
-			else if (med.prescription.stopOn.date && med.prescription.stopOn.date == [med.prescription.stopOn.date earlierDate:now]) {
+			else if (med.endDate.date && med.endDate.date == [med.endDate.date earlierDate:now]) {
 				dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 				
 				// THIS MED SHOULD BE ARCHIVED
 			}
 		}
-		else if (INDocumentStatusArchived == med.status) {
+		else if (INDocumentStatusArchived == med.documentStatus) {
 			[prescMainButton setTitle:@"Take" forState:UIControlStateNormal];
 			prescMainButton.buttonStyle = INButtonStyleAccept;
 			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 		}
-		else if (INDocumentStatusVoid == med.status) {
+		else if (INDocumentStatusVoid == med.documentStatus) {
 			[prescMainButton setTitle:@"Unvoid" forState:UIControlStateNormal];
 			prescMainButton.buttonStyle = INButtonStyleAccept;
 			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
@@ -228,7 +228,7 @@
 		prescDuration.textColor = dateCol;
 		
 		// instructions
-		prescInstructions.text = med.prescription.instructions.string;
+		prescInstructions.text = @"MISSING";//med.prescription.instructions.string;
 		
 		// image
 		if (med.pillImage) {
@@ -246,7 +246,7 @@
 
 
 /**
- *	The main action can have different titles, act accordingly
+ *  The main action can have different titles, act accordingly
  */
 - (void)triggerMainAction:(id)sender
 {
@@ -270,7 +270,7 @@
 }
 
 /**
- *	Instantiates and presents an INEditMedViewController modally
+ *  Instantiates and presents an INEditMedViewController modally
  */
 - (void)editMed:(id)sender
 {
@@ -315,7 +315,7 @@
 
 #pragma mark - Image Handling
 /**
- *	Starts or stops the activity indicator on the image view
+ *  Starts or stops the activity indicator on the image view
  */
 - (void)indicateImageAction:(BOOL)flag
 {
@@ -332,7 +332,7 @@
 }
 
 /**
- *	Displays the given image instead of the default image
+ *  Displays the given image instead of the default image
  */
 - (void)showImage:(UIImage *)anImage
 {
@@ -368,7 +368,7 @@
 }
 
 /**
- *	Returns the top shadow layer
+ *  Returns the top shadow layer
  */
 - (CAGradientLayer *)topShadow
 {
@@ -397,7 +397,7 @@
 }
 
 /**
- *	Returns the bottom shadow layer
+ *  Returns the bottom shadow layer
  */
 - (CAGradientLayer *)bottomShadow
 {

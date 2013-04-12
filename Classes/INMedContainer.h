@@ -16,8 +16,8 @@
 
 
 /**
- *	Container view to display INMedTile view objects.
- *	If you add non-INMedTile/INMedDetailTile views to this view, the behavior is undefined
+ *  Container view to display INMedTile view objects.
+ *  If you add non-INMedTile/INMedDetailTile views to this view, the behavior is undefined
  */
 @interface INMedContainer : UIScrollView
 

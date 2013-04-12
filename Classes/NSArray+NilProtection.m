@@ -11,7 +11,7 @@
 @implementation NSArray (NilProtection)
 
 /**
- *	Returns the first object or nil
+ *  Returns the first object or nil
  */
 - (id)firstObject
 {
@@ -22,7 +22,7 @@
 }
 
 /**
- *	Returns the object at given index or nil, if the index is out of bounds
+ *  Returns the object at given index or nil, if the index is out of bounds
  */
 - (id)objectOrNilAtIndex:(NSUInteger)index
 {

@@ -134,25 +134,25 @@
 
 - (void)updateDurationLabel
 {
-	drFormatter.from = med.prescription.on.date;
-	drFormatter.to = med.prescription.stopOn.date;
+	drFormatter.from = med.startDate.date;
+	drFormatter.to = med.endDate.date;
 	durationLabel.text = [drFormatter formattedRangeForLabel:durationLabel];
 	
 	/// @todo this should go to IndivoMedication
 	NSDate *now = [NSDate date];
 	UIColor *dateCol = [UIColor colorWithRed:0.f green:0.5f blue:0.f alpha:1.f];
-	if (INDocumentStatusActive == med.status) {
-		if (med.prescription.on.date == [med.prescription.on.date laterDate:now]) {
+	if (INDocumentStatusActive == med.documentStatus) {
+		if (med.startDate.date == [med.startDate.date laterDate:now]) {
 			dateCol = [UIColor colorWithRed:0.5f green:0.25f blue:0.f alpha:1.f];
 		}
-		else if (med.prescription.stopOn.date && med.prescription.stopOn.date == [med.prescription.stopOn.date earlierDate:now]) {
+		else if (med.endDate.date && med.endDate.date == [med.endDate.date earlierDate:now]) {
 			dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 		}
 	}
-	else if (INDocumentStatusArchived == med.status) {
+	else if (INDocumentStatusArchived == med.documentStatus) {
 		dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 	}
-	else if (INDocumentStatusVoid == med.status) {
+	else if (INDocumentStatusVoid == med.documentStatus) {
 		dateCol = [UIColor colorWithRed:0.7f green:0.f blue:0.f alpha:1.f];
 		durationLabel.text = @"Voided";
 	}
@@ -190,7 +190,7 @@
 
 #pragma mark - Dimming and Indicating Actions
 /**
- *	Dims a tile
+ *  Dims a tile
  */
 - (void)dimAnimated:(BOOL)animated
 {
@@ -211,7 +211,7 @@
 }
 
 /**
- *	Undims the tile
+ *  Undims the tile
  */
 - (void)undimAnimated:(BOOL)animated
 {
@@ -230,7 +230,7 @@
 
 
 /**
- *	Shows or hides an acitivty indicator
+ *  Shows or hides an acitivty indicator
  */
 - (void)indicateAction:(BOOL)flag
 {
@@ -259,7 +259,7 @@
 
 #pragma mark - Detail Tile
 /**
- *	Touching a tile will toggle the medication detail view
+ *  Touching a tile will toggle the medication detail view
  */
 - (void)showMedicationDetails:(id)sender
 {
@@ -285,7 +285,7 @@
 
 #pragma mark - Image Handling
 /**
- *	Starts or stops the activity indicator on the image view
+ *  Starts or stops the activity indicator on the image view
  */
 - (void)indicateImageAction:(BOOL)flag
 {
@@ -302,7 +302,7 @@
 }
 
 /**
- *	Displays the given image instead of the default image
+ *  Displays the given image instead of the default image
  */
 - (void)showImage:(UIImage *)anImage
 {

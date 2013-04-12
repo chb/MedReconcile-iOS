@@ -295,7 +295,7 @@
 
 #pragma mark - Medication Actions
 /**
- *	Reloads the current record's medications
+ *  Reloads the current record's medications
  */
 - (void)reloadList:(id)sender
 {
@@ -307,7 +307,7 @@
 	
 	// fetch this record's medications
 	DLog(@"REFRESHING!");
-	[record fetchAllReportsOfClass:[IndivoMedication class] callback:^(BOOL success, NSDictionary *userInfo) {
+	[record fetchReportsOfClass:[IndivoMedication class] callback:^(BOOL success, NSDictionary *__autoreleasing userInfo) {
 		
 		// error fetching medications
 		if (!success) {
@@ -333,11 +333,11 @@
 {
 	// filter meds
 	NSPredicate *filter = [NSPredicate predicateWithBlock:^BOOL(IndivoMedication *aMed, NSDictionary *bindings) {
-		if (!showVoid && (INDocumentStatusVoid == aMed.status)) {
+		if (!showVoid && (INDocumentStatusVoid == aMed.documentStatus)) {
 			return NO;
 		}
-		if (minStopDate && aMed.prescription.stopOn) {
-			return (minStopDate == [minStopDate earlierDate:[aMed.prescription.stopOn date]]);
+		if (minStopDate && aMed.endDate) {
+			return (minStopDate == [minStopDate earlierDate:[aMed.endDate date]]);
 		}
 		return YES;
 	}];
@@ -347,16 +347,16 @@
 	NSUInteger order = sortSelector.selectedSegmentIndex;
 	meds = [meds sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
 		if (0 == order) {
-			NSDate *date1 = [[[obj1 prescription] on] date];
-			NSDate *date2 = [[[obj2 prescription] on] date];
+			NSDate *date1 = [[obj1 startDate] date];
+			NSDate *date2 = [[obj2 startDate] date];
 			return [date1 compare:date2];
 		}
 		else if (1 == order) {
-			NSDate *date1 = [[[obj1 prescription] stopOn] date];
-			NSDate *date2 = [[[obj2 prescription] stopOn] date];
+			NSDate *date1 = [[obj1 endDate] date];
+			NSDate *date2 = [[obj2 endDate] date];
 			if (!date1 && !date2) {				// order by start date if both have no stop date
-				date1 = [[[obj1 prescription] on] date];
-				date2 = [[[obj2 prescription] on] date];
+				date1 = [[obj1 startDate] date];
+				date2 = [[obj2 startDate] date];
 			}
 			if (!date1) {
 				return NSOrderedDescending;		// those without stop date go to the end
@@ -372,7 +372,7 @@
 
 
 /**
- *	Show the add-medication screen
+ *  Show the add-medication screen
  */
 - (void)showNewMedView:(id)sender
 {
@@ -401,7 +401,7 @@
 
 #pragma mark - Medication Processing
 /**
- *	This methods walks through all IndivoMedication objects in self.medications and tries to group them
+ *  This methods walks through all IndivoMedication objects in self.medications and tries to group them
  */
 - (void)processMedicationsAndRefresh:(BOOL)refresh
 {
@@ -431,7 +431,7 @@
 
 #pragma mark - Indivo
 /**
- *	Connecting to the server retrieves the records of your users account
+ *  Connecting to the server retrieves the records of your users account
  */
 - (void)selectRecord:(id)sender
 {
@@ -461,7 +461,7 @@
 }
 
 /**
- *	Cancels current connection attempt
+ *  Cancels current connection attempt
  */
 - (void)cancelSelection:(id)sender
 {
@@ -470,7 +470,7 @@
 }
 
 /**
- *	We subscribe to notifications when the documents change with this method
+ *  We subscribe to notifications when the documents change with this method
  */
 - (void)documentsDidChange:(NSNotification *)aNotification
 {
@@ -530,7 +530,7 @@
 
 #pragma mark - UI Actions
 /**
- *	Reverts the navigation bar "connect" button
+ *  Reverts the navigation bar "connect" button
  */
 - (void)setRecordButtonTitle:(NSString *)aTitle
 {
@@ -540,7 +540,7 @@
 }
 
 /**
- *	Dismiss current overlay view controller
+ *  Dismiss current overlay view controller
  */
 - (void)dismissModalViewController:(id)sender
 {
@@ -553,7 +553,7 @@
 }
 
 /**
- *	Starts or stops the activity spinner
+ *  Starts or stops the activity spinner
  */
 - (void)indicateActivity:(BOOL)active
 {
@@ -595,7 +595,7 @@
 }
 
 /**
- *	The control view contains elements to control what is being shown
+ *  The control view contains elements to control what is being shown
  */
 - (UIView *)controlView
 {

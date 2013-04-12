@@ -13,7 +13,7 @@
 
 
 /**
- *	A view displaying one medication as a medication tile
+ *  A view displaying one medication as a medication tile
  */
 @interface INMedTile : UIControl
 

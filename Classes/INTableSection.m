@@ -85,7 +85,7 @@
 
 #pragma mark - The Indicator
 /**
- *	If we want an indicator shown, this method returns the indicator for the selected row, nil in all other cases
+ *  If we want an indicator shown, this method returns the indicator for the selected row, nil in all other cases
  */
 - (UIView *)accessoryViewForRow:(NSUInteger)row
 {
@@ -97,8 +97,8 @@
 }
 
 /**
- *	Make sure the indicator is shown, creating it if necessary.
- *	The indicator will only be shown for the selected row, so make sure to set a selectedObject before calling this method!
+ *  Make sure the indicator is shown, creating it if necessary.
+ *  The indicator will only be shown for the selected row, so make sure to set a selectedObject before calling this method!
  */
 - (void)showIndicator
 {
@@ -134,7 +134,7 @@
 
 #pragma mark - Row Properties
 /**
- *	Removes all objects and clears the selected object
+ *  Removes all objects and clears the selected object
  */
 - (void)removeAllObjects
 {
@@ -144,7 +144,7 @@
 }
 
 /**
- *	Add an object
+ *  Add an object
  */
 - (void)addObject:(id)anObject
 {
@@ -152,7 +152,7 @@
 }
 
 /**
- *	Adds all objects from an array
+ *  Adds all objects from an array
  */
 - (void)addObjects:(NSArray *)newObjects
 {
@@ -160,7 +160,7 @@
 }
 
 /**
- *	Adds an object to the beginning of the array
+ *  Adds an object to the beginning of the array
  */
 - (void)unshiftObject:(id)anObject
 {
@@ -170,7 +170,7 @@
 }
 
 /**
- *	Removes current objects and fills content with objects from the given array
+ *  Removes current objects and fills content with objects from the given array
  */
 - (void)setObjectsFrom:(NSArray *)anArray
 {
@@ -180,7 +180,7 @@
 }
 
 /**
- *	Returns the object representing the given row
+ *  Returns the object representing the given row
  */
 - (id)objectForRow:(NSUInteger)row
 {
@@ -191,7 +191,7 @@
 }
 
 /**
- *	Marks the object at the given row selected
+ *  Marks the object at the given row selected
  */
 - (void)selectObjectInRow:(NSUInteger)row
 {
@@ -204,7 +204,7 @@
 
 #pragma mark - Adding, collapsing and removing from/in/to a table
 /**
- *	Adds the receiver to the given table as section with given index.
+ *  Adds the receiver to the given table as section with given index.
  */
 - (void)addToTable:(UITableView *)aTable asSection:(NSUInteger)section animated:(BOOL)animated
 {
@@ -221,7 +221,7 @@
 }
 
 /**
- *	Expands the section to show all items, forgetting the previously selected object (if any).
+ *  Expands the section to show all items, forgetting the previously selected object (if any).
  */
 - (void)expandAnimated:(BOOL)animated
 {
@@ -248,7 +248,7 @@
 
 
 /**
- *	Collapse the section
+ *  Collapse the section
  */
 - (void)collapseAnimated:(BOOL)animated
 {
@@ -271,7 +271,7 @@
 }
 
 /**
- *	Collapses the receiver IF it has a selectedObject.
+ *  Collapses the receiver IF it has a selectedObject.
  */
 - (void)collapseInTable:(UITableView *)aTable section:(NSUInteger)section animated:(BOOL)animated
 {
@@ -302,7 +302,7 @@
 
 
 /**
- *	Remove the entire section from the table view
+ *  Remove the entire section from the table view
  */
 - (void)removeAnimated:(BOOL)animated
 {
@@ -325,7 +325,7 @@
 
 
 /**
- *	Reload the whole section
+ *  Reload the whole section
  */
 - (void)updateAnimated:(BOOL)animated
 {
@@ -351,12 +351,12 @@
 	if (!animated) {
 		return UITableViewRowAnimationNone;
 	}
-	return (NULL != UITableViewRowAnimationAutomatic) ? UITableViewRowAnimationAutomatic : UITableViewRowAnimationFade;
+	return UITableViewRowAnimationAutomatic;
 }
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"%@ <0x%x>  %@, section %d, %d objects", NSStringFromClass([self class]), self, (title ? title : (type ? type : @"No title and no type")), tableSection, [objects count]];
+	return [NSString stringWithFormat:@"%@ <%p>  %@, section %d, %d objects", NSStringFromClass([self class]), self, (title ? title : (type ? type : @"No title and no type")), tableSection, [objects count]];
 }
 
 

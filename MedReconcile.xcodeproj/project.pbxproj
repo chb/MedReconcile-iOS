@@ -60,6 +60,9 @@
 		EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB2145CE695001C6C2C /* Security.framework */; };
 		EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */; };
 		EEE62F96146AFACD000DA370 /* INTableSection.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE62F95146AFACD000DA370 /* INTableSection.m */; };
+		EEFFDEB71718B78600E13F13 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = EEFFDEB61718B78600E13F13 /* Default-568h@2x.png */; };
+		EEFFDEB91718B78900E13F13 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = EEFFDEB81718B78900E13F13 /* Default.png */; };
+		EEFFDEBB1718B78A00E13F13 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = EEFFDEBA1718B78A00E13F13 /* Default@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -155,6 +158,9 @@
 		EEDB8DB4145CE69D001C6C2C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		EEE62F94146AFACD000DA370 /* INTableSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INTableSection.h; sourceTree = "<group>"; };
 		EEE62F95146AFACD000DA370 /* INTableSection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = INTableSection.m; sourceTree = "<group>"; };
+		EEFFDEB61718B78600E13F13 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		EEFFDEB81718B78900E13F13 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
+		EEFFDEBA1718B78A00E13F13 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -162,17 +168,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EE3E772F1517C6850023BB1C /* libIndivo.a in Frameworks */,
-				EE4397FC14E9CB4600FCFC47 /* libiconv.dylib in Frameworks */,
+				EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */,
+				EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */,
 				EE4397FA14E9CB3600FCFC47 /* CoreVideo.framework in Frameworks */,
 				EE4397F814E9CB2E00FCFC47 /* CoreMedia.framework in Frameworks */,
 				EE4397F614E9CB2200FCFC47 /* AVFoundation.framework in Frameworks */,
 				EECEC44D1475891D009D85FC /* QuartzCore.framework in Frameworks */,
-				EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */,
 				EEDB8DB3145CE695001C6C2C /* Security.framework in Frameworks */,
-				EE30A4BD145B91C30077E832 /* UIKit.framework in Frameworks */,
-				EE30A4BF145B91C30077E832 /* Foundation.framework in Frameworks */,
 				EE30A4C1145B91C30077E832 /* CoreGraphics.framework in Frameworks */,
+				EEDB8DB5145CE69D001C6C2C /* libxml2.dylib in Frameworks */,
+				EE4397FC14E9CB4600FCFC47 /* libiconv.dylib in Frameworks */,
+				EE3E772F1517C6850023BB1C /* libIndivo.a in Frameworks */,
 				EE4397F414E9CB0F00FCFC47 /* libzbar.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -310,6 +316,9 @@
 		EE472612147308F100EAFDA3 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				EEFFDEBA1718B78A00E13F13 /* Default@2x.png */,
+				EEFFDEB81718B78900E13F13 /* Default.png */,
+				EEFFDEB61718B78600E13F13 /* Default-568h@2x.png */,
 				EECEC44A1475854B009D85FC /* white_carbon.png */,
 				EE8684D4149AAE9E0002C1E2 /* diagonal.png */,
 				EE72154314748CA4008835C5 /* tile.png */,
@@ -476,6 +485,9 @@
 				EE4397F014E9CAB600FCFC47 /* zbar-help.html in Resources */,
 				EE4397F114E9CAB600FCFC47 /* zbar-helpicons.png in Resources */,
 				EEA88B5F14EA9CA200B7599D /* zbar-samples.png in Resources */,
+				EEFFDEB71718B78600E13F13 /* Default-568h@2x.png in Resources */,
+				EEFFDEB91718B78900E13F13 /* Default.png in Resources */,
+				EEFFDEBB1718B78A00E13F13 /* Default@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -587,12 +599,14 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MedReconcile-Prefix.pch";
 				INFOPLIST_FILE = "MedReconcile-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(LOCAL_LIBRARY_DIR)/Indivo/MedReconcile/ZBarSDK\"",
+					"\"$(PROJECT_DIR)/ZBarSDK\"",
+					"\"$(SRCROOT)/../IndivoFramework-ios/IndivoFramework/build/Release-iphoneos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"$(PROJECT_DIR)\"/**";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -603,12 +617,14 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MedReconcile-Prefix.pch";
 				INFOPLIST_FILE = "MedReconcile-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(LOCAL_LIBRARY_DIR)/Indivo/MedReconcile/ZBarSDK\"",
+					"\"$(PROJECT_DIR)/ZBarSDK\"",
+					"\"$(SRCROOT)/../IndivoFramework-ios/IndivoFramework/build/Release-iphoneos\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "\"$(PROJECT_DIR)\"/**";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

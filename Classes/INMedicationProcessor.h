@@ -11,9 +11,9 @@
 
 
 /**
- *	A class that processes an array of medications. Specifically it:
- *		- does this
- *		- and that
+ *  A class that processes an array of medications. Specifically it:
+ *  	- does this
+ *  	- and that
  */
 @interface INMedicationProcessor : NSObject
 

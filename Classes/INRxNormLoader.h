@@ -10,7 +10,7 @@
 
 
 /**
- *	Helper to load content from RxNorm's REST interface
+ *  Helper to load content from RxNorm's REST interface
  */
 @interface INRxNormLoader : INURLLoader
 

@@ -12,7 +12,7 @@
 
 
 /**
- *	A class holding a bunch of related IndivoMedication objects
+ *  A class holding a bunch of related IndivoMedication objects
  */
 @interface IndivoMedicationGroup : NSObject
 

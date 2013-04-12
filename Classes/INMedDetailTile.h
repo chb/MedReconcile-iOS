@@ -14,7 +14,7 @@
 
 
 /**
- *	A view intended to be used as a detail view accompanying a INMedTile
+ *  A view intended to be used as a detail view accompanying a INMedTile
  */
 @interface INMedDetailTile : UIView
 

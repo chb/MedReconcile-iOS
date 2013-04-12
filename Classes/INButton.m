@@ -76,8 +76,8 @@
 
 #pragma mark - Action Indication
 /**
- *	Start or stops an activity indicator view on the button
- *	@param action Whether or not to show the indicator
+ *  Start or stops an activity indicator view on the button
+ *  @param action Whether or not to show the indicator
  */
 - (void)indicateAction:(BOOL)action
 {

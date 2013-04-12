@@ -139,11 +139,11 @@
 		cell.textLabel.text = [med displayName];
 		
 		INDateRangeFormatter *drFormatter = [INDateRangeFormatter new];
-		drFormatter.from = med.prescription.on.date;
-		drFormatter.to = med.prescription.stopOn.date;
+		drFormatter.from = med.startDate.date;
+		drFormatter.to = med.endDate.date;
 		cell.detailTextLabel.text = [drFormatter formattedRange];
 		
-		BOOL canUseDrug = (nil != med.record || [@"SBD" isEqualToString:med.dose.unit.abbrev] || object == [section selectedObject]);
+		BOOL canUseDrug = YES;//(nil != med.record || [@"SBD" isEqualToString:med.quantity.unit.abbrev] || object == [section selectedObject]);
 		INButtonStyle style = canUseDrug ? INButtonStyleAccept : INButtonStyleMain;
 		
 		INButton *use = [INButton buttonWithStyle:style];
@@ -190,7 +190,7 @@
 
 #pragma mark - Loading Suggestions
 /**
- *	Load medication suggestions for the user entered string
+ *  Load medication suggestions for the user entered string
  */
 - (void)loadSuggestionsFor:(NSString *)medString
 {
@@ -259,7 +259,7 @@
 
 
 /**
- *	This method can be used to start off with a given medication object
+ *  This method can be used to start off with a given medication object
  */
 - (void)loadSuggestionsForMed:(IndivoMedication *)aMed
 {
@@ -267,8 +267,8 @@
 	
 	if (aMed) {
 		nameInputField.enabled = NO;
-		nameInputField.placeholder = aMed.name.abbrev ? aMed.name.abbrev : aMed.name.text;
-		NSString *rxcui= aMed.name ? aMed.name.value : aMed.brandName.value;
+		nameInputField.placeholder = aMed.drugName.title;
+		NSString *rxcui= aMed.drugName.identifier;
 		
 		// prepare section and init suggestion loader
 		INTableSection *section = [INTableSection newWithTitle:@"Suggestions"];
@@ -363,8 +363,8 @@
 
 #pragma mark - User Flow
 /**
- *	An RX object was selected, go to the next step
- *	The sequence is: IN/MIN -> BN -> SBD
+ *  An RX object was selected, go to the next step
+ *  The sequence is: IN/MIN -> BN -> SBD
  */
 - (void)proceedWith:(NSIndexPath *)indexPath
 {
@@ -378,7 +378,7 @@
 			return;
 		}
 		
-		NSString *tty = startMed.dose.unit.abbrev;
+		NSString *tty = nil;//startMed.quantity.unit;
 		NSString *desired = nil;
 		BOOL nowAtDrugEndpoint = NO;
 		if ([@"BN" isEqualToString:tty]) {
@@ -394,7 +394,7 @@
 			[current selectRow:indexPath.row collapseAnimated:YES];
 			[current showIndicator];
 			
-			NSString *rxcui= startMed.brandName.value ? startMed.brandName.value : startMed.name.value;
+			NSString *rxcui= startMed.drugName.identifier;
 			
 			self.currentLoader = [INRxNormLoader loader];
 			[currentLoader getRelated:desired forId:rxcui callback:^(BOOL didCancel, NSString *errorString) {
@@ -412,7 +412,7 @@
 						NSString *name = [related objectForKey:@"name"];
 						NSString *rx = [related objectForKey:@"rxcui"];
 						
-						// ** we got a DF, dose form, use as section (e.g. "Oral Tablet")
+						// ** we got a DF, quantity form, use as section (e.g. "Oral Tablet")
 						if ([@"DF" isEqualToString:tty]) {
 							if (name) {
 								INTableSection *newSection = [INTableSection newWithTitle:name];
@@ -457,7 +457,7 @@
 							NSString *name = [drug objectForKey:@"name"];
 							if ([name length] > 0) {
 								
-								// use SCDC to get the formulation/dose by stripping IN and MIN names
+								// use SCDC to get the formulation/quantity by stripping IN and MIN names
 								NSMutableString *myStrength = [NSMutableString string];
 								for (NSString *strength in [scdc allKeys]) {
 									if (NSNotFound != [name rangeOfString:strength].location) {
@@ -542,7 +542,7 @@
 }
 
 /**
- *	If a drug has been chosen, continue to the next fields
+ *  If a drug has been chosen, continue to the next fields
  */
 - (void)useDrug:(NSIndexPath *)indexPath
 {
@@ -555,9 +555,9 @@
 	}
 	
 	// if we have no medication.name, fetch related IN/MIN first
-	if (!useMed.name) {
+	if (!useMed.drugName) {
 		self.currentLoader = [INRxNormLoader loader];
-		[currentLoader getRelated:@"MIN+IN" forId:useMed.brandName.value callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+		[currentLoader getRelated:@"MIN+IN" forId:useMed.drugName.identifier callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
 			if (!userDidCancel) {
 				NSMutableArray *mins = [NSMutableArray arrayWithCapacity:[currentLoader.responseObjects count]];
 				NSMutableArray *ins = [NSMutableArray arrayWithCapacity:[currentLoader.responseObjects count]];
@@ -587,7 +587,7 @@
 				// add and finish off
 				if (use) {
 					IndivoMedication *refMed = [IndivoMedication newWithRxNormDict:use];
-					useMed.name = refMed.name;
+					useMed.drugName = refMed.drugName;
 				}
 				[delegate newMedController:self didSelectMed:useMed];
 			}
@@ -606,7 +606,7 @@
 
 #pragma mark - Table Section Updating
 /**
- *	Clears all suggestions
+ *  Clears all suggestions
  */
 - (void)clearSuggestions
 {
@@ -628,7 +628,7 @@
 }
 
 /**
- *	Pushes the given table section while returning the current section
+ *  Pushes the given table section while returning the current section
  */
 - (void)addSection:(INTableSection *)newSection animated:(BOOL)animated
 {
@@ -642,7 +642,7 @@
 }
 
 /**
- *	Make the given level the active level
+ *  Make the given level the active level
  */
 - (void)goToSection:(NSUInteger)sectionIdx animated:(BOOL)animated
 {
@@ -677,8 +677,8 @@
 
 #pragma mark - UITextFieldDelegate
 /**
- *	This method gets called whenever the text in our textfield changes. We use it to start loading medication suggestions matching the
- *	current string in the field
+ *  This method gets called whenever the text in our textfield changes. We use it to start loading medication suggestions matching the
+ *  current string in the field
  */
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
@@ -701,7 +701,7 @@
 }
 
 /**
- *	Called when the user clears the field
+ *  Called when the user clears the field
  */
 - (BOOL)textFieldShouldClear:(UITextField *)textField
 {
@@ -710,7 +710,7 @@
 }
 
 /**
- *	Hitting the Done key on the keyboard hides the keyboard
+ *  Hitting the Done key on the keyboard hides the keyboard
  */
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {

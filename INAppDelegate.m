@@ -96,7 +96,7 @@
 
 #pragma mark - Utilities
 /**
- *	Returns the tint color for navigation bars used throughout our app
+ *  Returns the tint color for navigation bars used throughout our app
  */
 - (UIColor *)naviTintColor
 {

@@ -71,7 +71,7 @@ void runOnMainQueue(dispatch_block_t block);
 
 #pragma mark - Processing
 /**
- *	This kicks off the heavy-lifting-machine!
+ *  This kicks off the heavy-lifting-machine!
  */
 - (void)processMeds
 {
@@ -86,51 +86,50 @@ void runOnMainQueue(dispatch_block_t block);
 			for (IndivoMedication *med in medications) {
 				
 				// no medication code
-				if (!med.name.value) {
+				if (!med.drugName.identifier) {
+					NSString *rxcui = nil;
 					
 					// infer it from brand code?
-					if (med.brandName.value) {
-						runOnMainQueue(^{
-							INRxNormLoader *loader = [INRxNormLoader new];
-							[waitingForResources addObject:loader];
-							[loader getRelated:@"MIN+IN" forId:med.brandName.value callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-								
-								// update medication with MIN, if available, with IN otherwise
-								if (!userDidCancel && !errorMessage) {
-									BOOL found = NO;
+					runOnMainQueue(^{
+						INRxNormLoader *loader = [INRxNormLoader new];
+						[waitingForResources addObject:loader];
+						[loader getRelated:@"MIN+IN" forId:rxcui callback:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+							
+							// update medication with MIN, if available, with IN otherwise
+							if (!userDidCancel && !errorMessage) {
+								BOOL found = NO;
+								for (NSDictionary *dict in loader.responseObjects) {
+									if ([@"MIN" isEqualToString:[dict objectForKey:@"tty"]]) {
+										med.drugName.system = @"rxnorm/rxcui#";
+										med.drugName.identifier = [dict objectForKey:@"rxcui"];
+										med.drugName.title = [dict objectForKey:@"name"];
+										found = YES;
+										break;
+									}
+								}
+								if (!found) {
 									for (NSDictionary *dict in loader.responseObjects) {
-										if ([@"MIN" isEqualToString:[dict objectForKey:@"tty"]]) {
-											med.name.type = @"rxnorm/rxcui#";
-											med.name.value = [dict objectForKey:@"rxcui"];
-											med.name.text = [dict objectForKey:@"name"];
+										if ([@"IN" isEqualToString:[dict objectForKey:@"tty"]]) {
+											med.drugName.system = @"rxnorm/rxcui#";
+											med.drugName.identifier = [dict objectForKey:@"rxcui"];
+											med.drugName.title = [dict objectForKey:@"name"];
 											found = YES;
 											break;
 										}
 									}
-									if (!found) {
-										for (NSDictionary *dict in loader.responseObjects) {
-											if ([@"IN" isEqualToString:[dict objectForKey:@"tty"]]) {
-												med.name.type = @"rxnorm/rxcui#";
-												med.name.value = [dict objectForKey:@"rxcui"];
-												med.name.text = [dict objectForKey:@"name"];
-												found = YES;
-												break;
-											}
-										}
-									}
-									
-									if (found) {
-										[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
-											[self resourceDidArrive:loader];
-										}];
-										return;
-									}
 								}
 								
-								[self resourceDidArrive:loader];
-							}];
-						});
-					}
+								if (found) {
+									[med replace:^(BOOL userDidCancel, NSString *__autoreleasing errorMessage) {
+										[self resourceDidArrive:loader];
+									}];
+									return;
+								}
+							}
+							
+							[self resourceDidArrive:loader];
+						}];
+					});
 				}
 			}
 			if ([waitingForResources count] < 1) {
@@ -144,7 +143,7 @@ void runOnMainQueue(dispatch_block_t block);
 		// put all medications into a bin per rxnorm id for brandName
 		DLog(@"-->  Stage %d", stage);
 		for (IndivoMedication *med in medications) {
-			NSString *rxcui = med.brandName.value;
+			NSString *rxcui = med.drugName.identifier;
 			if ([rxcui length] > 0) {
 				IndivoMedicationGroup *grp = [rxnormBin objectForKey:rxcui];
 				if (!grp) {

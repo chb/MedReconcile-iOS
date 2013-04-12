@@ -31,7 +31,7 @@
 @synthesize delegate, med;
 @synthesize scrollView, agentContainer, drugContainer, buttonContainer;
 @synthesize agent, agentDesc, agentNameHint, drug, drugDesc, drugNameHint;
-@synthesize details, dose, start, stop, numDays;
+@synthesize details, quantity, start, stop, numDays;
 @synthesize instructions, prescriber;
 @synthesize voidButton, replaceButton, mainButton;
 
@@ -172,26 +172,26 @@
 
 #pragma mark - Medication Actions
 /**
- *	Loads medication values into the fields if we have a med and the view is loaded. Will in any case call layoutAnimated:NO.
+ *  Loads medication values into the fields if we have a med and the view is loaded. Will in any case call layoutAnimated:NO.
  */
 - (void)loadMed
 {
 	if (med && [self isViewLoaded]) {
-		agent.text = med.name.abbrev ? med.name.abbrev : med.name.text;
+		agent.text = med.drugName.title;
 		//agentDesc.text = [med medicationCodedName];
 		agentDesc.text = [med displayName];
-		drug.text = med.brandName.abbrev ? med.brandName.abbrev : med.brandName.text;
+		drug.text = med.drugName.title;
 		//drugDesc.text = [med prescriptionCodedName];
 		drugDesc.text = [med displayName];
 		
-		dose.text = med.dose.unit.value;
+		quantity.text = [med.quantity.value stringValue];
 		
 		// date started and stopped
-		INDate *startDate = med.prescription.on;
+		INDate *startDate = med.startDate;
 		if (!startDate) {
 			startDate = [INDate dateWithDate:[NSDate date]];
 		}
-		INDate *stopDate = med.prescription.stopOn;
+		INDateTime *stopDate = med.endDate;
 		
 		start.text = startDate && ![startDate isNull] ? [startDate isoString] : @"";
 		stop.text = stopDate && ![stopDate isNull] ? [stopDate isoString] : @"";
@@ -201,7 +201,7 @@
 		
 		// update hints and buttons according to status
 		[mainButton removeTarget:self action:NULL forControlEvents:UIControlEventTouchUpInside];
-		switch (med.status) {
+		switch (med.documentStatus) {
 			case INDocumentStatusActive:
 				agentNameHint.hidden = NO;
 				drugNameHint.hidden = NO;
@@ -254,7 +254,7 @@
 
 
 /**
- *	Marks a medication voided
+ *  Marks a medication voided
  */
 - (IBAction)voidMed:(id)sender
 {
@@ -274,8 +274,8 @@
 }
 
 /**
- *	duplicates the current med, populates the fields with its data and marks the original medication replaced by the duplicated one.
- *	@attention Does only actually replace the med once the duplicated medication is saved
+ *  duplicates the current med, populates the fields with its data and marks the original medication replaced by the duplicated one.
+ *  @attention Does only actually replace the med once the duplicated medication is saved
  */
 - (IBAction)replaceMed:(id)sender
 {
@@ -296,7 +296,7 @@
 }
 
 /**
- *	Actions for the main button
+ *  Actions for the main button
  */
 
 - (void)saveMed:(id)sender
@@ -306,28 +306,24 @@
 	}
 	
 	// update display names
-	if (!med.name) {
-		med.name = [INCodedValue new];
+	if (!med.drugName) {
+		med.drugName = [INCodedValue new];
 	}
-	med.name.text = agent.text;
-	if (!med.brandName) {
-		med.brandName = [INCodedValue new];
-	}
-	med.brandName.text = drug.text;
-	
+	med.drugName.title = agent.text;
+
 	// update details
-	IndivoPrescription *prescription = med.prescription;
-	if (!prescription) {
-		prescription = [IndivoPrescription new];
-	}
-	prescription.on = [INDate dateFromISOString:start.text];
-	prescription.stopOn = [INDate dateFromISOString:stop.text];
-	prescription.instructions = [INString newWithString:instructions.text];
-	prescription.dispenseAsWritten = [INBool newNo];
-	med.prescription = prescription;
+//	IndivoPrescription *prescription = med.prescription;
+//	if (!prescription) {
+//		prescription = [IndivoPrescription new];
+//	}
+//	startDate = [INDate dateFromISOString:start.text];
+//	endDate = [INDate dateFromISOString:stop.text];
+//	prescription.instructions = [INString newWithString:instructions.text];
+//	prescription.dispenseAsWritten = [INBool newNo];
+//	med.prescription = prescription;
 	
-	if (!med.dose) {
-		med.dose = [INUnitValue new];			// must be present for the current scheme to validate
+	if (!med.quantity) {
+		med.quantity = [INUnitValue new];			// must be present for the current scheme to validate
 	}
 	med.frequency = [INCodedValue new];			// must be present for the current scheme to validate
 	
@@ -388,7 +384,7 @@
 
 
 /**
- *	Adjusts the stop date when the days toggle is operated
+ *  Adjusts the stop date when the days toggle is operated
  */
 - (IBAction)changeDays:(id)sender
 {
@@ -423,7 +419,7 @@
 }
 
 /**
- *	Updates the num days label by comparing the text in the two input fields
+ *  Updates the num days label by comparing the text in the two input fields
  */
 - (void)updateNumDaysLabel
 {
@@ -456,7 +452,7 @@
 
 
 /**
- *	Dismiss current overlay view controller
+ *  Dismiss current overlay view controller
  */
 - (void)dismissModalViewController:(id)sender
 {
@@ -559,8 +555,8 @@
 	if (aMed != med) {
 		med = aMed;
 		
-		if (!med.dateStarted) {
-			med.dateStarted = [INDate dateWithDate:[NSDate date]];		// to make the current scheme validate. We don't use this property.
+		if (!med.startDate) {
+			med.startDate = [INDateTime dateWithDate:[NSDate date]];		// to make the current scheme validate. We don't use this property.
 		}
 		[self loadMed];
 	}
